@@ -6,6 +6,7 @@ import ShopCategory from './Pages/ShopCategory.jsx'; // Changed to default impor
 import { Product } from './Pages/Product.jsx';
 import { Cart } from './Pages/Cart.jsx';
 import { LoginSignup } from './Pages/LoginSignup.jsx';
+import { AdminPanel } from './Pages/AdminPanel.jsx';
 import { Footer } from './Components/Footer/Footer.jsx';
 import men_banner from './Components/Assets/banner_mens.png';
 import women_banner from './Components/Assets/banner_women.png';
@@ -24,6 +25,7 @@ function App() {
           <Route path='/product/:productId' element={<Product />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/login' element={<LoginSignup />} />
+          <Route path='/admin' element={<AdminPanel />} />
         </Routes>
         <Footer />
       </BrowserRouter>

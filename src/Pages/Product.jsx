@@ -7,16 +7,32 @@ import { DescriptionBox } from '../Components/DescriptionBox/DescriptionBox';
 import { RealatedProduct } from '../Components/RealatedProduct/RealatedProduct';
 
 export const Product = () => {
-  const {all_product} =useContext(ShopContext);
-  const {productId} =useParams();
-  const product =all_product.find((e)=>e.id ===Number(productId))
+  const { all_product } = useContext(ShopContext);
+  const { productId } = useParams();
+  const product = all_product.find((e) => e.id === Number(productId));
+
+  if (!all_product || all_product.length === 0) {
+    return (
+      <div style={{ padding: "100px", textAlign: "center", fontSize: "1.2rem", color: "#555" }}>
+        Loading product details...
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div style={{ padding: "100px", textAlign: "center", fontSize: "1.2rem", color: "#d9534f" }}>
+        Product not found.
+      </div>
+    );
+  }
 
   return (
     <div>
-      <Breadcrum product={product}/> 
-      <ProductDisplay product={product}/>
-      <DescriptionBox/>
-      <RealatedProduct/>
+      <Breadcrum product={product} />
+      <ProductDisplay product={product} />
+      <DescriptionBox />
+      <RealatedProduct />
     </div>
-  )
-}
+  );
+};
