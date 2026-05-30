@@ -201,7 +201,7 @@ app.use('/images', express.static(uploadDir));
 
 app.post("/upload", upload.single('product'), (req, res) => {
   const host = req.get('host');
-  const protocol = req.protocol;
+  const protocol = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.') || host.includes('10.') ? req.protocol : 'https';
   res.json({
     success: 1,
     image_url: `${protocol}://${host}/images/${req.file.filename}`
@@ -267,7 +267,7 @@ app.get("/allproducts", async (req, res) => {
     // Dynamically replace the image host with the current request's host and protocol!
     // This ensures product images load correctly both locally and on Render.
     const host = req.get('host');
-    const protocol = req.protocol;
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.') || host.includes('10.') ? req.protocol : 'https';
     
     const updatedProducts = products.map(prod => {
       const prodObj = prod.toObject();
