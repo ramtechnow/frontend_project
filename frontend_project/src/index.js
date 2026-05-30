@@ -2,15 +2,25 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import './Styles/variables.css';
+import './Styles/global.css';
 import ShopContextProvider from './Context/ShopContext';
+import { CartProvider } from './Context/CartContext';
+import { AuthProvider } from './Context/AuthContext';
+import { ThemeProvider } from './Context/ThemeContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ShopContextProvider>
-         <App />
-    </ShopContextProvider>
-
+    <ThemeProvider>
+      <AuthProvider>
+        <ShopContextProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </ShopContextProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 

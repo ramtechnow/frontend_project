@@ -26,6 +26,18 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  sizes: {
+    type: [String],
+    default: ['S', 'M', 'L', 'XL']
+  },
+  colors: {
+    type: [String],
+    default: ['Black', 'White']
+  },
+  stockCount: {
+    type: Number,
+    default: 100
+  },
   date: {
     type: Date,
     default: Date.now,

@@ -1,36 +1,150 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import '../Pages/CSS/ShopCategory.css';
 import { ShopContext } from "../Context/ShopContext";
-import dropdown_icon from '../Components/Assets/dropdown_icon.png'
+import dropdown_icon from '../Components/Assets/dropdown_icon.png';
 import { Item } from "../Components/Item/Item";
+import FilterPanel from "../Components/Filters/FilterPanel";
+import { enrichProductsList } from "../Utils/helpers";
 
 const ShopCategory = (props) => {
   const { all_product } = useContext(ShopContext);
+
+  // Define initial state for filters
+  const [filters, setFilters] = useState({
+    genders: [],
+    categories: [],
+    sizes: [],
+    colors: [],
+    inStockOnly: false
+  });
+
+  // Reset filters when changing main navigation category (e.g., Men to Women)
+  useEffect(() => {
+    setFilters({
+      genders: [],
+      categories: [],
+      sizes: [],
+      colors: [],
+      inStockOnly: false
+    });
+  }, [props.category]);
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      genders: [],
+      categories: [],
+      sizes: [],
+      colors: [],
+      inStockOnly: false
+    });
+  };
+
+  // 1. Enrich original raw products list with filterable details
+  const enrichedProducts = enrichProductsList(all_product);
+
+  // 2. Filter products based on Route Category (men, women, kid)
+  const categoryProducts = enrichedProducts.filter(
+    (item) => props.category === item.category
+  );
+
+  // 3. Apply secondary real-time sub-filters
+  const filteredProducts = categoryProducts.filter((item) => {
+    // Gender Filter
+    if (filters.genders.length > 0 && !filters.genders.includes(item.gender)) {
+      return false;
+    }
+
+    // Subcategory Filter (match title containing e.g. "Blouse", "Jacket", "Sweatshirt")
+    if (filters.categories.length > 0) {
+      const matchesSubcategory = filters.categories.some(cat => 
+        item.name.toLowerCase().includes(cat.toLowerCase())
+      );
+      if (!matchesSubcategory) return false;
+    }
+
+    // Sizes Filter (check intersection of arrays)
+    if (filters.sizes.length > 0) {
+      const hasSize = item.sizes.some(size => filters.sizes.includes(size));
+      if (!hasSize) return false;
+    }
+
+    // Colors Filter (check intersection of arrays)
+    if (filters.colors.length > 0) {
+      const hasColor = item.colors.some(color => filters.colors.includes(color));
+      if (!hasColor) return false;
+    }
+
+    // In Stock Only Filter
+    if (filters.inStockOnly && !item.inStock) {
+      return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="shop-category">
-      <img className='shopcategory-banner' src={props.banner} alt="" />
-      <div className="shopcategory-indexSort">
-        <p>
-          <span>Showing 1-12 </span>out of 36 products
-        </p>
-        <div className="shopcategory-sort">
-          Sort by <img src={dropdown_icon} alt="" />
+      <img className='shopcategory-banner' src={props.banner} alt={`${props.category} banner`} />
+      
+      <div className="shopcategory-layout">
+        {/* LEFT COLUMN: FILTERS PANEL */}
+        <FilterPanel 
+          filters={filters} 
+          onFilterChange={handleFilterChange} 
+          onClearFilters={handleClearFilters}
+          filteredCount={filteredProducts.length}
+        />
+
+        {/* RIGHT COLUMN: PRODUCTS CONTAINER */}
+        <div className="shopcategory-right-content">
+          <div className="shopcategory-indexSort">
+            <p>
+              Showing <span>1-{Math.min(12, filteredProducts.length)} </span>out of {filteredProducts.length} products
+            </p>
+            <div className="shopcategory-sort">
+              Sort by <img src={dropdown_icon} alt="dropdown" />
+            </div>
+          </div>
+
+          {filteredProducts.length === 0 ? (
+            <div className="no-products-found">
+              <h3>No Products Match Your Filters</h3>
+              <p>Try loosening your search filters or click "Clear All Filters" to start over.</p>
+              <button className="clear-filter-reset-btn" onClick={handleClearFilters}>
+                Reset All Filters
+              </button>
+            </div>
+          ) : (
+            <div className="shopcategory-products">
+              {filteredProducts.map((item, i) => (
+                <Item 
+                  key={i} 
+                  id={item.id} 
+                  name={item.name} 
+                  image={item.image} 
+                  new_price={item.new_price} 
+                  old_price={item.old_price} 
+                />
+              ))}
+            </div>
+          )}
+
+          {filteredProducts.length > 12 && (
+            <div className="shopcategory-loadmore">
+              Explore More
+            </div>
+          )}
         </div>
       </div>
-      <div className="shopcategory-products">
-        {all_product.map((item, i) => {
-          if (props.category === item.category) {
-            return <Item key={i} id={item.id} name={item.name} image={item.image} new_price={item.new_price} old_price={item.old_price} />
-          }
-          else {
-            return null;
-          }
-        })}
-      </div>
-      <div className="shopcategory-loadmore">
-        Explore More
-      </div>
     </div>
-  )
-}
+  );
+};
+
 export default ShopCategory;
