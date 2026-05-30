@@ -1,0 +1,7 @@
+services:
+  - type: static
+    name: frontend_project
+    env: static
+    rootDir: frontend_project
+    buildCommand: npm install && npm run build
+    publishPath: frontend_project/build
