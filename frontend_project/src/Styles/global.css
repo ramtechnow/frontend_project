@@ -1,0 +1,268 @@
+/* Global styles with premium typography and CSS variables integration */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Premium scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--border-radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Glassmorphism Navigation */
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 50px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: var(--transition-smooth);
+}
+
+/* Global button reset and styling */
+button {
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font-primary);
+  transition: var(--transition-smooth);
+}
+
+/* Smooth theme transitions */
+.navbar, .navbar *, .shop-category, .productdisplay, .cartitems, .descriptionbox, .loginsignup, input, button, select, p, h1, h2, h3, h4, h5, h6, span {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Premium Offer/Banner styles override for dark mode */
+.offers, .new-collections, .popular, .newsletter {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  transition: var(--transition-smooth);
+  border-radius: var(--border-radius-md);
+  margin: 30px auto;
+  max-width: 1200px;
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+}
+
+.item {
+  background: var(--card-bg) !important;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: var(--transition-smooth) !important;
+  overflow: hidden;
+}
+
+.item:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color);
+}
+
+.item p {
+  color: var(--text-primary) !important;
+}
+
+.item-price-new {
+  color: var(--accent-color) !important;
+  font-weight: 700 !important;
+}
+
+.item-price-old {
+  color: var(--text-tertiary) !important;
+  text-decoration: line-through;
+}
+
+/* Custom badge styling */
+.nav-cart-count {
+  background: var(--accent-color) !important;
+  color: #ffffff !important;
+  font-family: var(--font-primary);
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(255, 65, 65, 0.4);
+}
+
+/* ==========================================
+   GLOBAL DARK MODE COMPONENT OVERRIDES
+   ========================================== */
+
+/* Root backgrounds */
+.dark body,
+.dark-theme body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Glassmorphism navbar dark mode */
+.dark .navbar,
+.dark-theme .navbar {
+  background: var(--nav-bg) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* Hero section overrides */
+.dark .hero,
+.dark-theme .hero {
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%) !important;
+}
+
+.dark .hero-left h2,
+.dark-theme .hero-left h2 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .hero-left h1,
+.dark-theme .hero-left h1 {
+  color: var(--text-primary) !important;
+}
+
+/* Offers & Banners dark mode */
+.dark .offers,
+.dark-theme .offers,
+.dark .newsletter,
+.dark-theme .newsletter,
+.dark .popular,
+.dark-theme .popular,
+.dark .new-collections,
+.dark-theme .new-collections {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.dark .offers-left h1,
+.dark-theme .offers-left h1,
+.dark .newsletter h1,
+.dark-theme .newsletter h1 {
+  color: var(--text-primary) !important;
+}
+
+.dark .offers-left p,
+.dark-theme .offers-left p,
+.dark .newsletter p,
+.dark-theme .newsletter p {
+  color: var(--text-secondary) !important;
+}
+
+/* Newsletter Input Box dark mode */
+.dark .newsletter-emailBox,
+.dark-theme .newsletter-emailBox,
+.dark .newsLetter-emailBox,
+.dark-theme .newsLetter-emailBox {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark .newsletter-emailBox input,
+.dark-theme .newsletter-emailBox input,
+.dark .newsLetter-emailBox input,
+.dark-theme .newsLetter-emailBox input {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+/* Footer overrides */
+.dark .footer,
+.dark-theme .footer {
+  background-color: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding: 40px 20px !important;
+}
+
+.dark .footer-logo p,
+.dark-theme .footer-logo p {
+  color: var(--text-primary) !important;
+}
+
+.dark .footer-links li,
+.dark-theme .footer-links li {
+  color: var(--text-secondary) !important;
+}
+
+.dark .footer-links li:hover,
+.dark-theme .footer-links li:hover {
+  color: var(--accent-color) !important;
+}
+
+.dark .footer-icons-container,
+.dark-theme .footer-icons-container {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark .footer-social-icon img,
+.dark-theme .footer-social-icon img {
+  filter: invert(1) !important;
+}
+
+.dark .footer-copyright,
+.dark-theme .footer-copyright,
+.dark .footer-copyright p,
+.dark-theme .footer-copyright p {
+  color: var(--text-secondary) !important;
+}
+
+.dark .new-collections h1,
+.dark-theme .new-collections h1,
+.dark .popular h1,
+.dark-theme .popular h1 {
+  color: var(--text-primary) !important;
+}
+
+.dark .new-collections hr,
+.dark-theme .new-collections hr,
+.dark .popular hr,
+.dark-theme .popular hr {
+  background-color: var(--accent-color) !important;
+}
+
+/* Item details dark mode overrides */
+.dark .item,
+.dark-theme .item {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark .item p,
+.dark-theme .item p {
+  color: var(--text-primary) !important;
+}
+
+.dark .item-prices,
+.dark-theme .item-prices {
+  border-top-color: var(--border-color) !important;
+}
+

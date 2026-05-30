@@ -1,0 +1,195 @@
+.filter-panel {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+  width: 100%;
+  max-width: 300px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: flex-start;
+  transition: var(--transition-smooth);
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-header h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.product-count-badge {
+  font-size: 0.8rem;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--border-radius-full);
+  font-weight: 600;
+}
+
+.filter-divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 4px 0;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-section h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Checkbox Design */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input {
+  display: none;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.checkbox-label:hover .custom-checkbox {
+  border-color: var(--accent-color);
+}
+
+.checkbox-label input:checked + .custom-checkbox {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.checkbox-label input:checked + .custom-checkbox::after {
+  content: "✓";
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Size buttons */
+.size-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.filter-size-btn {
+  background-color: var(--bg-tertiary);
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  padding: 8px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-smooth);
+}
+
+.filter-size-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.filter-size-btn.active {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 10px rgba(255, 65, 65, 0.2);
+}
+
+/* Color palette buttons */
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.filter-color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-full);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  position: relative;
+}
+
+.filter-color-btn.active {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color) !important;
+}
+
+.color-check-icon {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Clear filters button */
+.clear-filters-btn {
+  background-color: transparent;
+  color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+  padding: 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: var(--transition-smooth);
+  margin-top: 10px;
+}
+
+.clear-filters-btn:hover {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 65, 65, 0.3);
+}
+
+@media (max-width: 900px) {
+  .filter-panel {
+    max-width: 100%;
+    align-self: stretch;
+  }
+}
