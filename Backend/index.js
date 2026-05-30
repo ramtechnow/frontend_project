@@ -199,11 +199,13 @@ const upload = multer({ storage });
 // Create upload endpoint of images
 app.use('/images', express.static(uploadDir));
 
-app.post("/upload",upload.single('product'),(req,res)=>{
-    res.json({
-      success:1,
-      image_url:`http://localhost:${port}/images/${req.file.filename}`
-    })
+app.post("/upload", upload.single('product'), (req, res) => {
+  const host = req.get('host');
+  const protocol = req.protocol;
+  res.json({
+    success: 1,
+    image_url: `${protocol}://${host}/images/${req.file.filename}`
+  })
 })
 
 // Schema for adding products API
@@ -261,8 +263,23 @@ app.post("/removeproduct", fetchAdmin, async (req, res) => {
 app.get("/allproducts", async (req, res) => {
   try {
     let products = await Product.find({});
-    console.log("All Products fetched");
-    res.send(products);
+    
+    // Dynamically replace the image host with the current request's host and protocol!
+    // This ensures product images load correctly both locally and on Render.
+    const host = req.get('host');
+    const protocol = req.protocol;
+    
+    const updatedProducts = products.map(prod => {
+      const prodObj = prod.toObject();
+      if (prodObj.image && prodObj.image.includes('/images/')) {
+        const imageName = prodObj.image.split('/images/')[1];
+        prodObj.image = `${protocol}://${host}/images/${imageName}`;
+      }
+      return prodObj;
+    });
+
+    console.log("All Products fetched and host-mapped dynamically");
+    res.send(updatedProducts);
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
