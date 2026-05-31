@@ -15,15 +15,17 @@
 }
 
 .hero-left h2 {
-    color: #090909;
+    color: var(--text-secondary);
     font-size: 26px;
     font-weight: 600;
+    transition: var(--transition-smooth);
 }
 
 .hero-left p {
-    color: #171717;
+    color: var(--text-primary);
     font-size: 100px;
     font-weight: 700;
+    transition: var(--transition-smooth);
 }
 
 .hero-hand-icon {
@@ -45,10 +47,11 @@
     height: 70px;
     border-radius: 75px;
     margin-top: 30px;
-    background: #ff4141;
+    background: var(--accent-color);
     color: white;
     font-size: 22px;
     font-weight: 500;
+    transition: var(--transition-smooth);
 }
 
 .hero-right {

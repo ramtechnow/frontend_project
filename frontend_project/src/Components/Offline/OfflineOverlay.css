@@ -1,0 +1,145 @@
+.offline-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(9, 9, 11, 0.75);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.offline-card {
+  background-color: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  border-radius: 24px;
+  padding: 40px 30px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+.dark-theme .offline-card {
+  background-color: #18181b;
+  border-color: #27272a;
+}
+
+.offline-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.offline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+}
+
+.animate-pulse {
+  animation: pulseBadge 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .4; transform: scale(1.15); }
+}
+
+.offline-illustration {
+  width: 240px;
+  height: auto;
+  margin: 10px 0;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
+}
+
+.offline-card h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary, #09090b);
+  margin: 0;
+}
+
+.offline-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #71717a);
+  margin: 0;
+  padding: 0 10px;
+}
+
+.offline-retry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 24px;
+  background-color: var(--accent-color, #ff4141);
+  color: #ffffff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 65, 65, 0.25);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.offline-retry-btn:hover {
+  background-color: var(--accent-hover, #e03535);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 65, 65, 0.35);
+}
+
+.retry-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.offline-retry-btn:active {
+  transform: translateY(0);
+}
+
+/* Shake Animation for failed retries */
+.offline-retry-btn.shake {
+  animation: btnShake 0.4s ease-in-out;
+}
+
+@keyframes btnShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@media (max-width: 500px) {
+  .offline-card {
+    padding: 30px 20px;
+  }
+  .offline-illustration {
+    width: 180px;
+  }
+  .offline-card h2 {
+    font-size: 1.5rem;
+  }
+}

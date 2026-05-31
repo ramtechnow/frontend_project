@@ -8,6 +8,7 @@ import { Cart } from './Pages/Cart.jsx';
 import { LoginSignup } from './Pages/LoginSignup.jsx';
 import { AdminPanel } from './Pages/AdminPanel.jsx';
 import { Footer } from './Components/Footer/Footer.jsx';
+import OfflineOverlay from './Components/Offline/OfflineOverlay.jsx';
 
 import men_banner from './Components/Assets/banner_mens.png';
 import women_banner from './Components/Assets/banner_women.png';
@@ -25,6 +26,7 @@ function App() {
         <CartProvider>
           <div>
             <BrowserRouter>
+              <OfflineOverlay />
               <Navbar />
               <Routes>
                 <Route path='/' element={<Shop />} />

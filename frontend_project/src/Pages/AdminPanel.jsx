@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import './CSS/AdminPanel.css';
 import { BACKEND_URL } from '../config';
+import { motion } from 'framer-motion';
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  PlusCircle, 
+  Users, 
+  Save, 
+  X, 
+  Pencil, 
+  Trash2, 
+  User, 
+  ShoppingCart,
+  ChevronDown,
+  ChevronRight,
+  Settings,
+  Plus
+} from 'lucide-react';
 
 const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const AVAILABLE_COLORS = ['Black', 'White', 'Red', 'Blue', 'Green', 'Pink', 'Grey', 'Orange', 'Yellow'];
@@ -478,7 +495,7 @@ export const AdminPanel = () => {
       {/* SIDE NAVIGATION PANEL */}
       <div className="admin-sidebar">
         <div className="sidebar-header">
-          <span className="sidebar-logo-icon">📊</span>
+          <LayoutDashboard className="sidebar-logo-icon-svg" size={24} style={{ color: 'var(--accent-color)' }} />
           <h3>SHOPS ADMIN</h3>
         </div>
         
@@ -487,25 +504,25 @@ export const AdminPanel = () => {
             className={activeTab === "dashboard" ? "active" : ""} 
             onClick={() => setActiveTab("dashboard")}
           >
-            <span className="menu-icon">📈</span> Dashboard
+            <span className="menu-icon"><LayoutDashboard size={18} /></span> Dashboard
           </button>
           <button 
             className={activeTab === "list" ? "active" : ""} 
             onClick={() => setActiveTab("list")}
           >
-            <span className="menu-icon">📁</span> Catalog ({products.length})
+            <span className="menu-icon"><ShoppingBag size={18} /></span> Catalog ({products.length})
           </button>
           <button 
             className={activeTab === "add" ? "active" : ""} 
             onClick={() => setActiveTab("add")}
           >
-            <span className="menu-icon">➕</span> Add Product
+            <span className="menu-icon"><PlusCircle size={18} /></span> Add Product
           </button>
           <button 
             className={activeTab === "users" ? "active" : ""} 
             onClick={() => { setActiveTab("users"); fetchUsers(); }}
           >
-            <span className="menu-icon">👥</span> Users list ({users.length})
+            <span className="menu-icon"><Users size={18} /></span> Users list ({users.length})
           </button>
         </nav>
       </div>
@@ -761,13 +778,41 @@ export const AdminPanel = () => {
                         <div className="action-buttons-wrapper">
                           {editingProductId === prod.id ? (
                             <>
-                              <button className="save-edit-btn" onClick={() => handleSaveEdit(prod.id)}>💾 Save</button>
-                              <button className="cancel-edit-btn" onClick={() => setEditingProductId(null)}>❌ Cancel</button>
+                              <motion.button 
+                                className="save-edit-btn" 
+                                onClick={() => handleSaveEdit(prod.id)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <Save size={14} style={{ marginRight: '4px' }} /> Save
+                              </motion.button>
+                              <motion.button 
+                                className="cancel-edit-btn" 
+                                onClick={() => setEditingProductId(null)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <X size={14} style={{ marginRight: '4px' }} /> Cancel
+                              </motion.button>
                             </>
                           ) : (
                             <>
-                              <button className="admin-edit-btn" onClick={() => startEditing(prod)}>✏️ Edit</button>
-                              <button className="admin-delete-btn" onClick={() => removeProduct(prod.id)}>🗑️ Delete</button>
+                              <motion.button 
+                                className="admin-edit-btn" 
+                                onClick={() => startEditing(prod)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <Pencil size={14} style={{ marginRight: '4px' }} /> Edit
+                              </motion.button>
+                              <motion.button 
+                                className="admin-delete-btn" 
+                                onClick={() => removeProduct(prod.id)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <Trash2 size={14} style={{ marginRight: '4px' }} /> Delete
+                              </motion.button>
                             </>
                           )}
                         </div>
@@ -919,7 +964,7 @@ export const AdminPanel = () => {
                       <img src={URL.createObjectURL(image)} alt="Preview" className="image-preview" />
                     ) : (
                       <div className="upload-placeholder">
-                        <span className="upload-icon">📤</span>
+                        <Plus size={28} style={{ color: 'var(--accent-color)', marginBottom: '8px' }} />
                         <p>Click here or drag-and-drop to upload image</p>
                         <span className="upload-hint">PNG, JPG or WEBP formats supported</span>
                       </div>
@@ -975,9 +1020,12 @@ export const AdminPanel = () => {
                           onClick={() => setExpandedUser(isExpanded ? null : u.email)}
                           style={{ cursor: "pointer" }}
                         >
-                          <td className="user-name-cell">
-                            <span className="expand-indicator">{isExpanded ? "▼" : "▶"}</span>
-                            👤 {u.name}
+                          <td className="user-name-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="expand-indicator" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </span>
+                            <User size={16} style={{ color: 'var(--text-secondary)' }} />
+                            <span>{u.name}</span>
                           </td>
                           <td className="user-email-cell">{u.email}</td>
                           <td>
@@ -986,24 +1034,29 @@ export const AdminPanel = () => {
                             </span>
                           </td>
                           <td className="user-cart-count-cell">
-                            <span className="user-items-added">
-                              🛒 {totalQty} {totalQty === 1 ? 'Item' : 'Items'} Added
+                            <span className="user-items-added" style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                              <ShoppingCart size={14} style={{ color: 'var(--accent-color)' }} /> 
+                              <span>{totalQty} {totalQty === 1 ? 'Item' : 'Items'} Added</span>
                             </span>
                           </td>
                           <td onClick={(e) => e.stopPropagation()}>
                             <div className="action-buttons-wrapper">
-                              <button 
+                              <motion.button 
                                 className="user-role-toggle-btn"
                                 onClick={() => handleToggleRole(u.email, u.isAdmin)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                               >
-                                ⚙️ Flip Role
-                              </button>
-                              <button 
+                                <Settings size={12} style={{ marginRight: '4px' }} /> Flip Role
+                              </motion.button>
+                              <motion.button 
                                 className="user-delete-btn"
                                 onClick={() => handleDeleteUser(u.email)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                               >
-                                🗑️ Terminate
-                              </button>
+                                <Trash2 size={12} style={{ marginRight: '4px' }} /> Terminate
+                              </motion.button>
                             </div>
                           </td>
                         </tr>

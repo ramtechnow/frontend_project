@@ -168,10 +168,16 @@
   align-items: center;
 }
 
-.nav-cart-wrapper img {
+.nav-cart-wrapper img,
+.nav-cart-icon {
   width: 32px;
-  filter: var(--text-primary);
+  height: 32px;
+  color: var(--text-primary);
   transition: var(--transition-smooth);
+}
+
+.nav-cart-wrapper:hover .nav-cart-icon {
+  color: var(--accent-color);
 }
 
 .nav-cart-count {

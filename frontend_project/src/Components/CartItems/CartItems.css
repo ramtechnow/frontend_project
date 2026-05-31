@@ -158,16 +158,23 @@
   font-weight: 700;
 }
 
-.cartitems-remove-icon {
-  width: 14px;
+.cartitems-remove-btn {
+  background: transparent;
+  border: none;
   cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: var(--border-radius-full);
   transition: var(--transition-smooth);
-  filter: grayscale(100%);
+  margin: 0 auto;
 }
 
-.cartitems-remove-icon:hover {
-  filter: grayscale(0%);
-  transform: scale(1.2);
+.cartitems-remove-btn:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.08);
 }
 
 /* Layout checkout footer */

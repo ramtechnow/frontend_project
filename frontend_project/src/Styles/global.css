@@ -143,7 +143,9 @@ button {
 }
 
 .dark .hero-left h1,
-.dark-theme .hero-left h1 {
+.dark-theme .hero-left h1,
+.dark .hero-left p,
+.dark-theme .hero-left p {
   color: var(--text-primary) !important;
 }
 

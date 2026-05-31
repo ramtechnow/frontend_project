@@ -2,12 +2,14 @@ import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../Assets/logo.png";
-import cart_icon from "../Assets/cart_icon.png";
-import nav_dropdown from "../Assets/dropdown_icon.png";
 import useCart from "../../Hooks/useCart";
 import useAuth from "../../Hooks/useAuth";
 import useTheme from "../../Hooks/useTheme";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart, Menu } from "lucide-react";
+
+const MotionMenu = motion(Menu);
+const MotionShoppingCart = motion(ShoppingCart);
 
 const Navbar = () => {
   const [menu, setMenu] = useState("shop");
@@ -20,7 +22,7 @@ const Navbar = () => {
 
   const dropdown_toggle = (e) => {
     menuRef.current.classList.toggle("nav-menu-visible");
-    e.target.classList.toggle("open");
+    e.currentTarget.classList.toggle("open");
   };
 
   const handleLogout = async () => {
@@ -47,11 +49,12 @@ const Navbar = () => {
         </motion.div>
       </Link>
 
-      <img 
+      <MotionMenu 
         className="nav-dropdown" 
         onClick={dropdown_toggle} 
-        src={nav_dropdown} 
-        alt="Dropdown Menu" 
+        size={28}
+        whileHover={{ scale: 1.15 }}
+        whileTap={{ scale: 0.9 }}
       />
 
       <ul ref={menuRef} className="nav-menu">
@@ -146,7 +149,12 @@ const Navbar = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <img src={cart_icon} alt="Cart" />
+          <MotionShoppingCart 
+            size={30} 
+            className="nav-cart-icon"
+            whileHover={{ rotate: [-5, 5, -5, 5, 0] }}
+            transition={{ duration: 0.4 }}
+          />
           <AnimatePresence mode="wait">
             <motion.div 
               className="nav-cart-count"

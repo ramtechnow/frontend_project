@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ProductDisplay.css';
-import star_icon from '../Assets/star_icon.png';
-import star_dull_icon from '../Assets/star_dull_icon.png';
 import useCart from '../../Hooks/useCart';
 import { motion } from 'framer-motion';
+import { Star } from 'lucide-react';
 
 export const ProductDisplay = ({ product }) => {
   const { addToCart } = useCart();
@@ -121,11 +120,28 @@ export const ProductDisplay = ({ product }) => {
         
         {/* Rating and review section */}
         <div className="productdisplay-right-star">
-          <img src={star_icon} alt="star" />
-          <img src={star_icon} alt="star" />
-          <img src={star_icon} alt="star" />
-          <img src={star_icon} alt="star" />
-          <img src={star_dull_icon} alt="star dull" />
+          {[1, 2, 3, 4, 5].map((starIndex) => (
+            <motion.div
+              key={starIndex}
+              initial={{ scale: 0, rotate: -30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 20,
+                delay: starIndex * 0.06 
+              }}
+              whileHover={{ scale: 1.25, rotate: 15 }}
+              style={{ display: "inline-flex" }}
+            >
+              <Star 
+                size={18} 
+                fill={starIndex <= 4 ? "#ffc600" : "none"} 
+                color={starIndex <= 4 ? "#ffc600" : "var(--text-tertiary)"} 
+                style={{ cursor: 'pointer' }}
+              />
+            </motion.div>
+          ))}
           <p>({reviewCount} reviews)</p>
         </div>
 

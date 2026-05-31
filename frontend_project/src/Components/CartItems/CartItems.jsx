@@ -2,8 +2,8 @@ import React from 'react';
 import './CartItems.css';
 import useCart from '../../Hooks/useCart';
 import { ShopContext } from '../../Context/ShopContext';
-import remove_icon from '../Assets/cart_cross_icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
 
 export const CartItems = () => {
   const { 
@@ -116,12 +116,15 @@ export const CartItems = () => {
 
                         {/* REMOVE ACTION */}
                         <div className="cart-item-remove">
-                          <img
-                            className='cartitems-remove-icon'
-                            src={remove_icon}
-                            alt="Remove item"
-                            onClick={() => updateQuantity(key, 0)} // Sets qty to 0 to delete fully
-                          />
+                          <motion.button
+                            className="cartitems-remove-btn"
+                            onClick={() => updateQuantity(key, 0)}
+                            whileHover={{ scale: 1.2, rotate: 8 }}
+                            whileTap={{ scale: 0.9 }}
+                            title="Remove item"
+                          >
+                            <Trash2 size={18} />
+                          </motion.button>
                         </div>
                       </div>
                       <hr className="cart-item-divider" />
