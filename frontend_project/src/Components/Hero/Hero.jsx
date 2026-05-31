@@ -2,7 +2,6 @@ import React from 'react';
 import './Hero.css';
 import hand_icon from '../Assets/hand_icon.png';
 import arrow_icon from '../Assets/arrow.png';
-import hero_image from '../Assets/hero_image_1.svg';
 import { motion } from 'framer-motion';
 
 export const Hero = () => {
@@ -52,15 +51,6 @@ export const Hero = () => {
               <div>Latest Collection</div>
               <img src={arrow_icon} alt="arrow" />
           </motion.div>
-        </motion.div>
-        
-        <motion.div 
-          className="hero-right"
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.1, type: "spring", stiffness: 80 }}
-        >
-          <img src={hero_image} alt="Hero illustration" style={{ width: '100%', maxWidth: '560px', height: 'auto' }} />
         </motion.div>
     </div>
   );

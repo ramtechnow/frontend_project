@@ -134,7 +134,7 @@ button {
 /* Hero section overrides */
 .dark .hero,
 .dark-theme .hero {
-  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%) !important;
+  background: linear-gradient(to right, rgba(15, 17, 21, 0.94) 35%, rgba(15, 17, 21, 0.4) 100%), url('../Components/Assets/happy.jpg') no-repeat center center/cover !important;
 }
 
 .dark .hero-left h2,

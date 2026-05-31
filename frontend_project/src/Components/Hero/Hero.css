@@ -1,7 +1,8 @@
 .hero {
     height: 100vh;
-    background: linear-gradient(180deg, #fde1ff, #e1ffea22 60%);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.9) 35%, rgba(255, 255, 255, 0.25) 100%), url('../Assets/happy.jpg') no-repeat center center/cover;
     display: flex;
+    transition: var(--transition-smooth);
 }
 
 .hero-left {
