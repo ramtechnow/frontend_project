@@ -3,6 +3,7 @@ import './CartItems.css';
 import useCart from '../../Hooks/useCart';
 import { ShopContext } from '../../Context/ShopContext';
 import remove_icon from '../Assets/cart_cross_icon.png';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const CartItems = () => {
   const { 
@@ -20,16 +21,27 @@ export const CartItems = () => {
   return (
     <div className='cartitems'>
       <div className="cartitems-container">
-        <h1>Your Shopping Basket</h1>
+        <motion.h1
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Your Shopping Basket
+        </motion.h1>
 
         {Object.keys(cartItems).length === 0 ? (
-          <div className="empty-cart-message">
+          <motion.div 
+            className="empty-cart-message"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="empty-cart-svg">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
             <h3>Your basket is empty</h3>
             <p>Looks like you haven't added anything to your cart yet.</p>
-          </div>
+          </motion.div>
         ) : (
           <>
             {/* TABLE HEADER */}
@@ -46,71 +58,86 @@ export const CartItems = () => {
             <hr className="cart-item-divider" />
 
             {/* CART ITEMS LOOP */}
-            <div className="cart-items-list">
-              {Object.keys(cartItems).map((key) => {
-                const item = cartItems[key]; // {id, size, color, quantity}
-                const product = all_product.find(p => p.id === item.id);
+            <div className="cart-items-list" style={{ overflow: 'hidden' }}>
+              <AnimatePresence initial={false}>
+                {Object.keys(cartItems).map((key) => {
+                  const item = cartItems[key]; // {id, size, color, quantity}
+                  const product = all_product.find(p => p.id === item.id);
 
-                if (!product) return null;
+                  if (!product) return null;
 
-                return (
-                  <div key={key} className="cart-item-wrapper">
-                    <div className="cartitems-format cartitem-format-main">
-                      {/* Product Image */}
-                      <div className="cart-item-img-container">
-                        <img src={product.image} alt={product.name} className="carticon-product-icon" />
+                  return (
+                    <motion.div 
+                      key={key} 
+                      className="cart-item-wrapper-outer"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: "easeInOut" }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div className="cartitems-format cartitem-format-main">
+                        {/* Product Image */}
+                        <div className="cart-item-img-container">
+                          <img src={product.image} alt={product.name} className="carticon-product-icon" />
+                        </div>
+
+                        {/* Product Name */}
+                        <p className="cart-product-title">{product.name}</p>
+
+                        {/* Specs */}
+                        <div className="cart-item-specs">
+                          <span className="spec-badge size-badge">Size: {item.size}</span>
+                          <span className="spec-badge color-badge">Color: {item.color}</span>
+                        </div>
+
+                        {/* PRICE */}
+                        <p className="cart-item-price">₹{product.new_price}</p>
+
+                        {/* QUANTITY CONTROL */}
+                        <div className="cart-item-quantity-control">
+                          <button 
+                            className="qty-btn dec-btn" 
+                            onClick={() => removeFromCart(key)}
+                          >
+                            -
+                          </button>
+                          <span className="qty-val">{item.quantity}</span>
+                          <button 
+                            className="qty-btn inc-btn" 
+                            onClick={() => addToCart(item.id, item.size, item.color, 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {/* TOTAL PER ITEM */}
+                        <p className="cart-item-total">₹{product.new_price * item.quantity}</p>
+
+                        {/* REMOVE ACTION */}
+                        <div className="cart-item-remove">
+                          <img
+                            className='cartitems-remove-icon'
+                            src={remove_icon}
+                            alt="Remove item"
+                            onClick={() => updateQuantity(key, 0)} // Sets qty to 0 to delete fully
+                          />
+                        </div>
                       </div>
-
-                      {/* Product Name */}
-                      <p className="cart-product-title">{product.name}</p>
-
-                      {/* Specs */}
-                      <div className="cart-item-specs">
-                        <span className="spec-badge size-badge">Size: {item.size}</span>
-                        <span className="spec-badge color-badge">Color: {item.color}</span>
-                      </div>
-
-                      {/* PRICE */}
-                      <p className="cart-item-price">₹{product.new_price}</p>
-
-                      {/* QUANTITY CONTROL */}
-                      <div className="cart-item-quantity-control">
-                        <button 
-                          className="qty-btn dec-btn" 
-                          onClick={() => removeFromCart(key)}
-                        >
-                          -
-                        </button>
-                        <span className="qty-val">{item.quantity}</span>
-                        <button 
-                          className="qty-btn inc-btn" 
-                          onClick={() => addToCart(item.id, item.size, item.color, 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      {/* TOTAL PER ITEM */}
-                      <p className="cart-item-total">₹{product.new_price * item.quantity}</p>
-
-                      {/* REMOVE ACTION */}
-                      <div className="cart-item-remove">
-                        <img
-                          className='cartitems-remove-icon'
-                          src={remove_icon}
-                          alt="Remove item"
-                          onClick={() => updateQuantity(key, 0)} // Sets qty to 0 to delete fully
-                        />
-                      </div>
-                    </div>
-                    <hr className="cart-item-divider" />
-                  </div>
-                );
-              })}
+                      <hr className="cart-item-divider" />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
 
             {/* CART TOTAL SECTION */}
-            <div className="cartitems-down">
+            <motion.div 
+              className="cartitems-down"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <div className="cartitems-total">
                 <h2>Cart Totals</h2>
                 <div className="cart-totals-summary">
@@ -129,17 +156,28 @@ export const CartItems = () => {
                     <h3>₹{getTotalCartAmount()}</h3>
                   </div>
                 </div>
-                <button className="checkout-btn">PROCEED TO CHECKOUT</button>
+                <motion.button 
+                  className="checkout-btn"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  PROCEED TO CHECKOUT
+                </motion.button>
               </div>
 
               <div className="cartitems-promocode">
                 <p>Have a promo code? Enter it below</p>
                 <div className="cartitems-promobox">
                   <input type="text" placeholder="Promo code" />
-                  <button>Apply</button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Apply
+                  </motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </>
         )}
       </div>

@@ -22,7 +22,8 @@ exports.addProduct = async (req, res) => {
       old_price: req.body.old_price,
       sizes: req.body.sizes,
       colors: req.body.colors,
-      stockCount: req.body.stockCount,
+      variants: req.body.variants || [],
+      stockCount: req.body.variants ? req.body.variants.reduce((sum, v) => sum + Number(v.stock), 0) : Number(req.body.stockCount || 100),
     });
     
     await product.save();
@@ -67,14 +68,30 @@ exports.getAllProducts = async (req, res) => {
     
     const updatedProducts = products.map(prod => {
       const prodObj = prod.toObject();
+      
+      // Host remapper
       if (prodObj.image && prodObj.image.includes('/images/')) {
         const imageName = prodObj.image.split('/images/')[1];
         prodObj.image = `${protocol}://${host}/images/${imageName}`;
       }
+      
+      // Synthesize variants for legacy documents
+      if (!prodObj.variants || prodObj.variants.length === 0) {
+        const colors = prodObj.colors && prodObj.colors.length > 0 ? prodObj.colors : ['Black', 'White'];
+        const totalStock = prodObj.stockCount !== undefined ? prodObj.stockCount : 100;
+        const stockPerColor = Math.floor(totalStock / colors.length);
+        
+        prodObj.variants = colors.map((c, idx) => ({
+          color: c,
+          stock: idx === colors.length - 1 ? totalStock - (stockPerColor * (colors.length - 1)) : stockPerColor,
+          price: prodObj.new_price
+        }));
+      }
+      
       return prodObj;
     });
 
-    console.log("All Products fetched and host-mapped dynamically");
+    console.log("All Products fetched and host-mapped dynamically with variants fallback");
     res.send(updatedProducts);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -85,19 +102,27 @@ exports.getAllProducts = async (req, res) => {
 // Update a product (Admin Only)
 exports.updateProduct = async (req, res) => {
   try {
-    const { id, name, new_price, old_price, stockCount } = req.body;
+    const { id, name, new_price, old_price, variants, stockCount } = req.body;
+    
+    const updateData = { 
+      name, 
+      new_price: Number(new_price), 
+      old_price: Number(old_price) 
+    };
+    
+    if (variants) {
+      updateData.variants = variants;
+      updateData.stockCount = variants.reduce((sum, v) => sum + Number(v.stock), 0);
+    } else if (stockCount !== undefined) {
+      updateData.stockCount = Number(stockCount);
+    }
+    
     const updatedProduct = await Product.findOneAndUpdate(
       { id: Number(id) },
-      { 
-        $set: { 
-          name, 
-          new_price: Number(new_price), 
-          old_price: Number(old_price), 
-          stockCount: Number(stockCount) 
-        } 
-      },
+      { $set: updateData },
       { new: true }
     );
+    
     if (updatedProduct) {
       console.log("Updated Product successfully:", updatedProduct.name);
       res.json({ success: true, product: updatedProduct });
@@ -106,6 +131,53 @@ exports.updateProduct = async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating product:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// Update stock of a specific variant directly (Admin row auditor)
+exports.updateVariantStock = async (req, res) => {
+  try {
+    const { id, color, change } = req.body;
+    
+    // Find the product
+    const product = await Product.findOne({ id: Number(id) });
+    if (!product) {
+      return res.status(404).json({ success: false, error: "Product not found" });
+    }
+    
+    // If product doesn't have variants, synthesize them first
+    if (!product.variants || product.variants.length === 0) {
+      const colors = product.colors && product.colors.length > 0 ? product.colors : ['Black', 'White'];
+      const totalStock = product.stockCount !== undefined ? product.stockCount : 100;
+      const stockPerColor = Math.floor(totalStock / colors.length);
+      
+      product.variants = colors.map((c, idx) => ({
+        color: c,
+        stock: idx === colors.length - 1 ? totalStock - (stockPerColor * (colors.length - 1)) : stockPerColor,
+        price: product.new_price
+      }));
+    }
+    
+    // Find the specific color variant
+    const variant = product.variants.find(v => v.color.toLowerCase() === color.toLowerCase());
+    if (!variant) {
+      // Add the color variant if it doesn't exist
+      product.variants.push({ color, stock: Math.max(0, Number(change)), price: product.new_price });
+    } else {
+      // Update the stock count
+      variant.stock = Math.max(0, variant.stock + Number(change));
+    }
+    
+    // Sync total stockCount
+    product.stockCount = product.variants.reduce((sum, v) => sum + v.stock, 0);
+    
+    await product.save();
+    
+    console.log(`Updated variant ${color} stock for product ${product.name} (change: ${change}, new stock: ${variant ? variant.stock : change})`);
+    res.json({ success: true, product });
+  } catch (error) {
+    console.error("Error updating variant stock:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };

@@ -350,3 +350,24 @@
     flex-direction: column;
   }
 }
+
+/* Availability & Disabled Status Upgrades */
+.availability-status-label.in-stock {
+  color: #10b981;
+}
+
+.availability-status-label.out-of-stock {
+  color: #ef4444;
+  font-weight: 800;
+}
+
+.add-to-cart-action-btn.disabled,
+.buy-now-action-btn.disabled {
+  background-color: #6b7280 !important;
+  border-color: #6b7280 !important;
+  cursor: not-allowed !important;
+  opacity: 0.65;
+  box-shadow: none !important;
+  transform: none !important;
+  color: #ffffff !important;
+}

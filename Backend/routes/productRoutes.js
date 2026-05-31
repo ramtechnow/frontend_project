@@ -15,4 +15,7 @@ router.post('/removeproduct', fetchAdmin, productController.removeProduct);
 // Admin route to update a product
 router.post('/updateproduct', fetchAdmin, productController.updateProduct);
 
+// Admin route to update stock of a specific variant directly
+router.post('/admin/updatevariantstock', fetchAdmin, productController.updateVariantStock);
+
 module.exports = router;

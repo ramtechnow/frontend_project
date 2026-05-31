@@ -34,6 +34,14 @@ const ProductSchema = new mongoose.Schema({
     type: [String],
     default: ['Black', 'White']
   },
+  variants: {
+    type: [{
+      color: { type: String, required: true },
+      stock: { type: Number, required: true, default: 0 },
+      price: { type: Number }
+    }],
+    default: []
+  },
   stockCount: {
     type: Number,
     default: 100

@@ -4,6 +4,7 @@ import './ProductDisplay.css';
 import star_icon from '../Assets/star_icon.png';
 import star_dull_icon from '../Assets/star_dull_icon.png';
 import useCart from '../../Hooks/useCart';
+import { motion } from 'framer-motion';
 
 export const ProductDisplay = ({ product }) => {
   const { addToCart } = useCart();
@@ -21,7 +22,13 @@ export const ProductDisplay = ({ product }) => {
   // Fallback rating counts
   const reviewCount = product.reviewCount || 122;
 
+  // Dynamic Availability Stock Resolver
+  const selectedVariant = product.variants ? product.variants.find(v => v.color.toLowerCase() === selectedColor.toLowerCase()) : null;
+  const activeStock = selectedVariant ? selectedVariant.stock : (product.stockCount !== undefined ? product.stockCount : 100);
+  const isOutOfStock = activeStock <= 0;
+
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
     addToCart(product.id, selectedSize, selectedColor, 1);
     
     // Popup feedback
@@ -32,6 +39,7 @@ export const ProductDisplay = ({ product }) => {
   };
 
   const handleBuyNow = () => {
+    if (isOutOfStock) return;
     addToCart(product.id, selectedSize, selectedColor, 1);
     navigate('/cart');
   };
@@ -50,7 +58,12 @@ export const ProductDisplay = ({ product }) => {
   };
 
   return (
-    <div className='productdisplay'>
+    <motion.div 
+      className='productdisplay'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
       {/* Toast Notification Popup */}
       {showPopup && (
         <div className="add-to-cart-popup">
@@ -67,7 +80,12 @@ export const ProductDisplay = ({ product }) => {
       )}
       
       {/* LEFT GALLERY VIEW */}
-      <div className="productdisplay-left">
+      <motion.div 
+        className="productdisplay-left"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+      >
         <div className="productdisplay-img-list">
           {[1, 2, 3, 4].map((index) => (
             <img 
@@ -80,12 +98,25 @@ export const ProductDisplay = ({ product }) => {
           ))}
         </div>
         <div className="productdisplay-img">
-          <img className='productdisplay-main-img' src={activeImage} alt={product.name} />
+          <motion.img 
+            className='productdisplay-main-img' 
+            src={activeImage} 
+            alt={product.name}
+            key={activeImage}
+            initial={{ opacity: 0.5, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          />
         </div>
-      </div>
+      </motion.div>
 
       {/* RIGHT PRODUCT PANEL */}
-      <div className="productdisplay-right">
+      <motion.div 
+        className="productdisplay-right"
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+      >
         <h1>{product.name}</h1>
         
         {/* Rating and review section */}
@@ -152,10 +183,18 @@ export const ProductDisplay = ({ product }) => {
 
         {/* ACTIONS */}
         <div className="product-actions-row">
-          <button className="add-to-cart-action-btn" onClick={handleAddToCart}>
-            ADD TO CART
+          <button 
+            className={`add-to-cart-action-btn ${isOutOfStock ? 'disabled' : ''}`} 
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+          >
+            {isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
           </button>
-          <button className="buy-now-action-btn" onClick={handleBuyNow}>
+          <button 
+            className={`buy-now-action-btn ${isOutOfStock ? 'disabled' : ''}`} 
+            onClick={handleBuyNow}
+            disabled={isOutOfStock}
+          >
             BUY NOW
           </button>
         </div>
@@ -163,10 +202,15 @@ export const ProductDisplay = ({ product }) => {
         <div className="product-metadata-tags">
           <p><span>Gender :</span> {product.gender || 'Unisex'}</p>
           <p><span>Category :</span> {product.category} , Modern , Latest</p>
-          <p><span>Availability :</span> {product.inStock ? "In Stock" : "Out of Stock"}</p>
+          <p>
+            <span>Availability :</span>{' '}
+            <strong className={`availability-status-label ${isOutOfStock ? 'out-of-stock' : 'in-stock'}`}>
+              {isOutOfStock ? 'Out of Stock' : `In Stock (${activeStock} remaining)`}
+            </strong>
+          </p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

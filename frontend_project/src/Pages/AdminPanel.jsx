@@ -35,6 +35,17 @@ export const AdminPanel = () => {
   // Size and Color selections for adding product
   const [selectedSizes, setSelectedSizes] = useState(['S', 'M', 'L', 'XL']);
   const [selectedColors, setSelectedColors] = useState(['Black', 'White']);
+  const [colorStocks, setColorStocks] = useState({
+    Black: 50,
+    White: 50,
+    Red: 50,
+    Pink: 50,
+    Green: 50,
+    Blue: 50,
+    Orange: 50,
+    Yellow: 50,
+    Grey: 50
+  });
   const [image, setImage] = useState(false);
 
   // Check Admin privileges on mount
@@ -135,11 +146,19 @@ export const AdminPanel = () => {
 
     console.log("Adding Product...", productDetails);
     let responseData;
+    
+    const variants = selectedColors.map(color => ({
+      color,
+      stock: Number(colorStocks[color] || 0),
+      price: Number(productDetails.new_price)
+    }));
+
     let product = { 
       ...productDetails, 
       sizes: selectedSizes, 
       colors: selectedColors,
-      stockCount: Number(productDetails.stockCount)
+      variants,
+      stockCount: variants.reduce((sum, v) => sum + v.stock, 0)
     };
 
     // 1. Upload the image file
@@ -227,14 +246,10 @@ export const AdminPanel = () => {
     }
   };
 
-  // Inline Stock Incrementor/Decrementor
-  const handleStockAdjust = async (id, currentStock, change) => {
-    const targetProduct = products.find(p => p.id === id);
-    if (!targetProduct) return;
-    
-    const newStock = Math.max(0, Number(currentStock) + change);
+  // Inline Variant Stock Incrementor/Decrementor (Admin row auditor)
+  const handleVariantStockAdjust = async (id, colorName, change) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/updateproduct`, {
+      const res = await fetch(`${BACKEND_URL}/admin/updatevariantstock`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -243,29 +258,43 @@ export const AdminPanel = () => {
         },
         body: JSON.stringify({
           id,
-          name: targetProduct.name,
-          new_price: targetProduct.new_price,
-          old_price: targetProduct.old_price,
-          stockCount: newStock
+          color: colorName,
+          change: Number(change)
         })
       });
       const data = await res.json();
       if (data.success) {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, stockCount: newStock } : p));
+        setProducts(prev => prev.map(p => p.id === id ? data.product : p));
       }
     } catch (e) {
-      console.warn("⚠️ Error adjusting stock count:", e);
+      console.warn("⚠️ Error adjusting variant stock count:", e);
     }
   };
 
   // Trigger editing form for a product
   const startEditing = (prod) => {
     setEditingProductId(prod.id);
+    
+    // Synthesize variants locally if they don't exist yet to make sure editing works
+    let initialVariants = prod.variants ? JSON.parse(JSON.stringify(prod.variants)) : [];
+    if (initialVariants.length === 0) {
+      const colors = prod.colors && prod.colors.length > 0 ? prod.colors : ['Black', 'White'];
+      const totalStock = prod.stockCount !== undefined ? prod.stockCount : 100;
+      const stockPerColor = Math.floor(totalStock / colors.length);
+      
+      initialVariants = colors.map((c, idx) => ({
+        color: c,
+        stock: idx === colors.length - 1 ? totalStock - (stockPerColor * (colors.length - 1)) : stockPerColor,
+        price: prod.new_price
+      }));
+    }
+
     setEditForm({
       name: prod.name,
       new_price: prod.new_price,
       old_price: prod.old_price,
-      stockCount: prod.stockCount || 100
+      stockCount: prod.stockCount || 100,
+      variants: initialVariants
     });
   };
 
@@ -284,12 +313,12 @@ export const AdminPanel = () => {
           name: editForm.name,
           new_price: Number(editForm.new_price),
           old_price: Number(editForm.old_price),
-          stockCount: Number(editForm.stockCount)
+          variants: editForm.variants
         })
       });
       const data = await res.json();
       if (data.success) {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...editForm } : p));
+        setProducts(prev => prev.map(p => p.id === id ? data.product : p));
         setEditingProductId(null);
         alert("Product updated successfully!");
       } else {
@@ -648,29 +677,53 @@ export const AdminPanel = () => {
                       {/* Inline Stock Controls */}
                       <td>
                         {editingProductId === prod.id ? (
-                          <input 
-                            type="number" 
-                            className="inline-edit-input narrow"
-                            value={editForm.stockCount}
-                            onChange={(e) => setEditForm({ ...editForm, stockCount: e.target.value })}
-                          />
+                          <div className="inline-variant-edit-list">
+                            {editForm.variants && editForm.variants.map((v, idx) => (
+                              <div key={idx} className="inline-variant-edit-row">
+                                <span className="mini-color-circle" style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid #ddd', display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }}></span>
+                                <span className="variant-label-text">{v.color}:</span>
+                                <input 
+                                  type="number" 
+                                  className="inline-edit-input narrow mini-variant-input"
+                                  value={v.stock}
+                                  onChange={(e) => {
+                                    const updatedVariants = [...editForm.variants];
+                                    updatedVariants[idx].stock = Number(e.target.value);
+                                    setEditForm({ ...editForm, variants: updatedVariants });
+                                  }}
+                                  min="0"
+                                />
+                              </div>
+                            ))}
+                          </div>
                         ) : (
-                          <div className="inline-stock-control-panel">
-                            <button 
-                              className="adjust-stock-btn dec" 
-                              onClick={() => handleStockAdjust(prod.id, prod.stockCount || 100, -5)}
-                            >
-                              -5
-                            </button>
-                            <span className={`stock-count-badge ${Number(prod.stockCount) > 0 ? 'in' : 'out'}`}>
-                              {prod.stockCount !== undefined ? prod.stockCount : 100} units
-                            </span>
-                            <button 
-                              className="adjust-stock-btn inc" 
-                              onClick={() => handleStockAdjust(prod.id, prod.stockCount || 100, 5)}
-                            >
-                              +5
-                            </button>
+                          <div className="variant-auditor-panel">
+                            {(prod.variants && prod.variants.length > 0 ? prod.variants : (prod.colors ? prod.colors.map(c => ({ color: c, stock: Math.floor((prod.stockCount || 100) / prod.colors.length), price: prod.new_price })) : [])).map((v, vidx) => (
+                              <div key={vidx} className="variant-auditor-row">
+                                <span className="variant-color-badge-small" style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid #ccc', display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', marginRight: '6px' }} title={v.color}></span>
+                                <span className="variant-color-name-small">{v.color}:</span>
+                                <div className="inline-stock-control-panel mini">
+                                  <button 
+                                    className="adjust-stock-btn dec mini" 
+                                    onClick={() => handleVariantStockAdjust(prod.id, v.color, -5)}
+                                  >
+                                    -
+                                  </button>
+                                  <span className={`stock-count-badge mini ${Number(v.stock) > 0 ? 'in' : 'out'}`}>
+                                    {v.stock}
+                                  </span>
+                                  <button 
+                                    className="adjust-stock-btn inc mini" 
+                                    onClick={() => handleVariantStockAdjust(prod.id, v.color, 5)}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            <div className="total-stock-count-indicator">
+                              Total: <strong>{prod.stockCount} units</strong>
+                            </div>
                           </div>
                         )}
                       </td>
@@ -781,13 +834,14 @@ export const AdminPanel = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Starting Inventory</label>
+                  <label>Total Inventory (Auto-calc)</label>
                   <input 
                     type="number" 
                     name="stockCount" 
-                    value={productDetails.stockCount} 
-                    onChange={changeHandler} 
-                    placeholder="e.g. 150"
+                    value={selectedColors.reduce((sum, c) => sum + (colorStocks[c] || 0), 0)} 
+                    disabled
+                    placeholder="Auto-calculated"
+                    style={{ backgroundColor: 'var(--border-color)', opacity: 0.8, cursor: 'not-allowed' }}
                   />
                 </div>
               </div>
@@ -825,6 +879,37 @@ export const AdminPanel = () => {
                   ))}
                 </div>
               </div>
+
+              {/* DYNAMIC VARIANT STOCK DETAILS */}
+              {selectedColors.length > 0 && (
+                <div className="form-group variant-stocks-form-group" style={{ backgroundColor: 'var(--bg-secondary)', padding: '15px', borderRadius: 'var(--border-radius-sm)', border: '1px dashed var(--border-color)', marginBottom: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-primary)' }}>Define Variant Stocks per Color Selected</label>
+                  <div className="variant-stocks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
+                    {selectedColors.map((color) => (
+                      <div key={color} className="variant-stock-input-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', backgroundColor: 'var(--card-bg)', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="variant-color-badge" style={{ backgroundColor: color.toLowerCase(), border: '1px solid #ccc', display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%' }}></span>
+                          <span className="variant-color-label" style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)' }}>{color} Stock:</span>
+                        </div>
+                        <input 
+                          type="number"
+                          className="variant-stock-field inline-edit-input"
+                          style={{ width: '100%', padding: '6px 8px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+                          value={colorStocks[color] || 0}
+                          onChange={(e) => {
+                            setColorStocks({
+                              ...colorStocks,
+                              [color]: Math.max(0, Number(e.target.value))
+                            });
+                          }}
+                          placeholder="Stock count"
+                          min="0"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Product Display Image</label>

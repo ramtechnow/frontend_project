@@ -65,6 +65,21 @@ async function seedDatabase() {
         category = "kid";
       }
 
+      let colorsPool = ['Black', 'White'];
+      if (category === 'women') {
+        colorsPool = ['Black', 'White', 'Red', 'Pink'];
+      } else if (category === 'men') {
+        colorsPool = ['Green', 'Black', 'Blue'];
+      } else if (category === 'kid') {
+        colorsPool = ['Orange', 'Blue', 'Yellow'];
+      }
+
+      const variants = colorsPool.map(c => ({
+        color: c,
+        stock: 50,
+        price: new_price
+      }));
+
       sampleProducts.push({
         id: i,
         name,
@@ -72,6 +87,9 @@ async function seedDatabase() {
         image: `http://localhost:${port}/images/product_${i}.png`,
         new_price,
         old_price,
+        colors: colorsPool,
+        variants,
+        stockCount: variants.reduce((sum, v) => sum + v.stock, 0)
       });
     }
 

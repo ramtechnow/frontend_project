@@ -5,6 +5,7 @@ import dropdown_icon from '../Components/Assets/dropdown_icon.png';
 import { Item } from "../Components/Item/Item";
 import FilterPanel from "../Components/Filters/FilterPanel";
 import { enrichProductsList } from "../Utils/helpers";
+import { motion } from "framer-motion";
 
 const ShopCategory = (props) => {
   const { all_product } = useContext(ShopContext);
@@ -90,8 +91,21 @@ const ShopCategory = (props) => {
   });
 
   return (
-    <div className="shop-category">
-      <img className='shopcategory-banner' src={props.banner} alt={`${props.category} banner`} />
+    <motion.div 
+      className="shop-category"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.img 
+        className='shopcategory-banner' 
+        src={props.banner} 
+        alt={`${props.category} banner`}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      />
       
       <div className="shopcategory-layout">
         {/* LEFT COLUMN: FILTERS PANEL */}
@@ -114,13 +128,18 @@ const ShopCategory = (props) => {
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="no-products-found">
+            <motion.div 
+              className="no-products-found"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
               <h3>No Products Match Your Filters</h3>
               <p>Try loosening your search filters or click "Clear All Filters" to start over.</p>
               <button className="clear-filter-reset-btn" onClick={handleClearFilters}>
                 Reset All Filters
               </button>
-            </div>
+            </motion.div>
           ) : (
             <div className="shopcategory-products">
               {filteredProducts.map((item, i) => (
@@ -143,7 +162,7 @@ const ShopCategory = (props) => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
