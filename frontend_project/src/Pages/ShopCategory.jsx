@@ -19,6 +19,8 @@ const ShopCategory = (props) => {
     inStockOnly: false
   });
 
+  const [sortOption, setSortOption] = useState("default");
+
   // Reset filters when changing main navigation category (e.g., Men to Women)
   useEffect(() => {
     setFilters({
@@ -28,6 +30,7 @@ const ShopCategory = (props) => {
       colors: [],
       inStockOnly: false
     });
+    setSortOption("default");
   }, [props.category]);
 
   const handleFilterChange = (filterType, value) => {
@@ -90,6 +93,16 @@ const ShopCategory = (props) => {
     return true;
   });
 
+  // Apply sorting utility
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === "low-to-high") {
+      return a.new_price - b.new_price;
+    } else if (sortOption === "high-to-low") {
+      return b.new_price - a.new_price;
+    }
+    return 0;
+  });
+
   return (
     <motion.div 
       className="shop-category"
@@ -118,12 +131,21 @@ const ShopCategory = (props) => {
 
         {/* RIGHT COLUMN: PRODUCTS CONTAINER */}
         <div className="shopcategory-right-content">
-          <div className="shopcategory-indexSort">
+          <div className="shopcategory-indexSort flex items-center justify-between">
             <p>
               Showing <span>1-{Math.min(12, filteredProducts.length)} </span>out of {filteredProducts.length} products
             </p>
-            <div className="shopcategory-sort">
-              Sort by <img src={dropdown_icon} alt="dropdown" />
+            <div className="shopcategory-sort flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
+              <select 
+                value={sortOption} 
+                onChange={(e) => setSortOption(e.target.value)}
+                className="border-none bg-transparent text-slate-700 dark:text-slate-200 font-extrabold text-xs outline-none cursor-pointer focus:ring-0"
+              >
+                <option value="default">Featured</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
+              </select>
             </div>
           </div>
 
@@ -142,14 +164,10 @@ const ShopCategory = (props) => {
             </motion.div>
           ) : (
             <div className="shopcategory-products">
-              {filteredProducts.map((item, i) => (
+              {sortedProducts.map((item, i) => (
                 <Item 
                   key={i} 
-                  id={item.id} 
-                  name={item.name} 
-                  image={item.image} 
-                  new_price={item.new_price} 
-                  old_price={item.old_price} 
+                  {...item} 
                 />
               ))}
             </div>
