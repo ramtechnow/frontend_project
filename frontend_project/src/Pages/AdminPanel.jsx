@@ -139,12 +139,62 @@ export const AdminPanel = () => {
     );
   };
 
-  // Image Upload handler
-  const imageHandler = (e) => {
-    setImage(e.target.files[0]);
+  // Image Conversion helper to compress and resize to Base64
+  const handleImageConversion = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max_size = 800; // Limit max resolution to 800px for optimal Mongo storage size
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Compress to JPEG with 0.7 quality to get small sized Base64
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
   };
 
-  // Add Product Submit
+  // Image Upload handler supporting files and direct camera capture
+  const imageHandler = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const base64Image = await handleImageConversion(file);
+        setImage(base64Image);
+      } catch (err) {
+        console.error("Error reading image file:", err);
+        alert("Failed to process the selected image. Please try another format.");
+      }
+    }
+  };
+
+  // Add Product Submit (Saves Base64 image directly to MongoDB Atlas for permanent backup)
   const addProduct = async () => {
     if (!productDetails.name || !productDetails.new_price || !productDetails.old_price || !image) {
       alert("Please fill all details and upload a product image!");
@@ -161,8 +211,7 @@ export const AdminPanel = () => {
       return;
     }
 
-    console.log("Adding Product...", productDetails);
-    let responseData;
+    console.log("Adding Product with Permanent Base64 Backup...", productDetails.name);
     
     const variants = selectedColors.map(color => ({
       color,
@@ -175,65 +224,43 @@ export const AdminPanel = () => {
       sizes: selectedSizes, 
       colors: selectedColors,
       variants,
-      stockCount: variants.reduce((sum, v) => sum + v.stock, 0)
+      stockCount: variants.reduce((sum, v) => sum + v.stock, 0),
+      image: image // Stored natively as compressed Base64 data URI
     };
 
-    // 1. Upload the image file
-    let formData = new FormData();
-    formData.append('product', image);
-
     try {
-      const uploadRes = await fetch(`${BACKEND_URL}/upload`, {
+      const addRes = await fetch(`${BACKEND_URL}/addproduct`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'auth-token': `${localStorage.getItem('auth-token')}`
         },
-        body: formData,
+        body: JSON.stringify(product),
       });
-      responseData = await uploadRes.json();
-    } catch (e) {
-      console.error("Image upload connection failure", e);
-    }
+      const addData = await addRes.json();
 
-    if (responseData && responseData.success) {
-      product.image = responseData.image_url;
-      
-      // 2. Save product details in database
-      try {
-        const addRes = await fetch(`${BACKEND_URL}/addproduct`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'auth-token': `${localStorage.getItem('auth-token')}`
-          },
-          body: JSON.stringify(product),
+      if (addData.success) {
+        alert("🎉 Product successfully added and stored permanently inside MongoDB!");
+        // Reset Form
+        setProductDetails({
+          name: "",
+          category: "women",
+          new_price: "",
+          old_price: "",
+          stockCount: 100
         });
-        const addData = await addRes.json();
-
-        if (addData.success) {
-          alert("Product added successfully!");
-          // Reset Form
-          setProductDetails({
-            name: "",
-            category: "women",
-            new_price: "",
-            old_price: "",
-            stockCount: 100
-          });
-          setSelectedSizes(['S', 'M', 'L', 'XL']);
-          setSelectedColors(['Black', 'White']);
-          setImage(false);
-          fetchProducts();
-          setActiveTab("list");
-        } else {
-          alert("Failed to add product: " + addData.errors);
-        }
-      } catch (err) {
-        alert("Failed to save product details to server database.");
+        setSelectedSizes(['S', 'M', 'L', 'XL']);
+        setSelectedColors(['Black', 'White']);
+        setImage(false);
+        fetchProducts();
+        setActiveTab("list");
+      } else {
+        alert("Failed to add product: " + addData.errors);
       }
-    } else {
-      alert("Image upload failed! Make sure the backend server is running on " + BACKEND_URL);
+    } catch (err) {
+      console.error("Save product database connection failure:", err);
+      alert("Failed to save product details to server database. Please make sure the backend is active.");
     }
   };
 
@@ -959,14 +986,89 @@ export const AdminPanel = () => {
               <div className="form-group">
                 <label>Product Display Image</label>
                 <div className="image-upload-wrapper">
-                  <label htmlFor="file-input" className="image-upload-label">
+                  <label className="image-upload-label" style={{ border: '2px dashed var(--border-color)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', backgroundColor: 'var(--bg-primary)', cursor: 'default' }}>
                     {image ? (
-                      <img src={URL.createObjectURL(image)} alt="Preview" className="image-preview" />
+                      <div className="image-preview-container" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={image} alt="Preview" className="image-preview" style={{ maxWidth: '100%', maxHeight: '220px', borderRadius: '8px', objectFit: 'contain', boxShadow: 'var(--shadow-sm)' }} />
+                        <button 
+                          type="button" 
+                          className="remove-image-btn" 
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImage(false); }}
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '30px',
+                            height: '30px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            transition: 'var(--transition-smooth)'
+                          }}
+                          title="Remove Image"
+                        >
+                          ×
+                        </button>
+                      </div>
                     ) : (
-                      <div className="upload-placeholder">
-                        <Plus size={28} style={{ color: 'var(--accent-color)', marginBottom: '8px' }} />
-                        <p>Click here or drag-and-drop to upload image</p>
-                        <span className="upload-hint">PNG, JPG or WEBP formats supported</span>
+                      <div className="upload-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', width: '100%' }}>
+                        <Plus size={36} style={{ color: 'var(--accent-color)', marginBottom: '4px' }} />
+                        <p style={{ margin: 0, fontWeight: '700', fontSize: '1rem', color: 'var(--text-primary)' }}>Select Product Display Image</p>
+                        
+                        <div className="upload-options-buttons" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                          <button 
+                            type="button" 
+                            className="admin-upload-option-btn files-btn"
+                            onClick={() => document.getElementById('file-input').click()}
+                            style={{
+                              padding: '10px 18px',
+                              backgroundColor: 'var(--bg-tertiary)',
+                              color: 'var(--text-primary)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
+                              fontSize: '0.85rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'var(--transition-smooth)'
+                            }}
+                          >
+                            📁 Choose File
+                          </button>
+                          <button 
+                            type="button" 
+                            className="admin-upload-option-btn camera-btn"
+                            onClick={() => document.getElementById('camera-input').click()}
+                            style={{
+                              padding: '10px 18px',
+                              backgroundColor: 'var(--accent-color)',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '8px',
+                              fontSize: '0.85rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 2px 8px rgba(255, 65, 65, 0.25)',
+                              transition: 'var(--transition-smooth)'
+                            }}
+                          >
+                            📷 Take Photo
+                          </button>
+                        </div>
+                        <span className="upload-hint" style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '6px' }}>PNG, JPG or WEBP formats supported</span>
                       </div>
                     )}
                   </label>
@@ -975,7 +1077,15 @@ export const AdminPanel = () => {
                     id="file-input" 
                     accept="image/*" 
                     onChange={imageHandler} 
-                    hidden 
+                    style={{ display: 'none' }}
+                  />
+                  <input 
+                    type="file" 
+                    id="camera-input" 
+                    accept="image/*" 
+                    capture="environment"
+                    onChange={imageHandler} 
+                    style={{ display: 'none' }}
                   />
                 </div>
               </div>
