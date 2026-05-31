@@ -338,7 +338,8 @@ export const AdminPanel = () => {
       new_price: prod.new_price,
       old_price: prod.old_price,
       stockCount: prod.stockCount || 100,
-      variants: initialVariants
+      variants: initialVariants,
+      image: prod.image
     });
   };
 
@@ -357,14 +358,15 @@ export const AdminPanel = () => {
           name: editForm.name,
           new_price: Number(editForm.new_price),
           old_price: Number(editForm.old_price),
-          variants: editForm.variants
+          variants: editForm.variants,
+          image: editForm.image // Send Base64 image directly to MongoDB for permanent storage
         })
       });
       const data = await res.json();
       if (data.success) {
         setProducts(prev => prev.map(p => p.id === id ? data.product : p));
         setEditingProductId(null);
-        alert("Product updated successfully!");
+        alert("🎉 Product successfully updated and saved permanently inside MongoDB!");
       } else {
         alert("Failed to update product: " + data.error);
       }
@@ -690,7 +692,49 @@ export const AdminPanel = () => {
                     <tr key={prod.id} className={editingProductId === prod.id ? "row-editing" : ""}>
                       {/* Thumbnail */}
                       <td>
-                        <img src={prod.image} alt={prod.name} className="admin-prod-thumb" />
+                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                          <img 
+                            src={editingProductId === prod.id && editForm.image ? editForm.image : prod.image} 
+                            alt={prod.name} 
+                            className="admin-prod-thumb" 
+                            style={{ width: '55px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} 
+                          />
+                          {editingProductId === prod.id && (
+                            <button 
+                              type="button" 
+                              onClick={() => document.getElementById(`row-image-input-${prod.id}`).click()}
+                              style={{ 
+                                padding: '3px 6px', 
+                                backgroundColor: 'var(--accent-color)', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                fontSize: '0.65rem', 
+                                fontWeight: '700', 
+                                cursor: 'pointer' 
+                              }}
+                            >
+                              📸 Change
+                            </button>
+                          )}
+                          <input 
+                            type="file" 
+                            id={`row-image-input-${prod.id}`}
+                            accept="image/*" 
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                try {
+                                  const base64 = await handleImageConversion(file);
+                                  setEditForm(prev => ({ ...prev, image: base64 }));
+                                } catch (err) {
+                                  alert("Failed to process image.");
+                                }
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                          />
+                        </div>
                       </td>
                       
                       {/* Name / Colors & Sizes */}

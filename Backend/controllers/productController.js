@@ -102,13 +102,17 @@ exports.getAllProducts = async (req, res) => {
 // Update a product (Admin Only)
 exports.updateProduct = async (req, res) => {
   try {
-    const { id, name, new_price, old_price, variants, stockCount } = req.body;
+    const { id, name, new_price, old_price, variants, stockCount, image } = req.body;
     
     const updateData = { 
       name, 
       new_price: Number(new_price), 
       old_price: Number(old_price) 
     };
+    
+    if (image) {
+      updateData.image = image;
+    }
     
     if (variants) {
       updateData.variants = variants;
