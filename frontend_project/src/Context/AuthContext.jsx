@@ -90,6 +90,7 @@ export const AuthProvider = ({ children }) => {
 
         if (data.success) {
           localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
           const decoded = decodeToken(data.token);
           
           // Pre-extract displayName from email for rendering
@@ -140,6 +141,7 @@ export const AuthProvider = ({ children }) => {
 
         if (data.success) {
           localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
           const decoded = decodeToken(data.token);
           const userObj = {
             uid: decoded.id,
@@ -171,6 +173,8 @@ export const AuthProvider = ({ children }) => {
       }
       localStorage.removeItem("auth-token");
       localStorage.removeItem("cart-items");
+      localStorage.removeItem("user-wishlist");
+      window.dispatchEvent(new Event('auth-change'));
       setCurrentUser(null);
       setLoading(false);
       return { success: true };

@@ -12,6 +12,11 @@ router.get('/getcart', fetchUser, userController.getCart);
 router.post('/addtocart', fetchUser, userController.addToCart);
 router.post('/removefromcart', fetchUser, userController.removeFromCart);
 
+// Wishlist routes
+router.get('/getwishlist', fetchUser, userController.getWishlist);
+router.post('/addtowishlist', fetchUser, userController.addToWishlist);
+router.post('/removefromwishlist', fetchUser, userController.removeFromWishlist);
+
 // Admin routes
 router.get('/admin/users', fetchAdmin, userController.getAllUsers);
 router.post('/admin/updateuserrole', fetchAdmin, userController.updateUserRole);

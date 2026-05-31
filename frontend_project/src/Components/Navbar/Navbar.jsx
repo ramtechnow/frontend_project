@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../Assets/logo.png";
@@ -6,16 +6,19 @@ import useCart from "../../Hooks/useCart";
 import useAuth from "../../Hooks/useAuth";
 import useTheme from "../../Hooks/useTheme";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Menu } from "lucide-react";
+import { ShoppingCart, Menu, Heart } from "lucide-react";
+import { WishlistContext } from "../../Context/WishlistContext";
 
 const MotionMenu = motion(Menu);
 const MotionShoppingCart = motion(ShoppingCart);
+const MotionHeart = motion(Heart);
 
 const Navbar = () => {
   const [menu, setMenu] = useState("shop");
   const { getCartItemCount, clearCart } = useCart();
   const { currentUser, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { wishlistItems } = useContext(WishlistContext);
   
   const menuRef = useRef();
   const navigate = useNavigate();
@@ -141,6 +144,35 @@ const Navbar = () => {
             </motion.button>
           </Link>
         )}
+
+        <motion.div 
+          className="nav-wishlist-wrapper" 
+          onClick={() => navigate("/wishlist")} 
+          style={{ cursor: "pointer" }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <MotionHeart 
+            size={30} 
+            className="nav-wishlist-icon"
+            whileHover={{ scale: 1.15 }}
+            transition={{ duration: 0.3 }}
+          />
+          {wishlistItems.length > 0 && (
+            <AnimatePresence mode="wait">
+              <motion.div 
+                className="nav-cart-count"
+                key={wishlistItems.length}
+                initial={{ scale: 0.7, opacity: 0.2 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.7, opacity: 0.2 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+              >
+                {wishlistItems.length}
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </motion.div>
 
         <motion.div 
           className="nav-cart-wrapper" 

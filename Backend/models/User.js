@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     type: Object,
     default: {},
   },
+  wishlistData: {
+    type: Array,
+    default: [],
+  },
   date: {
     type: Date,
     default: Date.now,

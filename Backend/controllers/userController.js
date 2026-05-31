@@ -134,6 +134,63 @@ exports.removeFromCart = async (req, res) => {
   }
 };
 
+// Fetch User's Wishlist
+exports.getWishlist = async (req, res) => {
+  try {
+    let userData = await User.findOne({ _id: req.user.id });
+    console.log("Wishlist data fetched successfully!");
+    res.json(userData.wishlistData || []);
+  } catch (error) {
+    console.error("Error in getwishlist:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// Add product to user's wishlist
+exports.addToWishlist = async (req, res) => {
+  try {
+    let userData = await User.findOne({ _id: req.user.id });
+    const itemId = Number(req.body.itemId);
+
+    if (!userData.wishlistData) {
+      userData.wishlistData = [];
+    }
+
+    if (!userData.wishlistData.includes(itemId)) {
+      userData.wishlistData.push(itemId);
+      userData.markModified('wishlistData');
+      await userData.save();
+      console.log(`Added product ${itemId} to user ${userData.email} wishlist`);
+    }
+
+    res.send({ success: true, message: "Added to wishlist successfully", wishlist: userData.wishlistData });
+  } catch (error) {
+    console.error("Error in addtowishlist:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// Remove product from user's wishlist
+exports.removeFromWishlist = async (req, res) => {
+  try {
+    let userData = await User.findOne({ _id: req.user.id });
+    const itemId = Number(req.body.itemId);
+
+    if (userData.wishlistData && userData.wishlistData.includes(itemId)) {
+      userData.wishlistData = userData.wishlistData.filter(id => id !== itemId);
+      userData.markModified('wishlistData');
+      await userData.save();
+      console.log(`Removed product ${itemId} from user ${userData.email} wishlist`);
+      res.send({ success: true, message: "Removed from wishlist successfully", wishlist: userData.wishlistData });
+    } else {
+      res.status(400).send({ success: false, error: "Item not in wishlist" });
+    }
+  } catch (error) {
+    console.error("Error in removefromwishlist:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
 // Admin: Get all registered user credentials and carts
 exports.getAllUsers = async (req, res) => {
   try {

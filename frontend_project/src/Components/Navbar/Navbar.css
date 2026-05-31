@@ -197,6 +197,24 @@
   border: 2px solid var(--bg-secondary);
 }
 
+/* Wishlist Icon Badge */
+.nav-wishlist-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-wishlist-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+.nav-wishlist-wrapper:hover .nav-wishlist-icon {
+  color: #ef4444; /* Turns red on hover */
+}
+
 .nav-dropdown {
   display: none;
 }
