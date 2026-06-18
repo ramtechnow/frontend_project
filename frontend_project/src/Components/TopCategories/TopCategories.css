@@ -1,0 +1,127 @@
+.top-categories-section {
+  background-color: var(--bg-secondary);
+  padding: 60px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.top-categories-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section-title-wrap h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.section-title-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--accent-color);
+  border-radius: var(--border-radius-full);
+  margin-top: 10px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.category-card-item {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.category-card-item:hover {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
+}
+
+.category-icon-circle {
+  width: 54px;
+  height: 54px;
+  background-color: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.category-card-item:hover .category-icon-circle {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.category-meta-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.category-meta-info h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 2px;
+}
+
+.category-meta-info span {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .section-title-wrap h2 {
+    font-size: 1.7rem;
+  }
+  .category-card-item {
+    padding: 18px;
+  }
+}

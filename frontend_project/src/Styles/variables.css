@@ -8,20 +8,20 @@
   --border-radius-full: 9999px;
 
   /* Light Theme Color tokens */
-  --bg-primary: #f8f9fc;
+  --bg-primary: #fcfaf7;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f3f7;
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --text-tertiary: #9ca3af;
-  --accent-color: #ff4141;
-  --accent-hover: #e03232;
-  --accent-light: #fee2e2;
-  --border-color: #e5e7eb;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
-  --nav-bg: rgba(255, 255, 255, 0.85);
+  --bg-tertiary: #f5f2eb;
+  --text-primary: #1a1e26;
+  --text-secondary: #5c6270;
+  --text-tertiary: #a0a6b5;
+  --accent-color: #f23e70;
+  --accent-hover: #d62f5f;
+  --accent-light: #fff0f3;
+  --border-color: #ebdacf;
+  --shadow-sm: 0 4px 12px rgba(92, 98, 112, 0.05);
+  --shadow-md: 0 12px 30px rgba(92, 98, 112, 0.08);
+  --shadow-lg: 0 24px 50px rgba(92, 98, 112, 0.12);
+  --nav-bg: rgba(255, 255, 255, 0.9);
   --card-bg: #ffffff;
   --input-bg: #ffffff;
 }

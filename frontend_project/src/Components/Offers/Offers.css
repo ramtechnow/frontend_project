@@ -1,154 +1,140 @@
-.offers {
-    width: 65%;
-    padding: 0px 140px;
-    display: flex;
-    margin: auto;
-    margin-bottom: 40px;
-    background: linear-gradient(180deg, #fde1ff 0%, #e1ffea22 60%);
+.offers-section {
+  background-color: var(--bg-primary);
+  padding: 40px 24px;
 }
 
-.offers-left {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
+.offers-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
-.offers-left h1 {
-    color: #171717;
-    font-size: 80px;
-    font-weight: 600;
+.promo-card-item {
+  position: relative;
+  border-radius: var(--border-radius-md);
+  padding: 36px 30px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 200px;
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.offers-left p {
-    color: #171717;
-    font-size: 22px;
-    font-weight: 600;
+.promo-card-item:hover {
+  box-shadow: var(--shadow-lg);
 }
 
-.offers-left button {
-    height: 70px;
-    border: none;
-    background: #ff4141;
-    border-radius: 35px;
-    color: white;
-    width: 282px;
-    font-size: 22px;
-    font-weight: 500;
-    margin-top: 30px;
-    cursor: pointer;
+/* Gradients matching template cards */
+.promo-card-blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #bfdbfe;
+}
+.promo-card-blue .promo-badge-offer { background: #3b82f6; color: white; }
+.promo-card-blue:hover { border-color: #3b82f6; }
+
+.promo-card-red {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border-color: #fecdd3;
+}
+.promo-card-red .promo-badge-offer { background: var(--accent-color); color: white; }
+.promo-card-red:hover { border-color: var(--accent-color); }
+
+.promo-card-gold {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fde68a;
+}
+.promo-card-gold .promo-badge-offer { background: #d97706; color: white; }
+.promo-card-gold:hover { border-color: #d97706; }
+
+.promo-card-content {
+  position: relative;
+  z-index: 5;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.offers-right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding-top: 50px;
+.promo-badge-offer {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: var(--border-radius-full);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-@media (max-width:1280px) {
-    .offers {
-        padding: 0px 80px;
-        margin-bottom: 120px;
-    }
-
-    .offers-left h1 {
-        font-size: 40px;
-    }
-
-    .offers-left p {
-        font-size: 18px;
-    }
-
-    .offers-right img {
-        width: 300px;
-    }
-
-    .offers-left button {
-        width: 220px;
-        height: 50px;
-        font-size: 18px;
-    }
-
-    .offers-right {
-        padding-top: 30px;
-    }
+.promo-card-content h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
 }
 
-@media (max-width:1024px) {
-    .offers {
-        padding: 0px 60px;
-        margin-bottom: 80px;
-    }
-
-    .offers-left h1 {
-        font-size: 30px;
-    }
-
-    .offers-left p {
-        font-size: 16px;
-    }
-
-    .offers-right img {
-        width: 200px;
-    }
-
-    .offers-left button {
-        width: 160px;
-        height: 40px;
-        font-size: 16px;
-    }
-
-    .offers-right {
-        padding-top: 10px;
-    }
+.promo-card-content p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.45;
 }
-@media (max-width:800px) {
-    .offers {
-        padding: 80px;
-    }
 
-    .offers-left h1 {
-        font-size: 22px;
-    }
-
-    .offers-left p{
-        font-size: 13px;
-    }
-
-    .offers-right img {
-        width: 180px;
-    }
-
-    .offers-left button {
-        width: 140px;
-        height: 30px;
-        font-size: 12px;
-    }
+.promo-shop-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--text-primary);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.2s, transform 0.2s;
 }
-@media (max-width:500px) {
-    .offers {
-        height: 25vh;
-        margin-bottom: 50px;
-    }
 
-    .offers-left h1 {
-        font-size: 16px;
-    }
+.promo-shop-btn:hover {
+  opacity: 0.9;
+  transform: translateX(2px);
+}
 
-    .offers-left p {
-        font-size: 10px;
-    }
+/* Background circles styling */
+.promo-bg-circle-1, .promo-bg-circle-2 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
 
-    .offers-right img {
-        width: 120px;
-    }
+.promo-bg-circle-1 {
+  width: 140px;
+  height: 140px;
+  right: -40px;
+  top: -40px;
+  z-index: 1;
+}
 
-    .offers-left button {
-        width: 120px;
-        height: 25px;
-        font-size: 10px;
-        margin-top: 12px;
-    }
+.promo-bg-circle-2 {
+  width: 100px;
+  height: 100px;
+  right: -10px;
+  bottom: -40px;
+  z-index: 1;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .offers-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
