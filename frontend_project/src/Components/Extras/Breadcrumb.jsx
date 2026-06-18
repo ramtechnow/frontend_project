@@ -19,17 +19,19 @@ export const Breadcrumb = (props) => {
   const categoryLabel = product.category ? product.category.toUpperCase() : '';
 
   return (
-    <div className='breadcrum'>
-      <Link to="/" className="breadcrumb-nav-link">HOME</Link>
-      <img src={arrow_icon} alt="arrow" />
-      <Link to="/" className="breadcrumb-nav-link">SHOP</Link>
-      <img src={arrow_icon} alt="arrow" />
-      <Link to={categoryLink} className="breadcrumb-nav-link category-link">
-        {categoryLabel}
-      </Link>
-      <img src={arrow_icon} alt="arrow" />
-      <span className="breadcrumb-current-item">{product.name}</span>
-    </div>
+    <nav className='breadcrumb-nav'>
+      <div className='breadcrumb-container'>
+        <Link to="/" className="breadcrumb-link">HOME</Link>
+        <span className="breadcrumb-separator"><img src={arrow_icon} alt="arrow" /></span>
+        <Link to="/" className="breadcrumb-link">SHOP</Link>
+        <span className="breadcrumb-separator"><img src={arrow_icon} alt="arrow" /></span>
+        <Link to={categoryLink} className="breadcrumb-link category-link">
+          {categoryLabel}
+        </Link>
+        <span className="breadcrumb-separator"><img src={arrow_icon} alt="arrow" /></span>
+        <span className="breadcrumb-current truncate" title={product.name}>{product.name}</span>
+      </div>
+    </nav>
   );
 };
 

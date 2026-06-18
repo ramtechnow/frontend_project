@@ -806,7 +806,7 @@ export const AdminPanel = () => {
               <div className="metric-card val">
                 <div className="metric-details">
                   <span className="metric-title">Catalog Asset Value</span>
-                  <span className="metric-value">₹{catalogValue.toLocaleString('en-IN')}</span>
+                  <span className="metric-value">${catalogValue.toLocaleString('en-US')}</span>
                 </div>
                 <span className="metric-icon">💰</span>
               </div>
@@ -1066,7 +1066,7 @@ export const AdminPanel = () => {
                             onChange={(e) => setEditForm({ ...editForm, new_price: e.target.value })}
                           />
                         ) : (
-                          <span className="val-text">₹{prod.new_price}</span>
+                          <span className="val-text">${prod.new_price}</span>
                         )}
                       </td>
                       
@@ -1080,7 +1080,7 @@ export const AdminPanel = () => {
                             onChange={(e) => setEditForm({ ...editForm, old_price: e.target.value })}
                           />
                         ) : (
-                          <span className="val-text">₹{prod.old_price}</span>
+                          <span className="val-text">${prod.old_price}</span>
                         )}
                       </td>
                       
@@ -1168,7 +1168,7 @@ export const AdminPanel = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Promo Price (₹)</label>
+                  <label>Promo Price ($)</label>
                   <input 
                     type="number" 
                     name="new_price" 
@@ -1179,7 +1179,7 @@ export const AdminPanel = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>MSRP Original (₹)</label>
+                  <label>MSRP Original ($)</label>
                   <input 
                     type="number" 
                     name="old_price" 
@@ -1478,11 +1478,11 @@ export const AdminPanel = () => {
                                                   <span>Size: <strong>{cartItem.size}</strong></span>
                                                   <span>Color: <strong>{cartItem.color}</strong></span>
                                                   <span>Qty: <strong>{cartItem.quantity}</strong></span>
-                                                  <span>Unit Price: <strong>₹{prodDetails.new_price}</strong></span>
+                                                  <span>Unit Price: <strong>${prodDetails.new_price}</strong></span>
                                                 </div>
                                               </div>
                                               <div className="drawer-item-total">
-                                                <span>Total: <strong>₹{prodDetails.new_price * cartItem.quantity}</strong></span>
+                                                <span>Total: <strong>${prodDetails.new_price * cartItem.quantity}</strong></span>
                                               </div>
                                             </>
                                           ) : (
@@ -1565,7 +1565,7 @@ export const AdminPanel = () => {
                             </div>
                           </td>
                           <td>{orderDate}</td>
-                          <td className="price-cell">₹{o.amount}</td>
+                          <td className="price-cell">${o.amount}</td>
                           <td>
                             <span className={`payment-status-badge ${o.payment ? 'paid' : 'unpaid'}`}>
                               {o.payment ? "PAID" : "UNPAID"}
@@ -1621,11 +1621,11 @@ export const AdminPanel = () => {
                                                 <span>Size: <strong>{item.size}</strong></span>
                                                 <span>Color: <strong>{item.color}</strong></span>
                                                 <span>Qty: <strong>{item.quantity}</strong></span>
-                                                <span>Unit Price: <strong>₹{item.price}</strong></span>
+                                                <span>Unit Price: <strong>${item.price}</strong></span>
                                               </div>
                                             </div>
                                             <div className="drawer-item-total">
-                                              <span>Total: <strong>₹{item.price * item.quantity}</strong></span>
+                                              <span>Total: <strong>${item.price * item.quantity}</strong></span>
                                             </div>
                                           </div>
                                         );
@@ -1638,17 +1638,17 @@ export const AdminPanel = () => {
                                         <div className="drawer-order-totals" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                             <span>Subtotal:</span>
-                                            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{subtotal}</span>
+                                            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>${subtotal}</span>
                                           </div>
                                           {discount > 0 && (
                                             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#22c55e', fontWeight: 700, marginBottom: '8px' }}>
                                               <span>Coupon Discount ({o.couponCode || 'Promo'}):</span>
-                                              <span>−₹{discount}</span>
+                                              <span>−${discount}</span>
                                             </div>
                                           )}
                                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
                                             <span>Total Paid:</span>
-                                            <span style={{ color: 'var(--accent-color)' }}>₹{o.amount}</span>
+                                            <span style={{ color: 'var(--accent-color)' }}>${o.amount}</span>
                                           </div>
                                         </div>
                                       );
@@ -1706,7 +1706,7 @@ export const AdminPanel = () => {
                         className="coupon-form-select"
                       >
                         <option value="percentage">Percentage (%)</option>
-                        <option value="flat">Flat (₹)</option>
+                        <option value="flat">Flat ($)</option>
                       </select>
                     </div>
 
@@ -1727,7 +1727,7 @@ export const AdminPanel = () => {
 
                   <div className="coupon-form-row">
                     <div className="coupon-form-group">
-                      <label>Min Order (₹)</label>
+                      <label>Min Order ($)</label>
                       <input 
                         type="number" 
                         name="minOrderAmount" 
@@ -1802,10 +1802,10 @@ export const AdminPanel = () => {
 
                         <div className="coupon-card-body">
                           <p>
-                            Discount: <strong>{c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`} Off</strong>
+                            Discount: <strong>{c.discountType === 'percentage' ? `${c.discountValue}%` : `$${c.discountValue}`} Off</strong>
                           </p>
                           {c.minOrderAmount > 0 && (
-                            <p>Min. Order Amount: <strong>₹{c.minOrderAmount}</strong></p>
+                            <p>Min. Order Amount: <strong>${c.minOrderAmount}</strong></p>
                           )}
                           <p>
                             Uses: <strong>{c.usedCount}</strong> {c.maxUses > 0 ? ` / ${c.maxUses}` : " (unlimited)"}

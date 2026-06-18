@@ -87,7 +87,7 @@ exports.applyCoupon = async (req, res) => {
     if (cartTotal < coupon.minOrderAmount) {
       return res.status(400).json({
         success: false,
-        error: `Minimum order amount for this coupon is ₹${coupon.minOrderAmount}`
+        error: `Minimum order amount for this coupon is $${coupon.minOrderAmount}`
       });
     }
 
@@ -108,7 +108,7 @@ exports.applyCoupon = async (req, res) => {
       discountValue: coupon.discountValue,
       discountAmount,
       finalTotal,
-      message: `Coupon applied! You save ₹${discountAmount}`
+      message: `Coupon applied! You save $${discountAmount}`
     });
   } catch (err) {
     console.error('Apply coupon error:', err);

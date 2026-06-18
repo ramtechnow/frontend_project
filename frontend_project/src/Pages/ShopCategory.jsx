@@ -46,6 +46,18 @@ const ShopCategory = (props) => {
     setCurrentPage(1);
   }, [filters, sortOption]);
 
+  // Lock body scroll when mobile filters drawer is open
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showMobileFilters]);
+
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({
       ...prev,

@@ -15,7 +15,7 @@ const CouponSchema = new mongoose.Schema({
   },
   discountValue: {
     type: Number,
-    required: true, // e.g., 20 means 20% OR flat ₹20 off
+    required: true, // e.g., 20 means 20% OR flat $20 off
   },
   minOrderAmount: {
     type: Number,

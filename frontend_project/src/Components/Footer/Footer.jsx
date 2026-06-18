@@ -12,8 +12,8 @@ export const Footer = () => {
         {/* Brand info column */}
         <div className="footer-col brand-col">
           <div className="footer-brand-logo">
-            <img src={footer_logo} alt="Oshop Logo" />
-            <span>Oshop</span>
+            <img src={footer_logo} alt="SHOPPER Logo" />
+            <span>SHOPPER</span>
           </div>
           <p className="footer-brand-desc">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Illum, accusamus! Lorem ipsum dolor sit amet.
@@ -124,7 +124,7 @@ export const Footer = () => {
           </div>
 
           <p className="footer-copyright-text">
-            © {new Date().getFullYear()}. All Rights Reserved by <Link to="/">Shopu</Link>
+            © {new Date().getFullYear()}. All Rights Reserved by <Link to="/">SHOPPER</Link>
           </p>
 
           {/* Payment providers right */}

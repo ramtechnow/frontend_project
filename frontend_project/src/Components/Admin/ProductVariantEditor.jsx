@@ -161,7 +161,7 @@ export const ProductVariantEditor = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 font-bold mb-1.5 uppercase tracking-wider">
-                    Price (₹)
+                    Price ($)
                   </label>
                   <input
                     type="number"

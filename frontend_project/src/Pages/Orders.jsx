@@ -201,7 +201,7 @@ export const Orders = () => {
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
                       {STATUS_ICONS[order.status]} {order.status}
                     </span>
-                    <span className="order-amount">₹{order.amount}</span>
+                    <span className="order-amount">${order.amount}</span>
                     <button className="expand-btn" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
                       {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
@@ -268,8 +268,8 @@ export const Orders = () => {
                                   </div>
                                 </div>
                                 <div className="item-price-col">
-                                  <span className="item-unit-price">₹{item.price} ea</span>
-                                  <span className="item-total">₹{item.price * item.quantity}</span>
+                                  <span className="item-unit-price">${item.price} ea</span>
+                                  <span className="item-total">${item.price * item.quantity}</span>
                                 </div>
                               </div>
                             ))}
@@ -282,18 +282,18 @@ export const Orders = () => {
                             return (
                               <div className="order-totals">
                                 <div className="total-row">
-                                  <span>Subtotal</span><span>₹{subtotal}</span>
+                                  <span>Subtotal</span><span>${subtotal}</span>
                                 </div>
                                 {discount > 0 && (
                                   <div className="total-row discount-row" style={{ color: '#22c55e', fontWeight: 700 }}>
-                                    <span>Coupon ({order.couponCode || 'Promo'})</span><span>−₹{discount}</span>
+                                    <span>Coupon ({order.couponCode || 'Promo'})</span><span>−${discount}</span>
                                   </div>
                                 )}
                                 <div className="total-row">
                                   <span>Delivery</span><span className="free-tag">FREE</span>
                                 </div>
                                 <div className="total-row grand">
-                                  <span>Grand Total</span><span>₹{order.amount}</span>
+                                  <span>Grand Total</span><span>${order.amount}</span>
                                 </div>
                               </div>
                             );

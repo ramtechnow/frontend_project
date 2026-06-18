@@ -94,7 +94,7 @@ export const CartItems = () => {
                         </div>
 
                         {/* PRICE */}
-                        <p className="cart-item-price">₹{product.new_price}</p>
+                        <p className="cart-item-price">${product.new_price}</p>
 
                         {/* QUANTITY CONTROL */}
                         <div className="cart-item-quantity-control">
@@ -114,7 +114,7 @@ export const CartItems = () => {
                         </div>
 
                         {/* TOTAL PER ITEM */}
-                        <p className="cart-item-total">₹{product.new_price * item.quantity}</p>
+                        <p className="cart-item-total">${product.new_price * item.quantity}</p>
 
                         {/* REMOVE ACTION */}
                         <div className="cart-item-remove">
@@ -148,7 +148,7 @@ export const CartItems = () => {
                 <div className="cart-totals-summary">
                   <div className="cartitems-total-item">
                     <p>Subtotal</p>
-                    <p>₹{getTotalCartAmount()}</p>
+                    <p>${getTotalCartAmount()}</p>
                   </div>
                   <hr />
                   <div className="cartitems-total-item">
@@ -158,7 +158,7 @@ export const CartItems = () => {
                   <hr />
                   <div className="cartitems-total-item grand-total">
                     <h3>Total</h3>
-                    <h3>₹{getTotalCartAmount()}</h3>
+                    <h3>${getTotalCartAmount()}</h3>
                   </div>
                 </div>
                 <motion.button 

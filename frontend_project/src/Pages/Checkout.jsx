@@ -255,12 +255,12 @@ export const Checkout = () => {
                 </div>
                 <div className="success-row">
                   <span>Amount Paid</span>
-                  <strong>₹{finalPayable}</strong>
+                  <strong>${finalPayable}</strong>
                 </div>
                 {savings > 0 && (
                   <div className="success-row savings-row">
                     <span>You saved</span>
-                    <strong>₹{savings} 🎉</strong>
+                    <strong>${savings} 🎉</strong>
                   </div>
                 )}
                 <div className="success-row">
@@ -391,8 +391,8 @@ export const Checkout = () => {
             {/* SUBMIT BUTTON */}
             <button type="submit" className="checkout-submit-btn">
               <CreditCard size={18} />
-              Place Order & Pay ₹{finalPayable}
-              {savings > 0 && <span className="savings-badge">Saving ₹{savings}</span>}
+              Place Order & Pay ${finalPayable}
+              {savings > 0 && <span className="savings-badge">Saving ${savings}</span>}
             </button>
           </form>
         </div>
@@ -419,7 +419,7 @@ export const Checkout = () => {
                         {item.color} · Size {item.size} · Qty {item.quantity}
                       </p>
                     </div>
-                    <span className="summary-item-price">₹{product.new_price * item.quantity}</span>
+                    <span className="summary-item-price">${product.new_price * item.quantity}</span>
                   </div>
                 );
               })}
@@ -457,18 +457,18 @@ export const Checkout = () => {
             {/* Totals */}
             <div className="summary-totals">
               <div className="total-line">
-                <span>Subtotal</span><span>₹{cartTotal}</span>
+                <span>Subtotal</span><span>${cartTotal}</span>
               </div>
               {savings > 0 && (
                 <div className="total-line discount-line">
-                  <span>Coupon ({couponCode})</span><span>−₹{savings}</span>
+                  <span>Coupon ({couponCode})</span><span>−${savings}</span>
                 </div>
               )}
               <div className="total-line">
                 <span>Delivery</span><span className="free-label">FREE</span>
               </div>
               <div className="total-line grand-total">
-                <span>Total</span><span>₹{finalPayable}</span>
+                <span>Total</span><span>${finalPayable}</span>
               </div>
             </div>
           </div>
