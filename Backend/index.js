@@ -11,6 +11,7 @@ const cors = require("cors");
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const Product = require('./models/Product');
 const User = require('./models/User');
+const Coupon = require('./models/Coupon');
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -117,7 +118,11 @@ async function connectDatabase() {
 
   try {
     if (!mongoUri) {
-      console.log("⚠️  No MONGO_URI specified in .env. Starting In-Memory MongoDB Server...");
+      console.error("\n🚨 =========================================================");
+      console.error("   NO MONGO_URI SET — Using ephemeral in-memory MongoDB!");
+      console.error("   ALL DATA (orders, users, coupons) WILL BE LOST on restart.");
+      console.error("   Fix: Set MONGO_URI in Render > Environment Variables.");
+      console.error("=========================================================\n");
       const mongoServer = await MongoMemoryServer.create();
       mongoUri = mongoServer.getUri();
       console.log(`🚀 Ephemeral In-Memory MongoDB Server running at: ${mongoUri}`);
@@ -161,6 +166,7 @@ const startServer = async () => {
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 
 // API CREATION
 app.get("/", (req, res) => {
@@ -198,5 +204,6 @@ app.post("/upload", upload.single('product'), (req, res) => {
 app.use(productRoutes);
 app.use(userRoutes);
 app.use(orderRoutes);
+app.use(couponRoutes);
 
 startServer();

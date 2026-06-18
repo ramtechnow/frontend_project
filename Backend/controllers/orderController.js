@@ -1,10 +1,11 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
+const { incrementCouponUsage } = require('./couponController');
 
 // Place a new Order (Authenticated User)
 exports.placeOrder = async (req, res) => {
   try {
-    const { items, amount, address } = req.body;
+    const { items, amount, address, couponCode } = req.body;
     const userId = req.user.id;
 
     if (!items || items.length === 0 || !amount || !address) {
@@ -17,11 +18,17 @@ exports.placeOrder = async (req, res) => {
       items,
       amount,
       address,
+      couponCode: couponCode || null,
       status: "Pending",
       payment: true,
     });
 
     await newOrder.save();
+
+    // If a coupon was used, increment its usage counter
+    if (couponCode) {
+      await incrementCouponUsage(couponCode);
+    }
 
     // Clear user's shopping cart on successful checkout
     await User.findByIdAndUpdate(userId, { $set: { cartData: {} } });
@@ -33,6 +40,7 @@ exports.placeOrder = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
+
 
 // Get orders history for the authenticated user
 exports.getUserOrders = async (req, res) => {

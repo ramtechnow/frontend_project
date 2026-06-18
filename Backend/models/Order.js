@@ -28,6 +28,10 @@ const OrderSchema = new mongoose.Schema({
     postalCode: { type: String, required: true },
     phone: { type: String, required: true },
   },
+  couponCode: {
+    type: String,
+    default: null,
+  },
   status: {
     type: String,
     default: "Pending", // Pending, Processing, Shipped, Delivered

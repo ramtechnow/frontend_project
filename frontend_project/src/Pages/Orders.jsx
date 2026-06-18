@@ -276,17 +276,28 @@ export const Orders = () => {
                           </div>
 
                           {/* ORDER TOTALS */}
-                          <div className="order-totals">
-                            <div className="total-row">
-                              <span>Subtotal</span><span>₹{order.amount}</span>
-                            </div>
-                            <div className="total-row">
-                              <span>Delivery</span><span className="free-tag">FREE</span>
-                            </div>
-                            <div className="total-row grand">
-                              <span>Grand Total</span><span>₹{order.amount}</span>
-                            </div>
-                          </div>
+                          {(() => {
+                            const subtotal = order.items.reduce((acc, cur) => acc + (cur.price * cur.quantity), 0);
+                            const discount = subtotal - order.amount;
+                            return (
+                              <div className="order-totals">
+                                <div className="total-row">
+                                  <span>Subtotal</span><span>₹{subtotal}</span>
+                                </div>
+                                {discount > 0 && (
+                                  <div className="total-row discount-row" style={{ color: '#22c55e', fontWeight: 700 }}>
+                                    <span>Coupon ({order.couponCode || 'Promo'})</span><span>−₹{discount}</span>
+                                  </div>
+                                )}
+                                <div className="total-row">
+                                  <span>Delivery</span><span className="free-tag">FREE</span>
+                                </div>
+                                <div className="total-row grand">
+                                  <span>Grand Total</span><span>₹{order.amount}</span>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         {/* SHIPPING & PAYMENT */}
