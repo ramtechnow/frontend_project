@@ -320,8 +320,9 @@
 @media (max-width: 900px) {
   .productdisplay {
     flex-direction: column;
-    padding: 20px;
+    padding: 20px 16px;
     gap: 30px;
+    margin: 0 auto;
   }
   .productdisplay-left {
     justify-content: center;
