@@ -1152,3 +1152,99 @@
   font-size: 0.8rem !important;
   height: 22px !important;
 }
+
+/* Order Management Additions */
+.order-main-row.active-expanded td {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: transparent;
+}
+
+.order-id-cell {
+  font-family: monospace;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.user-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.payment-status-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-full);
+  display: inline-block;
+}
+
+.payment-status-badge.paid {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.payment-status-badge.unpaid {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.order-status-select {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.order-status-select:focus {
+  border-color: var(--accent-color);
+}
+
+.order-drawer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 30px;
+}
+
+@media (max-width: 900px) {
+  .order-drawer-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.drawer-address-col, .drawer-items-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.address-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.address-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.address-card p strong {
+  color: var(--text-primary);
+  width: 90px;
+  display: inline-block;
+}

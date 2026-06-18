@@ -160,6 +160,7 @@ const startServer = async () => {
 
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 // API CREATION
 app.get("/", (req, res) => {
@@ -196,5 +197,6 @@ app.post("/upload", upload.single('product'), (req, res) => {
 // Use modular routes
 app.use(productRoutes);
 app.use(userRoutes);
+app.use(orderRoutes);
 
 startServer();

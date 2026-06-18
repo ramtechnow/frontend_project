@@ -1,5 +1,7 @@
 .item {
-    width: 250px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
     background: var(--card-bg);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -13,19 +15,4 @@
 .item:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
-}
-@media(max-width:1280px){
-    .item {
-        width: 210px;
-    }
-}
-@media(max-width:1024px){
-    .item {
-        width: 180px;
-    }
-}
-@media(max-width:500px){
-    .item {
-        width: 160px;
-    }
 }

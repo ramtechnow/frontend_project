@@ -1,5 +1,6 @@
 import React from 'react';
 import './FilterPanel.css';
+import { X } from 'lucide-react';
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const COLORS = [
@@ -20,7 +21,9 @@ export const FilterPanel = ({
   filters, 
   onFilterChange, 
   onClearFilters, 
-  filteredCount 
+  filteredCount,
+  isOpen,
+  onClose
 }) => {
 
   const handleGenderToggle = (gender) => {
@@ -56,10 +59,15 @@ export const FilterPanel = ({
   };
 
   return (
-    <div className="filter-panel">
+    <div className={`filter-panel ${isOpen ? 'mobile-open' : ''}`}>
       <div className="filter-header">
         <h3>Filters</h3>
-        <span className="product-count-badge">{filteredCount} Products</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="product-count-badge">{filteredCount} Products</span>
+          <button type="button" className="filter-close-btn" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       <hr className="filter-divider" />

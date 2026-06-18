@@ -25,16 +25,18 @@ const AVAILABLE_COLORS = ['Black', 'White', 'Red', 'Blue', 'Green', 'Pink', 'Gre
 export const AdminPanel = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard", "list", "add", "users"
+  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard", "list", "add", "users", "orders"
   
   // Catalog & Users State
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
   // Expanded User Row (to view cart detail)
   const [expandedUser, setExpandedUser] = useState(null);
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
   // Editing Product Inline State
   const [editingProductId, setEditingProductId] = useState(null);
@@ -81,6 +83,7 @@ export const AdminPanel = () => {
     setLoading(false);
     fetchProducts();
     fetchUsers();
+    fetchOrders();
   }, []);
 
   // Fetch all products
@@ -117,6 +120,103 @@ export const AdminPanel = () => {
         { name: "John Doe", email: "johndoe@gmail.com", isAdmin: false, cartData: { "12-XL-Grey": { quantity: 1 } }, date: new Date().toISOString() },
         { name: "Admin Manager", email: "admin@gmail.com", isAdmin: true, cartData: {}, date: new Date().toISOString() }
       ]);
+    }
+  };
+
+  // Fetch all orders placed (Admin Dashboard)
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/orders`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'auth-token': `${localStorage.getItem('auth-token')}`
+        }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setOrders(data);
+      }
+    } catch (error) {
+      console.warn("⚠️ Failed to fetch orders from Node backend server:", error);
+      // Fallback mocks for simulated orders preview
+      setOrders([
+        {
+          _id: "ORD-987216",
+          userName: "Emily Watson",
+          userEmail: "emily@gmail.com",
+          amount: 200,
+          status: "Pending",
+          payment: true,
+          date: new Date().toISOString(),
+          address: {
+            fullName: "Emily Watson",
+            addressLine: "Apt 4B, 12 Park Ave",
+            city: "New York",
+            state: "NY",
+            postalCode: "10016",
+            phone: "+1 212-555-0199"
+          },
+          items: [
+            { productId: 1, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "M", color: "Black", quantity: 2, price: 50.0 },
+            { productId: 4, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 100.0 }
+          ]
+        },
+        {
+          _id: "ORD-128456",
+          userName: "John Doe",
+          userEmail: "johndoe@gmail.com",
+          amount: 85,
+          status: "Delivered",
+          payment: true,
+          date: new Date(Date.now() - 86400000).toISOString(),
+          address: {
+            fullName: "John Doe",
+            addressLine: "456 Oak St",
+            city: "Seattle",
+            state: "WA",
+            postalCode: "98101",
+            phone: "+1 206-555-0145"
+          },
+          items: [
+            { productId: 2, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 85.0 }
+          ]
+        }
+      ]);
+    }
+  };
+
+  // Update specific order shipping status (Admin auditor)
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/orders/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'auth-token': `${localStorage.getItem('auth-token')}`
+        },
+        body: JSON.stringify({ orderId, status: newStatus })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+        if (expandedOrder && expandedOrder._id === orderId) {
+          setExpandedOrder(prev => ({ ...prev, status: newStatus }));
+        }
+        alert("🎉 Order status updated successfully!");
+      } else {
+        alert("Failed to update status: " + data.error);
+      }
+    } catch (error) {
+      console.warn("⚠️ Failed to update order status on Node server:", error);
+      // Fallback for visual mock simulation
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      if (expandedOrder && expandedOrder._id === orderId) {
+        setExpandedOrder(prev => ({ ...prev, status: newStatus }));
+      }
+      alert("🎉 Order status updated successfully (Visual fallback)!");
     }
   };
 
@@ -552,6 +652,12 @@ export const AdminPanel = () => {
             onClick={() => { setActiveTab("users"); fetchUsers(); }}
           >
             <span className="menu-icon"><Users size={18} /></span> Users list ({users.length})
+          </button>
+          <button 
+            className={activeTab === "orders" ? "active" : ""} 
+            onClick={() => { setActiveTab("orders"); fetchOrders(); }}
+          >
+            <span className="menu-icon"><ShoppingCart size={18} /></span> Orders ({orders.length})
           </button>
         </nav>
       </div>
@@ -1265,6 +1371,144 @@ export const AdminPanel = () => {
                   {users.length === 0 && (
                     <tr>
                       <td colSpan="5" className="no-products">No registered users found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: ORDERS TRACKING */}
+        {activeTab === "orders" && (
+          <div className="admin-orders-section animate-fade-in">
+            <h2>Order Tracking & Management</h2>
+            <p className="admin-helper-note">
+              💡 <strong>Order Management:</strong> View and track customer orders, update delivery status, and inspect items purchased. Click on an order row to view full address details and purchased item lists.
+            </p>
+
+            <div className="table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name & Email</th>
+                    <th>Date</th>
+                    <th>Total Amount</th>
+                    <th>Payment Status</th>
+                    <th>Delivery Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((o) => {
+                    const isExpanded = expandedOrder && expandedOrder._id === o._id;
+                    const orderDate = new Date(o.date).toLocaleDateString('en-IN', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+
+                    return (
+                      <React.Fragment key={o._id}>
+                        {/* ORDER ROW */}
+                        <tr 
+                          className={`order-main-row ${isExpanded ? "active-expanded" : ""}`}
+                          onClick={() => setExpandedOrder(isExpanded ? null : o)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td className="order-id-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="expand-indicator">
+                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </span>
+                            <strong>{o._id}</strong>
+                          </td>
+                          <td>
+                            <div className="user-info-stack">
+                              <span className="prod-name-bold">{o.userName || o.address?.fullName}</span>
+                              <span className="prod-params-meta">{o.userEmail}</span>
+                            </div>
+                          </td>
+                          <td>{orderDate}</td>
+                          <td className="price-cell">₹{o.amount}</td>
+                          <td>
+                            <span className={`payment-status-badge ${o.payment ? 'paid' : 'unpaid'}`}>
+                              {o.payment ? "PAID" : "UNPAID"}
+                            </span>
+                          </td>
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <select
+                              className="order-status-select"
+                              value={o.status}
+                              onChange={(e) => updateOrderStatus(o._id, e.target.value)}
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Processing">Processing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                            </select>
+                          </td>
+                        </tr>
+
+                        {/* ORDER DETAIL DRAWER */}
+                        {isExpanded && (
+                          <tr className="order-detail-drawer-row">
+                            <td colSpan="6" className="drawer-container-td">
+                              <div className="user-drawer-card animate-slide-down">
+                                <div className="order-drawer-grid">
+                                  {/* Shipping Address Column */}
+                                  <div className="drawer-address-col">
+                                    <h4>📍 Shipping Destination</h4>
+                                    <div className="address-card">
+                                      <p><strong>Name:</strong> {o.address?.fullName}</p>
+                                      <p><strong>Street:</strong> {o.address?.addressLine}</p>
+                                      <p><strong>City/State:</strong> {o.address?.city}, {o.address?.state} - {o.address?.postalCode}</p>
+                                      <p><strong>Phone:</strong> {o.address?.phone}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Items Purchased Column */}
+                                  <div className="drawer-items-col">
+                                    <h4>📦 Purchased Items</h4>
+                                    <div className="drawer-cart-list">
+                                      {o.items.map((item, idx) => {
+                                        const prodDetails = products.find(p => p.id === item.productId);
+                                        return (
+                                          <div key={idx} className="drawer-cart-item-row">
+                                            <img 
+                                              src={prodDetails?.image || item.image || "https://placehold.co/100x120?text=Product"} 
+                                              alt={item.name} 
+                                              className="drawer-prod-thumb" 
+                                            />
+                                            <div className="drawer-prod-info">
+                                              <span className="item-title">{item.name}</span>
+                                              <div className="item-specs">
+                                                <span>Size: <strong>{item.size}</strong></span>
+                                                <span>Color: <strong>{item.color}</strong></span>
+                                                <span>Qty: <strong>{item.quantity}</strong></span>
+                                                <span>Unit Price: <strong>₹{item.price}</strong></span>
+                                              </div>
+                                            </div>
+                                            <div className="drawer-item-total">
+                                              <span>Total: <strong>₹{item.price * item.quantity}</strong></span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                  {orders.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="no-products">No orders found in the database.</td>
                     </tr>
                   )}
                 </tbody>

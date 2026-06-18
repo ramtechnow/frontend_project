@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './CartItems.css';
 import useCart from '../../Hooks/useCart';
 import { ShopContext } from '../../Context/ShopContext';
@@ -6,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 
 export const CartItems = () => {
+  const navigate = useNavigate();
   const { 
     cartItems, 
     removeFromCart, 
@@ -163,6 +165,7 @@ export const CartItems = () => {
                   className="checkout-btn"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/checkout')}
                 >
                   PROCEED TO CHECKOUT
                 </motion.button>

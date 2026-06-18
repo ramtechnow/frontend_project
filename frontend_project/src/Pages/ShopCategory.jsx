@@ -6,6 +6,7 @@ import { Item } from "../Components/Item/Item";
 import FilterPanel from "../Components/Filters/FilterPanel";
 import { enrichProductsList } from "../Utils/helpers";
 import { motion } from "framer-motion";
+import { SlidersHorizontal } from "lucide-react";
 
 const ShopCategory = (props) => {
   const { all_product } = useContext(ShopContext);
@@ -20,6 +21,7 @@ const ShopCategory = (props) => {
   });
 
   const [sortOption, setSortOption] = useState("default");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Reset filters when changing main navigation category (e.g., Men to Women)
   useEffect(() => {
@@ -31,6 +33,7 @@ const ShopCategory = (props) => {
       inStockOnly: false
     });
     setSortOption("default");
+    setShowMobileFilters(false);
   }, [props.category]);
 
   const handleFilterChange = (filterType, value) => {
@@ -120,6 +123,13 @@ const ShopCategory = (props) => {
         transition={{ duration: 0.6, delay: 0.1 }}
       />
       
+      {showMobileFilters && (
+        <div 
+          className="mobile-filter-backdrop" 
+          onClick={() => setShowMobileFilters(false)}
+        />
+      )}
+
       <div className="shopcategory-layout">
         {/* LEFT COLUMN: FILTERS PANEL */}
         <FilterPanel 
@@ -127,25 +137,37 @@ const ShopCategory = (props) => {
           onFilterChange={handleFilterChange} 
           onClearFilters={handleClearFilters}
           filteredCount={filteredProducts.length}
+          isOpen={showMobileFilters}
+          onClose={() => setShowMobileFilters(false)}
         />
 
         {/* RIGHT COLUMN: PRODUCTS CONTAINER */}
         <div className="shopcategory-right-content">
           <div className="shopcategory-indexSort flex items-center justify-between">
-            <p>
+            <p className="shopcategory-indexText">
               Showing <span>1-{Math.min(12, filteredProducts.length)} </span>out of {filteredProducts.length} products
             </p>
-            <div className="shopcategory-sort flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
-              <select 
-                value={sortOption} 
-                onChange={(e) => setSortOption(e.target.value)}
-                className="border-none bg-transparent text-slate-700 dark:text-slate-200 font-extrabold text-xs outline-none cursor-pointer focus:ring-0"
+            <div className="flex items-center gap-2">
+              <button 
+                type="button"
+                className="shopcategory-filter-toggle-btn flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30"
+                onClick={() => setShowMobileFilters(true)}
               >
-                <option value="default">Featured</option>
-                <option value="low-to-high">Price: Low to High</option>
-                <option value="high-to-low">Price: High to Low</option>
-              </select>
+                <SlidersHorizontal size={14} className="text-slate-500 dark:text-slate-400" />
+                <span className="text-xs text-slate-700 dark:text-slate-200 font-extrabold uppercase tracking-wider">Filters</span>
+              </button>
+              <div className="shopcategory-sort flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Sort:</span>
+                <select 
+                  value={sortOption} 
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="border-none bg-transparent text-slate-700 dark:text-slate-200 font-extrabold text-xs outline-none cursor-pointer focus:ring-0"
+                >
+                  <option value="default">Featured</option>
+                  <option value="low-to-high">Price: Low to High</option>
+                  <option value="high-to-low">Price: High to Low</option>
+                </select>
+              </div>
             </div>
           </div>
 

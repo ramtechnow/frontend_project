@@ -1,0 +1,14 @@
+const express = require('express');
+const router = express.Router();
+const orderController = require('../controllers/orderController');
+const { fetchUser, fetchAdmin } = require('../middleware/auth');
+
+// Customer Order endpoints
+router.post('/placeorder', fetchUser, orderController.placeOrder);
+router.get('/userorders', fetchUser, orderController.getUserOrders);
+
+// Admin Order tracking endpoints
+router.get('/admin/orders', fetchAdmin, orderController.getAllOrders);
+router.post('/admin/orders/status', fetchAdmin, orderController.updateOrderStatus);
+
+module.exports = router;

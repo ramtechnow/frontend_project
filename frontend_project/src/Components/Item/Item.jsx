@@ -55,7 +55,7 @@ export const Item = (props) => {
   return (
     <motion.div 
       className='item flex flex-col bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/40 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition-all duration-300'
-      style={{ width: '100%', maxWidth: '280px' }}
+      style={{ width: '100%' }}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
@@ -64,13 +64,6 @@ export const Item = (props) => {
       {/* Aspect Ratio Container (Myntra uses 3:4 portrait layout) */}
       <div className="relative overflow-hidden aspect-[3/4] bg-slate-50 dark:bg-slate-950">
         
-        {/* Top-Left sponsored Ad Tag (mock) */}
-        {props.id % 4 === 1 && (
-          <div className="absolute top-2 left-2 z-10 bg-slate-900/60 backdrop-blur-md text-[8px] font-black uppercase text-white px-1.5 py-0.5 rounded tracking-widest">
-            Ad
-          </div>
-        )}
-
         {/* Product Image Link */}
         <Link to={`/product/${props.id}`} className="block w-full h-full">
           <img 

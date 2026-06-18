@@ -187,9 +187,39 @@
   box-shadow: 0 4px 15px rgba(255, 65, 65, 0.3);
 }
 
+.filter-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
 @media (max-width: 900px) {
   .filter-panel {
-    max-width: 100%;
-    align-self: stretch;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 300px;
+    height: 100vh;
+    background-color: var(--bg-secondary);
+    z-index: 1500;
+    transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-lg);
+    border-radius: 0;
+    border: none;
+    overflow-y: auto;
+    padding-bottom: 40px;
+  }
+  
+  .filter-panel.mobile-open {
+    left: 0;
+  }
+
+  .filter-close-btn {
+    display: flex;
   }
 }

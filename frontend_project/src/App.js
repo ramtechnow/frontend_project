@@ -8,6 +8,8 @@ import { Cart } from './Pages/Cart.jsx';
 import { LoginSignup } from './Pages/LoginSignup.jsx';
 import { AdminPanel } from './Pages/AdminPanel.jsx';
 import { Wishlist } from './Pages/Wishlist.jsx';
+import { Checkout } from './Pages/Checkout.jsx';
+import { Orders } from './Pages/Orders.jsx';
 import { Footer } from './Components/Footer/Footer.jsx';
 import OfflineOverlay from './Components/Offline/OfflineOverlay.jsx';
 
@@ -37,6 +39,8 @@ function App() {
                 <Route path='/product/:productId' element={<Product />} />
                 <Route path='/cart' element={<Cart />} />
                 <Route path='/wishlist' element={<Wishlist />} />
+                <Route path='/checkout' element={<Checkout />} />
+                <Route path='/orders' element={<Orders />} />
                 <Route path='/login' element={<LoginSignup />} />
                 <Route path='/admin' element={<AdminPanel />} />
               </Routes>
