@@ -1,40 +1,50 @@
 import React, { useContext, useState, useEffect } from "react";
 import '../Pages/CSS/ShopCategory.css';
 import { ShopContext } from "../Context/ShopContext";
-import dropdown_icon from '../Components/Assets/dropdown_icon.png';
 import { Item } from "../Components/Item/Item";
 import FilterPanel from "../Components/Filters/FilterPanel";
 import { enrichProductsList } from "../Utils/helpers";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SlidersHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ShopCategory = (props) => {
   const { all_product } = useContext(ShopContext);
 
   // Define initial state for filters
   const [filters, setFilters] = useState({
-    genders: [],
     categories: [],
+    brands: [],
     sizes: [],
     colors: [],
+    maxPrice: 1500,
     inStockOnly: false
   });
 
   const [sortOption, setSortOption] = useState("default");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-  // Reset filters when changing main navigation category (e.g., Men to Women)
+  // Reset filters when changing category route
   useEffect(() => {
     setFilters({
-      genders: [],
       categories: [],
+      brands: [],
       sizes: [],
       colors: [],
+      maxPrice: 1500,
       inStockOnly: false
     });
     setSortOption("default");
     setShowMobileFilters(false);
+    setCurrentPage(1);
   }, [props.category]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortOption]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({
@@ -45,10 +55,11 @@ const ShopCategory = (props) => {
 
   const handleClearFilters = () => {
     setFilters({
-      genders: [],
       categories: [],
+      brands: [],
       sizes: [],
       colors: [],
+      maxPrice: 1500,
       inStockOnly: false
     });
   };
@@ -63,29 +74,47 @@ const ShopCategory = (props) => {
 
   // 3. Apply secondary real-time sub-filters
   const filteredProducts = categoryProducts.filter((item) => {
-    // Gender Filter
-    if (filters.genders.length > 0 && !filters.genders.includes(item.gender)) {
-      return false;
-    }
-
-    // Subcategory Filter (match title containing e.g. "Blouse", "Jacket", "Sweatshirt")
+    // Subcategory Filter
     if (filters.categories.length > 0) {
-      const matchesSubcategory = filters.categories.some(cat => 
-        item.name.toLowerCase().includes(cat.toLowerCase())
-      );
+      const matchesSubcategory = filters.categories.some(cat => {
+        const name = item.name.toLowerCase();
+        if (cat === "Tshirt") return name.includes("t-shirt") || name.includes("top") || name.includes("shirt");
+        if (cat === "Accessories") return name.includes("accessories") || name.includes("bag");
+        if (cat === "Bag") return name.includes("bag") || name.includes("pack");
+        if (cat === "Cap") return name.includes("cap") || name.includes("hat");
+        if (cat === "Dress") return name.includes("dress") || name.includes("jacket") || name.includes("coat");
+        if (cat === "Lehenga") return name.includes("lehenga") || name.includes("ethnic");
+        if (cat === "Fashion") return true;
+        if (cat === "Night Care") return name.includes("night") || name.includes("sleep");
+        if (cat === "Baby") return name.includes("kid") || name.includes("boy") || name.includes("girl") || name.includes("baby");
+        if (cat === "Eye Care") return name.includes("glass") || name.includes("sunglasses") || name.includes("eye");
+        return name.includes(cat.toLowerCase());
+      });
       if (!matchesSubcategory) return false;
     }
 
-    // Sizes Filter (check intersection of arrays)
+    // Brands Filter
+    if (filters.brands && filters.brands.length > 0) {
+      const BRANDS = ['Nike', 'Zara', 'Denim', 'Madame', 'Armani', 'Max moll', 'Bara', 'Hanger'];
+      const assignedBrand = BRANDS[item.id % BRANDS.length];
+      if (!filters.brands.includes(assignedBrand)) return false;
+    }
+
+    // Sizes Filter
     if (filters.sizes.length > 0) {
       const hasSize = item.sizes.some(size => filters.sizes.includes(size));
       if (!hasSize) return false;
     }
 
-    // Colors Filter (check intersection of arrays)
+    // Colors Filter
     if (filters.colors.length > 0) {
       const hasColor = item.colors.some(color => filters.colors.includes(color));
       if (!hasColor) return false;
+    }
+
+    // Price Filter
+    if (filters.maxPrice && item.new_price > filters.maxPrice) {
+      return false;
     }
 
     // In Stock Only Filter
@@ -106,6 +135,16 @@ const ShopCategory = (props) => {
     return 0;
   });
 
+  // Pagination slicing
+  const paginatedProducts = sortedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+
+  const categoryLabel = props.category === 'kid' ? 'Kids' : props.category === 'men' ? 'Men' : 'Women';
+
   return (
     <motion.div 
       className="shop-category"
@@ -114,14 +153,22 @@ const ShopCategory = (props) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.img 
-        className='shopcategory-banner' 
-        src={props.banner} 
-        alt={`${props.category} banner`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      />
+      {/* Category Banner Container with Overlay */}
+      <div className="shopcategory-banner-container">
+        <img 
+          className='shopcategory-banner-bg' 
+          src={props.banner} 
+          alt={`${props.category} banner`}
+        />
+        <div className="shopcategory-banner-overlay">
+          <h1>{categoryLabel}</h1>
+          <div className="shopcategory-banner-breadcrumb">
+            <Link to="/">Home</Link>
+            <span className="dot-sep">•</span>
+            <span className="current-cat">{categoryLabel}</span>
+          </div>
+        </div>
+      </div>
       
       {showMobileFilters && (
         <div 
@@ -139,31 +186,31 @@ const ShopCategory = (props) => {
           filteredCount={filteredProducts.length}
           isOpen={showMobileFilters}
           onClose={() => setShowMobileFilters(false)}
+          allCategoryProducts={categoryProducts}
         />
 
         {/* RIGHT COLUMN: PRODUCTS CONTAINER */}
         <div className="shopcategory-right-content">
-          <div className="shopcategory-indexSort flex items-center justify-between">
+          <div className="shopcategory-indexSort">
             <p className="shopcategory-indexText">
-              Showing <span>1-{Math.min(12, filteredProducts.length)} </span>out of {filteredProducts.length} products
+              Showing <span>{Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)}-{Math.min(currentPage * itemsPerPage, filteredProducts.length)} </span>out of {filteredProducts.length} results
             </p>
-            <div className="flex items-center gap-2">
+            <div className="shopcategory-controls-row">
               <button 
                 type="button"
-                className="shopcategory-filter-toggle-btn flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30"
+                className="shopcategory-filter-toggle-btn"
                 onClick={() => setShowMobileFilters(true)}
               >
-                <SlidersHorizontal size={14} className="text-slate-500 dark:text-slate-400" />
-                <span className="text-xs text-slate-700 dark:text-slate-200 font-extrabold uppercase tracking-wider">Filters</span>
+                <SlidersHorizontal size={14} />
+                <span>Filters</span>
               </button>
-              <div className="shopcategory-sort flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-1.5 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-500/30">
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Sort:</span>
+              <div className="shopcategory-sort">
+                <span>Sort by:</span>
                 <select 
                   value={sortOption} 
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="border-none bg-transparent text-slate-700 dark:text-slate-200 font-extrabold text-xs outline-none cursor-pointer focus:ring-0"
                 >
-                  <option value="default">Featured</option>
+                  <option value="default">Default sorting</option>
                   <option value="low-to-high">Price: Low to High</option>
                   <option value="high-to-low">Price: High to Low</option>
                 </select>
@@ -185,20 +232,57 @@ const ShopCategory = (props) => {
               </button>
             </motion.div>
           ) : (
-            <div className="shopcategory-products">
-              {sortedProducts.map((item, i) => (
-                <Item 
-                  key={i} 
-                  {...item} 
-                />
-              ))}
-            </div>
-          )}
+            <>
+              <div className="shopcategory-products-grid">
+                <AnimatePresence mode="popLayout">
+                  {paginatedProducts.map((item) => (
+                    <motion.div 
+                      key={item.id} 
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="products-grid-item"
+                    >
+                      <Item {...item} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
 
-          {filteredProducts.length > 12 && (
-            <div className="shopcategory-loadmore">
-              Explore More
-            </div>
+              {/* Pagination bar */}
+              {totalPages > 1 && (
+                <div className="shopcategory-pagination-container">
+                  <button 
+                    className="pag-nav-btn" 
+                    disabled={currentPage === 1}
+                    onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 350, behavior: 'smooth' }); }}
+                  >
+                    &lt;
+                  </button>
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    return (
+                      <button 
+                        key={pageNum}
+                        className={`pag-num-btn ${currentPage === pageNum ? 'active' : ''}`}
+                        onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 350, behavior: 'smooth' }); }}
+                      >
+                        {pageNum < 10 ? `0${pageNum}` : pageNum}
+                      </button>
+                    );
+                  })}
+                  <button 
+                    className="pag-nav-btn" 
+                    disabled={currentPage === totalPages}
+                    onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 350, behavior: 'smooth' }); }}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

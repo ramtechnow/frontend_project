@@ -1,14 +1,16 @@
 import React, { useContext } from 'react';
+import '../Pages/CSS/Wishlist.css';
 import { WishlistContext } from '../Context/WishlistContext';
 import { ShopContext } from '../Context/ShopContext';
-import { Item } from '../Components/Item/Item';
-import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import useCart from '../Hooks/useCart';
+import { Heart, ShoppingBag, ArrowRight, Trash2, Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export const Wishlist = () => {
-  const { wishlistItems } = useContext(WishlistContext);
+  const { wishlistItems, toggleWishlist } = useContext(WishlistContext);
   const { all_product } = useContext(ShopContext);
+  const { addToCart } = useCart();
   const navigate = useNavigate();
 
   // Filter products in wishlist
@@ -18,67 +20,202 @@ export const Wishlist = () => {
 
   return (
     <motion.div 
-      className="w-full max-w-7xl mx-auto px-4 py-12 min-h-[70vh] flex flex-col"
+      className="wishlist-page"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header Title */}
-      <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-6 mb-8">
-        <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-2xl">
-          <Heart size={24} className="fill-rose-500 text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            My Wishlist
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {wishlistedProducts.length} {wishlistedProducts.length === 1 ? 'item' : 'items'} saved in your favorites
-          </p>
+      {/* Breadcrumb banner */}
+      <div className="wishlist-banner">
+        <div className="wishlist-banner-content">
+          <h1>Wishlist</h1>
+          <div className="wishlist-breadcrumb">
+            <Link to="/">Home</Link>
+            <span>•</span>
+            <span className="current">Wishlist</span>
+          </div>
         </div>
       </div>
 
-      {/* Grid or Empty State */}
-      {wishlistedProducts.length === 0 ? (
-        <motion.div 
-          className="flex-grow flex flex-col items-center justify-center text-center p-8 bg-slate-50/50 dark:bg-slate-900/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl max-w-md mx-auto my-12 space-y-6"
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="relative p-6 bg-white dark:bg-slate-950 rounded-full shadow-lg border border-slate-100 dark:border-slate-800 text-slate-300 dark:text-slate-700">
-            <Heart size={48} className="text-slate-300 dark:text-slate-700" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Heart size={20} className="text-rose-400/30 dark:text-rose-500/20 fill-rose-500/10" />
+      <div className="wishlist-container">
+        
+        {wishlistedProducts.length === 0 ? (
+          /* Empty State */
+          <motion.div 
+            className="wishlist-empty-state"
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="empty-icon-circle">
+              <Heart size={40} className="fill-current" />
             </div>
-          </div>
-          <div>
-            <h2 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-wider">
-              Your wishlist is empty
-            </h2>
-            <p className="text-xs text-slate-400 mt-2 max-w-[280px] mx-auto leading-relaxed">
+            <h2>Your wishlist is empty</h2>
+            <p>
               Explore our latest catalog, search hot collections, and tap the heart icon to save products here!
             </p>
-          </div>
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white text-xs font-black rounded-xl shadow-lg hover:shadow-orange-500/20 transition-all active:scale-98"
-          >
-            <ShoppingBag size={14} />
-            Explore Store
-            <ArrowRight size={12} />
-          </button>
-        </motion.div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {wishlistedProducts.map((item) => (
-            <div key={item.id} className="flex justify-center">
-              <Item {...item} />
+            <button
+              onClick={() => navigate('/')}
+              className="explore-store-btn"
+            >
+              <ShoppingBag size={15} />
+              Explore Store
+              <ArrowRight size={14} />
+            </button>
+          </motion.div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="wishlist-table-wrapper">
+              <table className="wishlist-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Stock Status</th>
+                    <th>Add to Cart</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wishlistedProducts.map((item) => {
+                    const sizes = item.sizes && item.sizes.length > 0 ? item.sizes : ['M'];
+                    const colors = item.colors && item.colors.length > 0 ? item.colors : ['White'];
+                    const inStock = item.stockCount !== undefined ? item.stockCount > 0 : (item.id % 11 !== 0);
+
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <div className="wishlist-product-cell">
+                            <img src={item.image} alt={item.name} className="wishlist-product-img" />
+                            <Link to={`/product/${item.id}`} className="wishlist-product-name">
+                              {item.name}
+                            </Link>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="wishlist-price-cell">${item.new_price}</div>
+                        </td>
+                        <td>
+                          <span className={`stock-status-badge ${inStock ? 'in-stock' : 'out-of-stock'}`}>
+                            {inStock ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </td>
+                        <td>
+                          <button 
+                            type="button"
+                            className="wishlist-add-cart-btn"
+                            disabled={!inStock}
+                            onClick={() => addToCart(item.id, sizes[0], colors[0], 1)}
+                          >
+                            Add To Cart
+                          </button>
+                        </td>
+                        <td>
+                          <button 
+                            type="button"
+                            className="wishlist-delete-btn"
+                            onClick={() => toggleWishlist(item.id)}
+                            title="Remove from wishlist"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
+
+            {/* Mobile List View */}
+            <div className="mobile-wishlist-list">
+              {wishlistedProducts.map((item) => {
+                const sizes = item.sizes && item.sizes.length > 0 ? item.sizes : ['M'];
+                const colors = item.colors && item.colors.length > 0 ? item.colors : ['White'];
+                const inStock = item.stockCount !== undefined ? item.stockCount > 0 : (item.id % 11 !== 0);
+
+                return (
+                  <div key={item.id} className="mobile-wishlist-item">
+                    <img src={item.image} alt={item.name} className="mobile-wishlist-img" />
+                    <div className="mobile-wishlist-info">
+                      <Link to={`/product/${item.id}`} className="mobile-wishlist-title">
+                        {item.name}
+                      </Link>
+                      <div className="mobile-wishlist-price">${item.new_price}</div>
+                      <span className={`mobile-wishlist-stock ${inStock ? 'in-stock' : 'out-of-stock'}`}>
+                        {inStock ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                      <div className="mobile-wishlist-btn-row">
+                        <button 
+                          type="button"
+                          className="wishlist-add-cart-btn"
+                          disabled={!inStock}
+                          onClick={() => addToCart(item.id, sizes[0], colors[0], 1)}
+                        >
+                          Add To Cart
+                        </button>
+                      </div>
+                    </div>
+                    <button 
+                      type="button"
+                      className="mobile-wishlist-delete"
+                      onClick={() => toggleWishlist(item.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Features bar at the bottom */}
+        <div className="features-bar-grid">
+          <div className="feature-card">
+            <div className="feature-icon-wrapper">
+              <Truck size={22} />
+            </div>
+            <div className="feature-info">
+              <h3>Free Shipping</h3>
+              <p>For all orders over $99. Safe and rapid transport.</p>
+            </div>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon-wrapper">
+              <ShieldCheck size={22} />
+            </div>
+            <div className="feature-info">
+              <h3>Security Payment</h3>
+              <p>100% secure payment methods and SSL transaction security.</p>
+            </div>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon-wrapper">
+              <RotateCcw size={22} />
+            </div>
+            <div className="feature-info">
+              <h3>14-Day Return</h3>
+              <p>Shop with confidence. Easy returns inside 14 days.</p>
+            </div>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon-wrapper">
+              <Headphones size={22} />
+            </div>
+            <div className="feature-info">
+              <h3>24/7 Support</h3>
+              <p>Customer help desk. Friendly support around the clock.</p>
+            </div>
+          </div>
         </div>
-      )}
+
+      </div>
     </motion.div>
   );
 };

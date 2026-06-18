@@ -3,155 +3,196 @@ import './Item.css';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { WishlistContext } from '../../Context/WishlistContext';
-import { Heart, Star } from 'lucide-react';
+import useCart from '../../Hooks/useCart';
+import { Heart, Star, Eye, RefreshCw } from 'lucide-react';
 
 export const Item = (props) => {
   const { toggleWishlist, isWishlisted } = useContext(WishlistContext);
+  const { addToCart } = useCart();
   const isFav = isWishlisted(props.id);
 
-  // Dynamic Brand & Description parser (Extracts first 1-2 words as Brand, remainder as details)
-  const getBrandAndDesc = (name) => {
-    if (!name) return { brand: "Roadster", desc: "Casual Cotton Wear" };
-    const parts = name.split(" ");
-    if (parts.length <= 2) {
-      return { brand: parts[0] || "Roadster", desc: parts.slice(1).join(" ") || "Casual Wear" };
-    }
-    const brand = parts[0] + (parts[1] && parts[1].length <= 4 ? " " + parts[1] : "");
-    const desc = name.replace(brand, "").trim();
-    return { brand, desc };
+  // Deterministic ratings
+  const rating = ((props.id * 13) % 5 === 0 
+    ? '4.0' 
+    : (props.id * 13) % 5 === 1 
+      ? '5.0' 
+      : (props.id * 13) % 5 === 2 
+        ? '4.0' 
+        : (props.id * 13) % 5 === 3 
+          ? '5.0' 
+          : '4.0');
+  
+  const rawReviews = (props.id * 223 + 47) % 150 + 10;
+
+  // Sizes formatting
+  const sizes = props.sizes && props.sizes.length > 0 
+    ? props.sizes 
+    : ['S', 'M', 'L', 'XL'];
+
+  // Colors formatting
+  const colors = props.colors && props.colors.length > 0
+    ? props.colors
+    : ['Black', 'White', 'Pink'];
+
+  const colorMap = {
+    Black: '#000000',
+    White: '#ffffff',
+    Red: '#f23e70',
+    Blue: '#1e88e5',
+    Green: '#4caf50',
+    Pink: '#ec4899',
+    Grey: '#888888',
+    Orange: '#ff9800',
+    Yellow: '#f59e0b',
   };
 
-  const { brand, desc } = getBrandAndDesc(props.name);
+  // Badging logic
+  let badgeText = '';
+  let badgeClass = '';
 
-  // Calculate discount percentage
   const discount = props.old_price && props.old_price > props.new_price
     ? Math.round(((props.old_price - props.new_price) / props.old_price) * 100)
     : 0;
 
-  // Inventory availability logic
-  const inStock = props.inStock !== undefined 
-    ? props.inStock 
-    : (props.stockCount !== undefined ? props.stockCount > 0 : (props.id % 11 !== 0));
+  if (discount > 0) {
+    if (props.id % 2 === 0) {
+      badgeText = `-${discount}%`;
+      badgeClass = 'badge-discount';
+    } else {
+      badgeText = 'Sale';
+      badgeClass = 'badge-sale';
+    }
+  } else if (props.id % 3 === 0) {
+    badgeText = 'New';
+    badgeClass = 'badge-new';
+  }
 
-  // Deterministic Myntra-style Ratings & Reviews count based on ID
-  const rating = ((props.id * 13) % 5 === 0 
-    ? '4.1' 
-    : (props.id * 13) % 5 === 1 
-      ? '4.4' 
-      : (props.id * 13) % 5 === 2 
-        ? '4.2' 
-        : (props.id * 13) % 5 === 3 
-          ? '4.5' 
-          : '4.3');
-  
-  const rawReviews = (props.id * 223 + 47) % 900 + 12;
-  const reviewsText = rawReviews > 500 ? `${(rawReviews/100).toFixed(1)}k` : `${rawReviews}`;
-
-  // Sizes formatting
-  const sizesString = props.sizes && props.sizes.length > 0 
-    ? props.sizes.join(', ') 
-    : 'S, M, L, XL';
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(props.id, sizes[0] || 'M', colors[0] || 'White', 1);
+  };
 
   return (
     <motion.div 
-      className='item flex flex-col bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/40 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition-all duration-300'
-      style={{ width: '100%' }}
-      initial={{ opacity: 0, y: 20 }}
+      className="orishop-item-card"
+      initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
       transition={{ duration: 0.4 }}
     >
-      {/* Aspect Ratio Container (Myntra uses 3:4 portrait layout) */}
-      <div className="relative overflow-hidden aspect-[3/4] bg-slate-50 dark:bg-slate-950">
-        
+      <div className="item-image-wrapper">
+        {/* Badge */}
+        {badgeText && (
+          <span className={`item-card-badge ${badgeClass}`}>
+            {badgeText}
+          </span>
+        )}
+
         {/* Product Image Link */}
-        <Link to={`/product/${props.id}`} className="block w-full h-full">
+        <Link to={`/product/${props.id}`} className="item-image-link" onClick={() => window.scrollTo(0, 0)}>
           <img 
-            onClick={() => window.scrollTo(0, 0)} 
             src={props.image} 
             alt={props.name} 
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="item-product-img"
           />
         </Link>
 
-        {/* Rating overlay pill (Translucent bottom-left) */}
-        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 px-2 py-0.5 bg-white/90 dark:bg-slate-950/80 backdrop-blur-md rounded text-[10px] font-bold text-slate-800 dark:text-slate-200 border border-slate-100/10 shadow-sm">
-          <span>{rating}</span>
-          <Star size={8} className="fill-emerald-500 text-emerald-500" />
-          <span className="text-slate-400 dark:text-slate-500 font-normal">|</span>
-          <span className="text-slate-500 dark:text-slate-400 font-medium">{reviewsText}</span>
-        </div>
-
-        {/* Wishlist Button Overlay (reveals on hover from bottom) */}
-        <div className="absolute inset-x-0 bottom-0 p-3 bg-white dark:bg-slate-900 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-center z-10 border-t border-slate-100 dark:border-slate-800">
-          <button
+        {/* Hover Overlay Floating Action Icons */}
+        <div className="item-hover-actions">
+          <button 
+            type="button"
+            className={`action-btn-floating ${isFav ? 'wishlisted' : ''}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               toggleWishlist(props.id);
             }}
-            className={`w-full py-2 border text-[10px] font-extrabold tracking-wider uppercase rounded shadow-sm flex items-center justify-center gap-2 transition-all ${
-              isFav 
-                ? 'bg-rose-50 border-rose-200 text-rose-500 dark:bg-rose-950/30 dark:border-rose-900/50' 
-                : 'bg-white border-slate-200 text-slate-700 hover:text-rose-500 hover:border-rose-300 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-300'
-            }`}
+            title={isFav ? "Remove from Wishlist" : "Add to Wishlist"}
           >
-            <Heart size={12} className={isFav ? "fill-rose-500 text-rose-500" : ""} />
-            {isFav ? "WISHLISTED" : "WISHLIST"}
+            <Heart size={15} className={isFav ? "fill-[#f23e70] stroke-[#f23e70]" : "text-slate-600"} />
+          </button>
+          
+          <button 
+            type="button"
+            className="action-btn-floating"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              alert(`"${props.name}" added to comparison!`);
+            }}
+            title="Compare"
+          >
+            <RefreshCw size={13} className="text-slate-600" />
+          </button>
+
+          <Link 
+            to={`/product/${props.id}`}
+            className="action-btn-floating"
+            onClick={() => window.scrollTo(0, 0)}
+            title="Quick View"
+          >
+            <Eye size={14} className="text-slate-600" />
+          </Link>
+        </div>
+
+        {/* Hover Slide-up Pink Add to Cart Button */}
+        <div className="item-add-cart-slide">
+          <button 
+            type="button" 
+            className="pink-add-cart-btn"
+            onClick={handleAddToCart}
+          >
+            Add To Cart
           </button>
         </div>
       </div>
 
-      {/* Details Container */}
-      <div className="p-3.5 flex flex-col flex-grow">
-        
-        {/* Brand Name (Bold, Charcoal) */}
-        <h4 className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight truncate">
-          {brand}
-        </h4>
+      {/* Info details under image */}
+      <div className="item-details-box">
+        {/* Colors and Rating row */}
+        <div className="item-meta-info-row">
+          <div className="color-dots-list">
+            {colors.slice(0, 3).map((c, i) => (
+              <span 
+                key={i} 
+                className="color-dot-swatch" 
+                style={{ backgroundColor: colorMap[c] || '#ccc' }}
+                title={c}
+              />
+            ))}
+          </div>
 
-        {/* Available Sizes reveal on Hover, otherwise short description */}
-        <div className="relative h-4 overflow-hidden mt-1 mb-2">
-          <div className="absolute inset-0 transition-all duration-300 group-hover:-translate-y-full flex flex-col">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-              {desc}
-            </span>
-            <span className="text-[11px] text-amber-500 dark:text-amber-400 font-extrabold tracking-tight truncate">
-              Sizes: {sizesString}
-            </span>
+          <div className="stars-ratings-box">
+            <div className="star-icons">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star 
+                  key={s} 
+                  size={10} 
+                  className={s <= Math.round(Number(rating)) ? "fill-[#ffb300] text-[#ffb300]" : "text-[#e2e8f0]"}
+                />
+              ))}
+            </div>
+            <span className="reviews-label">({rawReviews})</span>
           </div>
         </div>
 
-        {/* Price layout: Myntra style (Rs. X crossed-out Y (Z% OFF)) */}
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-slate-900 dark:text-white font-extrabold text-xs">
-              Rs. {props.new_price}
-            </span>
-            {props.old_price && (
-              <>
-                <span className="text-slate-400 dark:text-slate-500 line-through text-[10px] font-medium">
-                  Rs. {props.old_price}
-                </span>
-                {discount > 0 && (
-                  <span className="text-[10px] font-black text-rose-500 dark:text-rose-400 tracking-tight">
-                    ({discount}% OFF)
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+        {/* Product Name */}
+        <h4 className="item-product-name">
+          <Link to={`/product/${props.id}`} onClick={() => window.scrollTo(0, 0)}>
+            {props.name}
+          </Link>
+        </h4>
 
-          {/* Real-time stock status badge */}
-          <span className={`text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
-            inStock
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-          }`}>
-            {inStock ? 'In Stock' : 'Out of Stock'}
-          </span>
+        {/* Prices */}
+        <div className="item-price-display">
+          <span className="current-price-val">${props.new_price}</span>
+          {props.old_price && (
+            <span className="old-price-val">${props.old_price}</span>
+          )}
         </div>
       </div>
     </motion.div>
   );
 };
+

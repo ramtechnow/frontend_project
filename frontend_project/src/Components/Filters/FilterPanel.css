@@ -1,105 +1,98 @@
-.filter-panel {
+.orishop-filter-panel {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: 24px;
+  border-radius: 8px;
+  padding: 30px 24px;
   width: 100%;
   max-width: 300px;
-  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   align-self: flex-start;
-  transition: var(--transition-smooth);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+  font-family: 'Poppins', sans-serif;
 }
 
-.filter-header {
+.filter-header-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.filter-header h3 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.3rem;
+.filter-header-title h3 {
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-main);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.product-count-badge {
-  font-size: 0.8rem;
-  background-color: var(--bg-tertiary);
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: var(--border-radius-full);
-  font-weight: 600;
-}
-
-.filter-divider {
-  border: none;
+.sidebar-divider {
+  border: 0;
   border-top: 1px solid var(--border-color);
-  margin: 4px 0;
+  margin: 0;
 }
 
-.filter-section {
+.filter-checklist-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Checklist Group */
+.checklist-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.filter-section h4 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Custom Checkbox Design */
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.checkbox-label {
+.checklist-label-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: var(--text-muted);
   cursor: pointer;
   user-select: none;
 }
 
-.checkbox-label input {
+.checklist-label-row input {
   display: none;
 }
 
-.custom-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  display: inline-block;
+.custom-checkmark-box {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 3px;
+  margin-right: 12px;
   position: relative;
-  transition: var(--transition-smooth);
+  transition: all 0.2s ease;
+  background-color: var(--bg-primary);
 }
 
-.checkbox-label:hover .custom-checkbox {
-  border-color: var(--accent-color);
+.checklist-label-row:hover .custom-checkmark-box {
+  border-color: var(--accent-pink);
 }
 
-.checkbox-label input:checked + .custom-checkbox {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
+.checklist-label-row input:checked + .custom-checkmark-box {
+  background-color: var(--accent-pink);
+  border-color: var(--accent-pink);
 }
 
-.checkbox-label input:checked + .custom-checkbox::after {
+.checklist-label-row input:checked + .custom-checkmark-box::after {
   content: "✓";
-  color: #fff;
-  font-size: 0.75rem;
+  color: #ffffff;
+  font-size: 10px;
   font-weight: bold;
   position: absolute;
   top: 50%;
@@ -107,91 +100,217 @@
   transform: translate(-50%, -50%);
 }
 
-/* Size buttons */
-.size-selector-grid {
+.label-text {
+  flex-grow: 1;
+  transition: color 0.2s ease;
+}
+
+.checklist-label-row:hover .label-text {
+  color: var(--text-main);
+}
+
+.label-count-pill {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Price Range Filter */
+.price-slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.premium-range-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-color);
+  outline: none;
+}
+
+.premium-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-pink);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.premium-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.price-range-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.price-range-text span {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Colors swatches grid */
+.colors-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.color-bubble-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.color-bubble-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-bubble-swatch.active {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px var(--accent-pink);
+}
+
+.swatch-check {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Sizes Buttons */
+.sizes-buttons-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
-.filter-size-btn {
-  background-color: var(--bg-tertiary);
-  border: 1px solid transparent;
-  color: var(--text-primary);
-  padding: 8px 0;
-  font-size: 0.85rem;
+.size-btn-pill {
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-muted);
+  padding: 6px 0;
+  font-size: 11px;
   font-weight: 600;
-  border-radius: var(--border-radius-sm);
-  transition: var(--transition-smooth);
-}
-
-.filter-size-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.filter-size-btn.active {
-  background-color: var(--accent-color);
-  color: #ffffff;
-  border-color: var(--accent-color);
-  box-shadow: 0 4px 10px rgba(255, 65, 65, 0.2);
-}
-
-/* Color palette buttons */
-.color-palette-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.filter-color-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--border-radius-full);
-  border: 2px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-smooth);
+  border-radius: 4px;
   cursor: pointer;
-  position: relative;
+  transition: all 0.2s ease;
 }
 
-.filter-color-btn.active {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent-color) !important;
+.size-btn-pill:hover {
+  border-color: var(--text-main);
+  color: var(--text-main);
 }
 
-.color-check-icon {
-  font-size: 0.75rem;
-  font-weight: bold;
+.size-btn-pill.active {
+  background-color: var(--text-main);
+  color: var(--bg-primary);
+  border-color: var(--text-main);
 }
 
-/* Clear filters button */
-.clear-filters-btn {
-  background-color: transparent;
-  color: var(--accent-color);
-  border: 2px solid var(--accent-color);
-  padding: 12px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.9rem;
+/* Reset Button */
+.sidebar-reset-btn {
+  background: none;
+  border: 2px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 700;
-  transition: var(--transition-smooth);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
   margin-top: 10px;
 }
 
-.clear-filters-btn:hover {
-  background-color: var(--accent-color);
+.sidebar-reset-btn:hover {
+  background-color: var(--text-main);
+  color: var(--bg-primary);
+  border-color: var(--text-main);
+}
+
+/* Sidebar Campaign Banner */
+.filter-sidebar-ad-card {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+}
+
+.filter-sidebar-ad-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-ad-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 100%);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ad-pill {
+  background-color: var(--accent-pink);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 65, 65, 0.3);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.ad-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ad-btn-shop {
+  background-color: #ffffff;
+  color: #111111;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ad-btn-shop:hover {
+  background-color: var(--accent-pink);
+  color: #ffffff;
 }
 
 .filter-close-btn {
   display: none;
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--text-main);
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -199,23 +318,23 @@
 }
 
 @media (max-width: 900px) {
-  .filter-panel {
+  .orishop-filter-panel {
     position: fixed;
     top: 0;
     left: -100%;
     width: 300px;
     height: 100vh;
-    background-color: var(--bg-secondary);
+    background-color: var(--card-bg);
     z-index: 1500;
     transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
     border-radius: 0;
     border: none;
     overflow-y: auto;
     padding-bottom: 40px;
   }
   
-  .filter-panel.mobile-open {
+  .orishop-filter-panel.mobile-open {
     left: 0;
   }
 
@@ -223,3 +342,4 @@
     display: flex;
   }
 }
+
