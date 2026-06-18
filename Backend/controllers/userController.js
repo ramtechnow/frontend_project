@@ -24,6 +24,8 @@ exports.signup = async (req, res) => {
     const data = {
       user: {
         id: user.id,
+        name: user.name,
+        email: user.email,
         isAdmin: user.isAdmin
       }
     };
@@ -45,6 +47,8 @@ exports.login = async (req, res) => {
         const data = {
           user: {
             id: user.id,
+            name: user.name,
+            email: user.email,
             isAdmin: user.isAdmin
           }
         };

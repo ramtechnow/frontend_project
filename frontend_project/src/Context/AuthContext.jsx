@@ -54,10 +54,12 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         const decoded = decodeToken(token);
         if (decoded) {
+          const storedEmail = localStorage.getItem("user-email");
+          const storedName = localStorage.getItem("user-name");
           setCurrentUser({
             uid: decoded.id,
-            email: decoded.email || (decoded.id === "Admin" ? "admin@gmail.com" : "user@gmail.com"),
-            displayName: decoded.name || (decoded.id === "Admin" ? "Admin" : "Shopper"),
+            email: storedEmail || decoded.email || (decoded.id === "Admin" ? "admin@gmail.com" : "user@gmail.com"),
+            displayName: storedName || decoded.name || (decoded.id === "Admin" ? "Admin" : "Shopper"),
             isAdmin: decoded.isAdmin || false,
             isFirebase: false
           });
@@ -95,11 +97,15 @@ export const AuthProvider = ({ children }) => {
           
           // Pre-extract displayName from email for rendering
           const username = email.split('@')[0];
+          const displayNameValue = decoded?.name || username;
+          localStorage.setItem("user-email", email);
+          localStorage.setItem("user-name", displayNameValue);
+
           const userObj = {
-            uid: decoded.id,
+            uid: decoded?.id,
             email: email,
-            displayName: decoded.name || username,
-            isAdmin: decoded.isAdmin || false,
+            displayName: displayNameValue,
+            isAdmin: decoded?.isAdmin || false,
             isFirebase: false
           };
           
@@ -143,11 +149,15 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("auth-token", data.token);
           window.dispatchEvent(new Event('auth-change'));
           const decoded = decodeToken(data.token);
+          
+          localStorage.setItem("user-email", email);
+          localStorage.setItem("user-name", username);
+
           const userObj = {
-            uid: decoded.id,
+            uid: decoded?.id,
             email: email,
             displayName: username,
-            isAdmin: decoded.isAdmin || false,
+            isAdmin: decoded?.isAdmin || false,
             isFirebase: false
           };
           setCurrentUser(userObj);
@@ -174,6 +184,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("auth-token");
       localStorage.removeItem("cart-items");
       localStorage.removeItem("user-wishlist");
+      localStorage.removeItem("user-email");
+      localStorage.removeItem("user-name");
       window.dispatchEvent(new Event('auth-change'));
       setCurrentUser(null);
       setLoading(false);
@@ -228,6 +240,8 @@ export const AuthProvider = ({ children }) => {
             isAdmin: false,
             isFirebase: false
           };
+          localStorage.setItem("user-email", `${phoneNumber}@sms.com`);
+          localStorage.setItem("user-name", phoneNumber);
           setCurrentUser(userObj);
           return { success: true };
         } else {
