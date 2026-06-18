@@ -223,4 +223,27 @@
   color: var(--text-muted);
   text-decoration: line-through;
   font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .item-details-box {
+    padding: 8px 6px;
+    gap: 4px;
+  }
+  .item-product-name {
+    font-size: 11px;
+  }
+  .current-price-val {
+    font-size: 12px;
+  }
+  .old-price-val {
+    font-size: 10px;
+  }
+  .reviews-label {
+    display: none;
+  }
+  .item-meta-info-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
 }
