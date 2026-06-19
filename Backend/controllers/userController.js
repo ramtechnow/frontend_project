@@ -282,13 +282,47 @@ exports.verifyAdmin = async (req, res) => {
 
 // Provider-agnostic SMS OTP sender helper
 async function sendSMS(phone, otp) {
-  console.log(`\n======================================================`);
-  console.log(`📱 SMS OTP SENT TO: ${phone}`);
-  console.log(`💬 CODE: [ ${otp} ]`);
-  console.log(`======================================================\n`);
-  
-  // Real provider integration goes here (e.g. MSG91, Twilio, etc.)
-  return true;
+  if (process.env.TWILIO_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE) {
+    try {
+      const sid = process.env.TWILIO_SID;
+      const token = process.env.TWILIO_AUTH_TOKEN;
+      const from = process.env.TWILIO_PHONE;
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
+      
+      const authHeader = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          To: phone,
+          From: from,
+          Body: `Your SHOPPER login OTP code is: ${otp}. It is valid for 5 minutes.`
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        console.log(`✅ Real SMS dispatched via Twilio to ${phone}: SID ${data.sid}`);
+        return true;
+      } else {
+        console.error(`❌ Twilio API Error: ${data.message}`);
+        return false;
+      }
+    } catch (err) {
+      console.error("❌ Failed to connect to Twilio SMS API:", err);
+      return false;
+    }
+  } else {
+    console.log(`\n======================================================`);
+    console.log(`📱 SMS OTP SENT TO: ${phone}`);
+    console.log(`💬 CODE: [ ${otp} ]`);
+    console.log(`======================================================\n`);
+    return true;
+  }
 }
 
 // Transactional Email OTP sender helper using Nodemailer
