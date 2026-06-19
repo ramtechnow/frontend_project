@@ -18,6 +18,7 @@ router.post('/addtowishlist', fetchUser, userController.addToWishlist);
 router.post('/removefromwishlist', fetchUser, userController.removeFromWishlist);
 
 // Admin routes
+router.get('/admin/verify', fetchAdmin, userController.verifyAdmin);
 router.get('/admin/users', fetchAdmin, userController.getAllUsers);
 router.post('/admin/updateuserrole', fetchAdmin, userController.updateUserRole);
 router.post('/admin/deleteuser', fetchAdmin, userController.deleteUser);

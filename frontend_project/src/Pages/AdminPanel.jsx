@@ -1,1838 +1,369 @@
-import React, { useState, useEffect, useContext } from 'react';
-import '../Styles/adminPanel.css';
-import { BACKEND_URL } from '../config';
-import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  PlusCircle, 
-  Users, 
-  Save, 
-  X, 
-  Pencil, 
-  Trash2, 
-  User, 
-  ShoppingCart,
-  ChevronDown,
-  ChevronRight,
-  Settings,
-  Plus,
-  Tag
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAdminAuth } from '../Hooks/useAdminAuth';
+import { adminApi } from '../Utils/adminApi';
+import { Toast } from '../Components/admin/Toast';
+import { ConfirmModal } from '../Components/admin/ConfirmModal';
+import { AdminLoadingScreen } from '../Components/admin/AdminLoadingScreen';
+import { AdminAccessDenied } from '../Components/admin/AdminAccessDenied';
+import { AdminSidebar } from '../Components/admin/AdminSidebar';
+import { AdminTopbar } from '../Components/admin/AdminTopbar';
 
-const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
-const AVAILABLE_COLORS = ['Black', 'White', 'Red', 'Blue', 'Green', 'Pink', 'Grey', 'Orange', 'Yellow'];
+// Individual Tabs
+import { AdminDashboardTab } from '../Components/admin/AdminDashboardTab';
+import { AdminCatalogTab } from '../Components/admin/AdminCatalogTab';
+import { AdminAddProductTab } from '../Components/admin/AdminAddProductTab';
+import { AdminUsersTab } from '../Components/admin/AdminUsersTab';
+import { AdminOrdersTab } from '../Components/admin/AdminOrdersTab';
+import { AdminCouponsTab } from '../Components/admin/AdminCouponsTab';
+
+// Styling imports
+import '../Styles/adminPanel.css';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+
+// Demo/offline preview mode toggle
+const ENABLE_ADMIN_DEMO_MODE = false;
+
+const MOCK_USERS = [
+  { name: "Emily Watson", email: "emily@gmail.com", isAdmin: false, cartData: { "1-M-Black": { quantity: 2 }, "4-L-White": { quantity: 1 } }, date: new Date().toISOString() },
+  { name: "John Doe", email: "johndoe@gmail.com", isAdmin: false, cartData: { "12-XL-Grey": { quantity: 1 } }, date: new Date().toISOString() },
+  { name: "Admin Manager", email: "admin@gmail.com", isAdmin: true, cartData: {}, date: new Date().toISOString() }
+];
+
+const MOCK_ORDERS = [
+  {
+    _id: "ORD-987216",
+    userName: "Emily Watson",
+    userEmail: "emily@gmail.com",
+    amount: 200,
+    status: "Pending",
+    payment: true,
+    date: new Date().toISOString(),
+    address: {
+      fullName: "Emily Watson",
+      addressLine: "Apt 4B, 12 Park Ave",
+      city: "New York",
+      state: "NY",
+      postalCode: "10016",
+      phone: "+1 212-555-0199"
+    },
+    items: [
+      { productId: 1, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "M", color: "Black", quantity: 2, price: 50.0 },
+      { productId: 4, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 100.0 }
+    ]
+  },
+  {
+    _id: "ORD-128456",
+    userName: "John Doe",
+    userEmail: "johndoe@gmail.com",
+    amount: 85,
+    status: "Delivered",
+    payment: true,
+    date: new Date(Date.now() - 86400000).toISOString(),
+    address: {
+      fullName: "John Doe",
+      addressLine: "456 Oak St",
+      city: "Seattle",
+      state: "WA",
+      postalCode: "98101",
+      phone: "+1 206-555-0145"
+    },
+    items: [
+      { productId: 2, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 85.0 }
+    ]
+  }
+];
 
 export const AdminPanel = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard", "list", "add", "users", "orders"
-  
-  // Catalog & Users State
+  // 1. Secure Authentication Hook
+  const { isAdmin, loading: authLoading, adminUser } = useAdminAuth();
+
+  // 2. Active Tab State
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  // 3. Database State
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [coupons, setCoupons] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
 
-  // Coupon Form State
-  const [couponDetails, setCouponDetails] = useState({
-    code: "",
-    discountType: "percentage",
-    discountValue: "",
-    minOrderAmount: "",
-    maxUses: "",
-    expiresAt: "",
+  // Fetch Loaders and Error triggers
+  const [fetchingData, setFetchingData] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+
+  // 4. Toast notifications State
+  const [toasts, setToasts] = useState([]);
+  const addToast = (message, type = 'info') => {
+    const id = Date.now() + Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  // 5. Custom Modal dialog State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    isDestructive: false,
+    onConfirm: () => {},
+    onCancel: () => {}
   });
-  
-  // Expanded User Row (to view cart detail)
-  const [expandedUser, setExpandedUser] = useState(null);
-  const [expandedOrder, setExpandedOrder] = useState(null);
 
-  // Editing Product Inline State
-  const [editingProductId, setEditingProductId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", new_price: "", old_price: "", stockCount: "" });
+  const triggerConfirm = ({ title, message, confirmText, cancelText, isDestructive, onConfirm }) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      isDestructive,
+      onConfirm: () => {
+        onConfirm();
+        closeConfirm();
+      },
+      onCancel: closeConfirm
+    });
+  };
 
-  // Add Product Form State
-  const [productDetails, setProductDetails] = useState({
-    name: "",
-    category: "women",
-    new_price: "",
-    old_price: "",
-    stockCount: 100
-  });
-  
-  // Size and Color selections for adding product
-  const [selectedSizes, setSelectedSizes] = useState(['S', 'M', 'L', 'XL']);
-  const [selectedColors, setSelectedColors] = useState(['Black', 'White']);
-  const [colorStocks, setColorStocks] = useState({
-    Black: 50,
-    White: 50,
-    Red: 50,
-    Pink: 50,
-    Green: 50,
-    Blue: 50,
-    Orange: 50,
-    Yellow: 50,
-    Grey: 50
-  });
-  const [image, setImage] = useState(false);
+  const closeConfirm = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+  };
 
-  // Check Admin privileges on mount
-  useEffect(() => {
-    const token = localStorage.getItem('auth-token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.user && payload.user.isAdmin) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("JWT Decode error:", error);
+  // 6. Simulated Session Logs
+  const [recentActions, setRecentActions] = useState([
+    { message: "Administrative Session Established", time: new Date().toLocaleTimeString() }
+  ]);
+  const logAction = (message) => {
+    setRecentActions(prev => [
+      { message, time: new Date().toLocaleTimeString() },
+      ...prev.slice(0, 9) // Limit to last 10 logs
+    ]);
+  };
+
+  // Load Admin Data on authorized mounts
+  const fetchAllAdminData = useCallback(async () => {
+    setFetchingData(true);
+    setFetchError(null);
+    try {
+      // Parallel fetches for performance
+      const [prodData, usersData, ordersData, couponsData] = await Promise.allSettled([
+        adminApi.fetchProducts(),
+        adminApi.fetchUsers(),
+        adminApi.fetchOrders(),
+        adminApi.fetchCoupons()
+      ]);
+
+      if (prodData.status === 'fulfilled') {
+        setProducts(prodData.value);
+      } else {
+        console.warn("Could not load products:", prodData.reason);
       }
+
+      if (usersData.status === 'fulfilled') {
+        setUsers(usersData.value);
+      } else {
+        console.warn("Could not load users directory:", usersData.reason);
+        if (ENABLE_ADMIN_DEMO_MODE) {
+          setUsers(MOCK_USERS);
+        } else {
+          throw new Error("Node backend users API offline");
+        }
+      }
+
+      if (ordersData.status === 'fulfilled') {
+        setOrders(ordersData.value);
+      } else {
+        console.warn("Could not load order tracking:", ordersData.reason);
+        if (ENABLE_ADMIN_DEMO_MODE) {
+          setOrders(MOCK_ORDERS);
+        }
+      }
+
+      if (couponsData.status === 'fulfilled') {
+        setCoupons(couponsData.value);
+      } else {
+        console.warn("Could not load active coupons list:", couponsData.reason);
+      }
+
+    } catch (err) {
+      console.error("Critical database fetch failure:", err);
+      setFetchError(err.message || "Failed to establish active connection with database API.");
+      addToast("Failed to fetch administrative data lists", "error");
+    } finally {
+      setFetchingData(false);
     }
-    setLoading(false);
-    fetchProducts();
-    fetchUsers();
-    fetchOrders();
-    fetchCoupons();
   }, []);
 
-  // Fetch all products
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/allproducts`);
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.warn("⚠️ Failed to fetch products:", error);
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAllAdminData();
     }
-  };
+  }, [isAdmin, fetchAllAdminData]);
 
-  // Fetch all users
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/users`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        }
-      });
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setUsers(data);
-      }
-    } catch (error) {
-      console.warn("⚠️ Failed to fetch users from Node backend server:", error);
-      // Fallback mocks for simulated visual preview
-      setUsers([
-        { name: "Emily Watson", email: "emily@gmail.com", isAdmin: false, cartData: { "1-M-Black": { quantity: 2 }, "4-L-White": { quantity: 1 } }, date: new Date().toISOString() },
-        { name: "John Doe", email: "johndoe@gmail.com", isAdmin: false, cartData: { "12-XL-Grey": { quantity: 1 } }, date: new Date().toISOString() },
-        { name: "Admin Manager", email: "admin@gmail.com", isAdmin: true, cartData: {}, date: new Date().toISOString() }
-      ]);
-    }
-  };
-
-  // Fetch all orders placed (Admin Dashboard)
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/orders`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        }
-      });
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setOrders(data);
-      }
-    } catch (error) {
-      console.warn("⚠️ Failed to fetch orders from Node backend server:", error);
-      // Fallback mocks for simulated orders preview
-      setOrders([
-        {
-          _id: "ORD-987216",
-          userName: "Emily Watson",
-          userEmail: "emily@gmail.com",
-          amount: 200,
-          status: "Pending",
-          payment: true,
-          date: new Date().toISOString(),
-          address: {
-            fullName: "Emily Watson",
-            addressLine: "Apt 4B, 12 Park Ave",
-            city: "New York",
-            state: "NY",
-            postalCode: "10016",
-            phone: "+1 212-555-0199"
-          },
-          items: [
-            { productId: 1, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "M", color: "Black", quantity: 2, price: 50.0 },
-            { productId: 4, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 100.0 }
-          ]
-        },
-        {
-          _id: "ORD-128456",
-          userName: "John Doe",
-          userEmail: "johndoe@gmail.com",
-          amount: 85,
-          status: "Delivered",
-          payment: true,
-          date: new Date(Date.now() - 86400000).toISOString(),
-          address: {
-            fullName: "John Doe",
-            addressLine: "456 Oak St",
-            city: "Seattle",
-            state: "WA",
-            postalCode: "98101",
-            phone: "+1 206-555-0145"
-          },
-          items: [
-            { productId: 2, name: "Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse", size: "L", color: "White", quantity: 1, price: 85.0 }
-          ]
-        }
-      ]);
-    }
-  };
-
-  // Update specific order shipping status (Admin auditor)
-  const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/orders/status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({ orderId, status: newStatus })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-        if (expandedOrder && expandedOrder._id === orderId) {
-          setExpandedOrder(prev => ({ ...prev, status: newStatus }));
-        }
-        alert("🎉 Order status updated successfully!");
-      } else {
-        alert("Failed to update status: " + data.error);
-      }
-    } catch (error) {
-      console.warn("⚠️ Failed to update order status on Node server:", error);
-      // Fallback for visual mock simulation
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-      if (expandedOrder && expandedOrder._id === orderId) {
-        setExpandedOrder(prev => ({ ...prev, status: newStatus }));
-      }
-      alert("🎉 Order status updated successfully (Visual fallback)!");
-    }
-  };
-
-  const fetchCoupons = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/coupons`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setCoupons(data.coupons);
-      }
-    } catch (error) {
-      console.warn("⚠️ Failed to fetch coupons:", error);
-    }
-  };
-
-  const handleCouponChange = (e) => {
-    setCouponDetails({ ...couponDetails, [e.target.name]: e.target.value });
-  };
-
-  const handleCreateCoupon = async (e) => {
-    e.preventDefault();
-    if (!couponDetails.code || !couponDetails.discountValue) {
-      alert("⚠️ Coupon Code and Discount Value are required!");
-      return;
-    }
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/coupons/create`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({
-          code: couponDetails.code,
-          discountType: couponDetails.discountType,
-          discountValue: Number(couponDetails.discountValue),
-          minOrderAmount: couponDetails.minOrderAmount ? Number(couponDetails.minOrderAmount) : 0,
-          maxUses: couponDetails.maxUses ? Number(couponDetails.maxUses) : 0,
-          expiresAt: couponDetails.expiresAt || null,
-        })
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert("🎉 Coupon created successfully!");
-        setCouponDetails({
-          code: "",
-          discountType: "percentage",
-          discountValue: "",
-          minOrderAmount: "",
-          maxUses: "",
-          expiresAt: "",
-        });
-        fetchCoupons();
-      } else {
-        alert(`❌ Failed: ${data.error}`);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("❌ Could not connect to backend server.");
-    }
-  };
-
-  const handleToggleCoupon = async (couponId) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/coupons/toggle`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({ couponId })
-      });
-      const data = await response.json();
-      if (data.success) {
-        fetchCoupons();
-      } else {
-        alert(`❌ Failed to toggle: ${data.error}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleDeleteCoupon = async (couponId) => {
-    if (!window.confirm("Are you sure you want to delete this coupon?")) return;
-    try {
-      const response = await fetch(`${BACKEND_URL}/admin/coupons/delete`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({ couponId })
-      });
-      const data = await response.json();
-      if (data.success) {
-        fetchCoupons();
-      } else {
-        alert(`❌ Failed to delete: ${data.error}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // Input Change Handler
-  const changeHandler = (e) => {
-    setProductDetails({ ...productDetails, [e.target.name]: e.target.value });
-  };
-
-  // Size Checkbox toggle
-  const sizeToggleHandler = (size) => {
-    setSelectedSizes((prev) => 
-      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
-    );
-  };
-
-  // Color Checkbox toggle
-  const colorToggleHandler = (color) => {
-    setSelectedColors((prev) => 
-      prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]
-    );
-  };
-
-  // Image Conversion helper to compress and resize to Base64
-  const handleImageConversion = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const max_size = 800; // Limit max resolution to 800px for optimal Mongo storage size
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > height) {
-            if (width > max_size) {
-              height *= max_size / width;
-              width = max_size;
-            }
-          } else {
-            if (height > max_size) {
-              width *= max_size / height;
-              height = max_size;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Compress to JPEG with 0.7 quality to get small sized Base64
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl);
-        };
-        img.onerror = (err) => reject(err);
-      };
-      reader.onerror = (err) => reject(err);
-    });
-  };
-
-  // Image Upload handler supporting files and direct camera capture
-  const imageHandler = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const base64Image = await handleImageConversion(file);
-        setImage(base64Image);
-      } catch (err) {
-        console.error("Error reading image file:", err);
-        alert("Failed to process the selected image. Please try another format.");
-      }
-    }
-  };
-
-  // Add Product Submit (Saves Base64 image directly to MongoDB Atlas for permanent backup)
-  const addProduct = async () => {
-    if (!productDetails.name || !productDetails.new_price || !productDetails.old_price || !image) {
-      alert("Please fill all details and upload a product image!");
-      return;
-    }
-
-    if (selectedSizes.length === 0) {
-      alert("Please select at least one available Size!");
-      return;
-    }
-
-    if (selectedColors.length === 0) {
-      alert("Please select at least one available Color!");
-      return;
-    }
-
-    console.log("Adding Product with Permanent Base64 Backup...", productDetails.name);
-    
-    const variants = selectedColors.map(color => ({
-      color,
-      stock: Number(colorStocks[color] || 0),
-      price: Number(productDetails.new_price)
-    }));
-
-    let product = { 
-      ...productDetails, 
-      sizes: selectedSizes, 
-      colors: selectedColors,
-      variants,
-      stockCount: variants.reduce((sum, v) => sum + v.stock, 0),
-      image: image // Stored natively as compressed Base64 data URI
-    };
-
-    try {
-      const addRes = await fetch(`${BACKEND_URL}/addproduct`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify(product),
-      });
-      const addData = await addRes.json();
-
-      if (addData.success) {
-        alert("🎉 Product successfully added and stored permanently inside MongoDB!");
-        // Reset Form
-        setProductDetails({
-          name: "",
-          category: "women",
-          new_price: "",
-          old_price: "",
-          stockCount: 100
-        });
-        setSelectedSizes(['S', 'M', 'L', 'XL']);
-        setSelectedColors(['Black', 'White']);
-        setImage(false);
-        fetchProducts();
-        setActiveTab("list");
-      } else {
-        alert("Failed to add product: " + addData.errors);
-      }
-    } catch (err) {
-      console.error("Save product database connection failure:", err);
-      alert("Failed to save product details to server database. Please make sure the backend is active.");
-    }
-  };
-
-  // Remove Product
-  const removeProduct = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/removeproduct`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'auth-token': `${localStorage.getItem('auth-token')}`
-          },
-          body: JSON.stringify({ id: id })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert("Product deleted successfully!");
-          fetchProducts();
-        } else {
-          alert("Failed to delete product: " + data.errors);
-        }
-      } catch (err) {
-        alert("Connection error occurred when deleting product.");
-      }
-    }
-  };
-
-  // Inline Variant Stock Incrementor/Decrementor (Admin row auditor)
-  const handleVariantStockAdjust = async (id, colorName, change) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/updatevariantstock`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({
-          id,
-          color: colorName,
-          change: Number(change)
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProducts(prev => prev.map(p => p.id === id ? data.product : p));
-      }
-    } catch (e) {
-      console.warn("⚠️ Error adjusting variant stock count:", e);
-    }
-  };
-
-  // Trigger editing form for a product
-  const startEditing = (prod) => {
-    setEditingProductId(prod.id);
-    
-    // Synthesize variants locally if they don't exist yet to make sure editing works
-    let initialVariants = prod.variants ? JSON.parse(JSON.stringify(prod.variants)) : [];
-    if (initialVariants.length === 0) {
-      const colors = prod.colors && prod.colors.length > 0 ? prod.colors : ['Black', 'White'];
-      const totalStock = prod.stockCount !== undefined ? prod.stockCount : 100;
-      const stockPerColor = Math.floor(totalStock / colors.length);
-      
-      initialVariants = colors.map((c, idx) => ({
-        color: c,
-        stock: idx === colors.length - 1 ? totalStock - (stockPerColor * (colors.length - 1)) : stockPerColor,
-        price: prod.new_price
-      }));
-    }
-
-    setEditForm({
-      name: prod.name,
-      new_price: prod.new_price,
-      old_price: prod.old_price,
-      stockCount: prod.stockCount || 100,
-      variants: initialVariants,
-      image: prod.image
-    });
-  };
-
-  // Inline Edit Save
-  const handleSaveEdit = async (id) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/updateproduct`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'auth-token': `${localStorage.getItem('auth-token')}`
-        },
-        body: JSON.stringify({
-          id,
-          name: editForm.name,
-          new_price: Number(editForm.new_price),
-          old_price: Number(editForm.old_price),
-          variants: editForm.variants,
-          image: editForm.image // Send Base64 image directly to MongoDB for permanent storage
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProducts(prev => prev.map(p => p.id === id ? data.product : p));
-        setEditingProductId(null);
-        alert("🎉 Product successfully updated and saved permanently inside MongoDB!");
-      } else {
-        alert("Failed to update product: " + data.error);
-      }
-    } catch (e) {
-      console.warn("⚠️ Failed to update product:", e);
-      alert("Failed to update product due to server connection issues. Please check if the backend server is running.");
-    }
-  };
-
-  // Toggle User Role (Admin / Customer)
-  const handleToggleRole = async (email, currentIsAdmin) => {
-    const nextRoleText = currentIsAdmin ? "Standard Customer" : "Admin Manager";
-    if (window.confirm(`Are you sure you want to change role for ${email} to ${nextRoleText}?`)) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/admin/updateuserrole`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'auth-token': `${localStorage.getItem('auth-token')}`
-          },
-          body: JSON.stringify({ email, isAdmin: !currentIsAdmin })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setUsers(prev => prev.map(u => u.email === email ? { ...u, isAdmin: !currentIsAdmin } : u));
-          alert("User role updated successfully!");
-        } else {
-          alert("Failed to update user role: " + data.error);
-        }
-      } catch (e) {
-        console.warn("⚠️ Failed to update user role on server:", e);
-        // Fallback for mock visual mode
-        setUsers(prev => prev.map(u => u.email === email ? { ...u, isAdmin: !currentIsAdmin } : u));
-      }
-    }
-  };
-
-  // Delete User Account
-  const handleDeleteUser = async (email) => {
-    if (window.confirm(`⚠️ WARNING: Are you sure you want to permanently delete the user account: ${email}? This cannot be undone.`)) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/admin/deleteuser`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'auth-token': `${localStorage.getItem('auth-token')}`
-          },
-          body: JSON.stringify({ email })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setUsers(prev => prev.filter(u => u.email !== email));
-          alert("User account deleted successfully!");
-        } else {
-          alert("Failed to delete user: " + data.error);
-        }
-      } catch (e) {
-        console.warn("⚠️ Failed to delete user:", e);
-        // Fallback for mock visual mode
-        setUsers(prev => prev.filter(u => u.email !== email));
-      }
-    }
-  };
-
-  // Normalize user carts data dynamically
-  const getNormalizedCartItems = (cartData) => {
-    if (!cartData || typeof cartData !== "object") return [];
-    const normalized = [];
-    Object.keys(cartData).forEach((key) => {
-      const value = cartData[key];
-      if (value === undefined || value === null) return;
-      
-      const parts = key.split("-");
-      const keyId = Number(parts[0]);
-      if (isNaN(keyId)) return;
-      
-      let size = parts[1] || "M";
-      let color = parts[2] || "White";
-      let quantity = 0;
-      let id = keyId;
-
-      if (typeof value === "object") {
-        quantity = Number(value.quantity) || 0;
-        if (value.id !== undefined) id = Number(value.id);
-        if (value.size !== undefined) size = value.size;
-        if (value.color !== undefined) color = value.color;
-      } else {
-        quantity = Number(value) || 0;
-      }
-
-      if (quantity > 0) {
-        normalized.push({
-          id,
-          size,
-          color,
-          quantity
-        });
-      }
-    });
-    return normalized;
-  };
-
-  // Calculate overall quantity in cart
-  const calculateCartItemsCount = (cartData) => {
-    const items = getNormalizedCartItems(cartData);
-    return items.reduce((acc, curr) => acc + curr.quantity, 0);
-  };
-
-  // Computed metrics for dashboard cards
-  const totalProducts = products.length;
-  const totalUsers = users.length;
-  const totalStock = products.reduce((acc, curr) => acc + (Number(curr.stockCount) || 100), 0);
-  const catalogValue = products.reduce((acc, curr) => acc + ((Number(curr.new_price) || 0) * (Number(curr.stockCount) || 100)), 0);
-
-  // Category distributions for interactive bar graphs
-  const countCategory = (cat) => products.filter(p => p.category === cat).length;
-  const catWomen = countCategory("women");
-  const catMen = countCategory("men");
-  const catKids = countCategory("kid") + countCategory("kids");
-  const catMax = Math.max(catWomen, catMen, catKids, 1);
-
-  // Live filter lists based on search & category queries
-  const filteredProducts = products.filter((prod) => {
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || prod.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  if (loading) {
-    return (
-      <div className="admin-loading">
-        <div className="admin-spinner"></div>
-        <p>Verifying administrative credentials...</p>
-      </div>
-    );
+  // Loader UI
+  if (authLoading) {
+    return <AdminLoadingScreen />;
   }
 
+  // Verification Failure UI
   if (!isAdmin) {
-    return (
-      <div className="admin-access-denied">
-        <div className="denied-box">
-          <div className="denied-icon">🔒</div>
-          <h2>Access Unauthorized</h2>
-          <p>This console contains administrative credentials and metrics. Please sign in using an authorized Admin Manager profile.</p>
-          <button onClick={() => window.location.replace('/login')}>Proceed to Sign In</button>
-        </div>
-      </div>
-    );
+    return <AdminAccessDenied />;
   }
 
   return (
-    <div className="admin-panel">
-      {/* SIDE NAVIGATION PANEL */}
-      <div className="admin-sidebar">
-        <div className="sidebar-header">
-          <LayoutDashboard className="sidebar-logo-icon-svg" size={24} style={{ color: 'var(--accent-color)' }} />
-          <h3>SHOPS ADMIN</h3>
-        </div>
+    <div className="admin-panel animate-fade-in" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+      
+      {/* 1. Sidebar */}
+      <AdminSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
+        productsCount={products.length}
+        usersCount={users.length}
+        ordersCount={orders.length}
+        couponsCount={coupons.length}
+      />
+
+      {/* Primary Content Viewport */}
+      <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         
-        <nav className="sidebar-menu">
-          <button 
-            className={activeTab === "dashboard" ? "active" : ""} 
-            onClick={() => setActiveTab("dashboard")}
-          >
-            <span className="menu-icon"><LayoutDashboard size={18} /></span> Dashboard
-          </button>
-          <button 
-            className={activeTab === "list" ? "active" : ""} 
-            onClick={() => setActiveTab("list")}
-          >
-            <span className="menu-icon"><ShoppingBag size={18} /></span> Catalog ({products.length})
-          </button>
-          <button 
-            className={activeTab === "add" ? "active" : ""} 
-            onClick={() => setActiveTab("add")}
-          >
-            <span className="menu-icon"><PlusCircle size={18} /></span> Add Product
-          </button>
-          <button 
-            className={activeTab === "users" ? "active" : ""} 
-            onClick={() => { setActiveTab("users"); fetchUsers(); }}
-          >
-            <span className="menu-icon"><Users size={18} /></span> Users list ({users.length})
-          </button>
-          <button 
-            className={activeTab === "orders" ? "active" : ""} 
-            onClick={() => { setActiveTab("orders"); fetchOrders(); }}
-          >
-            <span className="menu-icon"><ShoppingCart size={18} /></span> Orders ({orders.length})
-          </button>
-          <button 
-            className={activeTab === "coupons" ? "active" : ""} 
-            onClick={() => { setActiveTab("coupons"); fetchCoupons(); }}
-          >
-            <span className="menu-icon"><Tag size={18} /></span> Coupons & Offers ({coupons.length})
-          </button>
-        </nav>
-      </div>
+        {/* 2. Topbar */}
+        <AdminTopbar adminUser={adminUser} />
 
-      {/* PRIMARY CONTROLS VIEWPORT */}
-      <div className="admin-content">
-        
-        {/* TAB 0: ANALYTICS DASHBOARD */}
-        {activeTab === "dashboard" && (
-          <div className="dashboard-section animate-fade-in">
-            <h2>System Performance Metrics</h2>
-            
-            {/* STATS METRIC GRID */}
-            <div className="metrics-grid">
-              <div className="metric-card val">
-                <div className="metric-details">
-                  <span className="metric-title">Catalog Asset Value</span>
-                  <span className="metric-value">${catalogValue.toLocaleString('en-US')}</span>
-                </div>
-                <span className="metric-icon">💰</span>
-              </div>
-              <div className="metric-card prod">
-                <div className="metric-details">
-                  <span className="metric-title">Active Products Listing</span>
-                  <span className="metric-value">{totalProducts} Items</span>
-                </div>
-                <span className="metric-icon">👕</span>
-              </div>
-              <div className="metric-card users">
-                <div className="metric-details">
-                  <span className="metric-title">Registered Accounts</span>
-                  <span className="metric-value">{totalUsers} Users</span>
-                </div>
-                <span className="metric-icon">👥</span>
-              </div>
-              <div className="metric-card stock">
-                <div className="metric-details">
-                  <span className="metric-title">Store Stocks Remaining</span>
-                  <span className="metric-value">{totalStock} Units</span>
-                </div>
-                <span className="metric-icon">📦</span>
-              </div>
+        {/* 3. Tab Body Panel */}
+        <main className="admin-content" style={{ flexGrow: 1, padding: '32px' }}>
+          
+          {fetchingData && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 18px',
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              marginBottom: '24px',
+              fontSize: '0.85rem',
+              color: 'var(--text-secondary)'
+            }}>
+              <span className="admin-spinner" style={{ borderLeftColor: 'var(--accent-color)', width: '16px', height: '16px' }}></span>
+              <span>Syncing database collections...</span>
             </div>
+          )}
 
-            {/* ANALYTICS CHARTS SPLIT */}
-            <div className="charts-split">
-              <div className="chart-card">
-                <h3>Product Category Distribution</h3>
-                <div className="bar-graph-container">
-                  <div className="graph-bar-row">
-                    <span className="bar-label">Women ({catWomen})</span>
-                    <div className="bar-wrapper">
-                      <div className="bar-fill women" style={{ width: `${(catWomen / catMax) * 100}%` }}></div>
-                    </div>
-                    <span className="bar-percentage">{Math.round((catWomen / (totalProducts || 1)) * 100)}%</span>
-                  </div>
-                  <div className="graph-bar-row">
-                    <span className="bar-label">Men ({catMen})</span>
-                    <div className="bar-wrapper">
-                      <div className="bar-fill men" style={{ width: `${(catMen / catMax) * 100}%` }}></div>
-                    </div>
-                    <span className="bar-percentage">{Math.round((catMen / (totalProducts || 1)) * 100)}%</span>
-                  </div>
-                  <div className="graph-bar-row">
-                    <span className="bar-label">Kids ({catKids})</span>
-                    <div className="bar-wrapper">
-                      <div className="bar-fill kids" style={{ width: `${(catKids / catMax) * 100}%` }}></div>
-                    </div>
-                    <span className="bar-percentage">{Math.round((catKids / (totalProducts || 1)) * 100)}%</span>
-                  </div>
-                </div>
+          {fetchError && !fetchingData && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              padding: '24px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '16px',
+              marginBottom: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ef4444' }}>
+                <AlertCircle size={20} />
+                <strong style={{ fontSize: '0.95rem' }}>Database Fetch Error</strong>
               </div>
-              
-              <div className="chart-card helpers">
-                <h3>Administrative Shortcuts</h3>
-                <div className="shortcuts-row">
-                  <button className="shortcut-btn" onClick={() => setActiveTab("add")}>
-                    🚀 Launch New Product
-                  </button>
-                  <button className="shortcut-btn" onClick={() => setActiveTab("list")}>
-                    🔍 Audit Catalog Stock
-                  </button>
-                  <button className="shortcut-btn" onClick={() => { setActiveTab("users"); fetchUsers(); }}>
-                    ⚙️ Resolve User Issues
-                  </button>
-                  <button className="shortcut-btn" onClick={() => { setActiveTab("coupons"); fetchCoupons(); }}>
-                    🏷️ Manage Coupons
-                  </button>
-                </div>
-                <p className="admin-console-note">
-                  💡 <strong>Tip:</strong> Double-click prices inside the Catalog tab to adjust pricing dynamically, or click details on user profiles to investigate active shopping cart items.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 1: SEARCHABLE AND EDITABLE PRODUCT CATALOG */}
-        {activeTab === "list" && (
-          <div className="admin-list-section animate-fade-in">
-            <div className="list-header-row">
-              <h2>Product Catalog Audit</h2>
-              
-              {/* INTERACTIVE CONTROLS BAR */}
-              <div className="audit-controls">
-                <input 
-                  type="text" 
-                  className="audit-search-input" 
-                  placeholder="Search catalog titles..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <select 
-                  className="audit-filter-select"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  <option value="women">Women</option>
-                  <option value="men">Men</option>
-                  <option value="kid">Kids</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Title & Parameters</th>
-                    <th>Category</th>
-                    <th>Stock Control (Inline)</th>
-                    <th>New Price</th>
-                    <th>Old Price</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((prod) => (
-                    <tr key={prod.id} className={editingProductId === prod.id ? "row-editing" : ""}>
-                      {/* Thumbnail */}
-                      <td>
-                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                          <img 
-                            src={editingProductId === prod.id && editForm.image ? editForm.image : prod.image} 
-                            alt={prod.name} 
-                            className="admin-prod-thumb" 
-                            style={{ width: '55px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} 
-                          />
-                          {editingProductId === prod.id && (
-                            <button 
-                              type="button" 
-                              onClick={() => document.getElementById(`row-image-input-${prod.id}`).click()}
-                              style={{ 
-                                padding: '3px 6px', 
-                                backgroundColor: 'var(--accent-color)', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                fontSize: '0.65rem', 
-                                fontWeight: '700', 
-                                cursor: 'pointer' 
-                              }}
-                            >
-                              📸 Change
-                            </button>
-                          )}
-                          <input 
-                            type="file" 
-                            id={`row-image-input-${prod.id}`}
-                            accept="image/*" 
-                            onChange={async (e) => {
-                              const file = e.target.files[0];
-                              if (file) {
-                                try {
-                                  const base64 = await handleImageConversion(file);
-                                  setEditForm(prev => ({ ...prev, image: base64 }));
-                                } catch (err) {
-                                  alert("Failed to process image.");
-                                }
-                              }
-                            }}
-                            style={{ display: 'none' }}
-                          />
-                        </div>
-                      </td>
-                      
-                      {/* Name / Colors & Sizes */}
-                      <td className="prod-title-cell">
-                        {editingProductId === prod.id ? (
-                          <input 
-                            type="text" 
-                            className="inline-edit-input wide" 
-                            value={editForm.name} 
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                          />
-                        ) : (
-                          <>
-                            <span className="prod-name-bold">{prod.name}</span>
-                            <div className="prod-params-meta">
-                              <span>📏 {Array.isArray(prod.sizes) ? prod.sizes.join(', ') : 'S, M, L'}</span>
-                              <span>🎨 {Array.isArray(prod.colors) ? prod.colors.join(', ') : 'Multicolor'}</span>
-                            </div>
-                          </>
-                        )}
-                      </td>
-                      
-                      {/* Category */}
-                      <td>
-                        <span className={`cat-tag ${prod.category}`}>{prod.category}</span>
-                      </td>
-                      
-                      {/* Inline Stock Controls */}
-                      <td>
-                        {editingProductId === prod.id ? (
-                          <div className="inline-variant-edit-list">
-                            {editForm.variants && editForm.variants.map((v, idx) => (
-                              <div key={idx} className="inline-variant-edit-row">
-                                <span className="mini-color-circle" style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid #ddd', display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }}></span>
-                                <span className="variant-label-text">{v.color}:</span>
-                                <input 
-                                  type="number" 
-                                  className="inline-edit-input narrow mini-variant-input"
-                                  value={v.stock}
-                                  onChange={(e) => {
-                                    const updatedVariants = [...editForm.variants];
-                                    updatedVariants[idx].stock = Number(e.target.value);
-                                    setEditForm({ ...editForm, variants: updatedVariants });
-                                  }}
-                                  min="0"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="variant-auditor-panel">
-                            {(prod.variants && prod.variants.length > 0 ? prod.variants : (prod.colors ? prod.colors.map(c => ({ color: c, stock: Math.floor((prod.stockCount || 100) / prod.colors.length), price: prod.new_price })) : [])).map((v, vidx) => (
-                              <div key={vidx} className="variant-auditor-row">
-                                <span className="variant-color-badge-small" style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid #ccc', display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', marginRight: '6px' }} title={v.color}></span>
-                                <span className="variant-color-name-small">{v.color}:</span>
-                                <div className="inline-stock-control-panel mini">
-                                  <button 
-                                    className="adjust-stock-btn dec mini" 
-                                    onClick={() => handleVariantStockAdjust(prod.id, v.color, -5)}
-                                  >
-                                    -
-                                  </button>
-                                  <span className={`stock-count-badge mini ${Number(v.stock) > 0 ? 'in' : 'out'}`}>
-                                    {v.stock}
-                                  </span>
-                                  <button 
-                                    className="adjust-stock-btn inc mini" 
-                                    onClick={() => handleVariantStockAdjust(prod.id, v.color, 5)}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                            <div className="total-stock-count-indicator">
-                              Total: <strong>{prod.stockCount} units</strong>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-                      
-                      {/* New Price */}
-                      <td className="price-cell">
-                        {editingProductId === prod.id ? (
-                          <input 
-                            type="number" 
-                            className="inline-edit-input narrow"
-                            value={editForm.new_price} 
-                            onChange={(e) => setEditForm({ ...editForm, new_price: e.target.value })}
-                          />
-                        ) : (
-                          <span className="val-text">${prod.new_price}</span>
-                        )}
-                      </td>
-                      
-                      {/* Old Price */}
-                      <td className="price-cell old">
-                        {editingProductId === prod.id ? (
-                          <input 
-                            type="number" 
-                            className="inline-edit-input narrow"
-                            value={editForm.old_price} 
-                            onChange={(e) => setEditForm({ ...editForm, old_price: e.target.value })}
-                          />
-                        ) : (
-                          <span className="val-text">${prod.old_price}</span>
-                        )}
-                      </td>
-                      
-                      {/* Actions */}
-                      <td>
-                        <div className="action-buttons-wrapper">
-                          {editingProductId === prod.id ? (
-                            <>
-                              <motion.button 
-                                className="save-edit-btn" 
-                                onClick={() => handleSaveEdit(prod.id)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Save size={14} style={{ marginRight: '4px' }} /> Save
-                              </motion.button>
-                              <motion.button 
-                                className="cancel-edit-btn" 
-                                onClick={() => setEditingProductId(null)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <X size={14} style={{ marginRight: '4px' }} /> Cancel
-                              </motion.button>
-                            </>
-                          ) : (
-                            <>
-                              <motion.button 
-                                className="admin-edit-btn" 
-                                onClick={() => startEditing(prod)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Pencil size={14} style={{ marginRight: '4px' }} /> Edit
-                              </motion.button>
-                              <motion.button 
-                                className="admin-delete-btn" 
-                                onClick={() => removeProduct(prod.id)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Trash2 size={14} style={{ marginRight: '4px' }} /> Delete
-                              </motion.button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredProducts.length === 0 && (
-                    <tr>
-                      <td colSpan="7" className="no-products">No products found matching the filters.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: ADD PRODUCT VIEW */}
-        {activeTab === "add" && (
-          <div className="admin-add-section animate-fade-in">
-            <h2>Launch New Product Listing</h2>
-            <div className="admin-form">
-              <div className="form-group">
-                <label>Product Title / Descriptive Name</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  value={productDetails.name} 
-                  onChange={changeHandler} 
-                  placeholder="e.g. Premium Slim Fit Cotton Denim Shirt"
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Audience Target</label>
-                  <select name="category" value={productDetails.category} onChange={changeHandler}>
-                    <option value="women">Women Fashion</option>
-                    <option value="men">Men Outfitting</option>
-                    <option value="kid">Kids Collections</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Promo Price ($)</label>
-                  <input 
-                    type="number" 
-                    name="new_price" 
-                    value={productDetails.new_price} 
-                    onChange={changeHandler} 
-                    placeholder="e.g. 1499"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>MSRP Original ($)</label>
-                  <input 
-                    type="number" 
-                    name="old_price" 
-                    value={productDetails.old_price} 
-                    onChange={changeHandler} 
-                    placeholder="e.g. 2999"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Total Inventory (Auto-calc)</label>
-                  <input 
-                    type="number" 
-                    name="stockCount" 
-                    value={selectedColors.reduce((sum, c) => sum + (colorStocks[c] || 0), 0)} 
-                    disabled
-                    placeholder="Auto-calculated"
-                    style={{ backgroundColor: 'var(--border-color)', opacity: 0.8, cursor: 'not-allowed' }}
-                  />
-                </div>
-              </div>
-
-              {/* SIZES MULTI-SELECT CHIPS */}
-              <div className="form-group">
-                <label>Inventory Sizing Available (Select multiple)</label>
-                <div className="admin-checkbox-row">
-                  {AVAILABLE_SIZES.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={`admin-toggle-chip ${selectedSizes.includes(size) ? 'active' : ''}`}
-                      onClick={() => sizeToggleHandler(size)}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* COLORS MULTI-SELECT CHIPS */}
-              <div className="form-group">
-                <label>Inventory Colors Available (Select multiple)</label>
-                <div className="admin-checkbox-row">
-                  {AVAILABLE_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={`admin-toggle-chip ${selectedColors.includes(color) ? 'active' : ''}`}
-                      onClick={() => colorToggleHandler(color)}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* DYNAMIC VARIANT STOCK DETAILS */}
-              {selectedColors.length > 0 && (
-                <div className="form-group variant-stocks-form-group" style={{ backgroundColor: 'var(--bg-secondary)', padding: '15px', borderRadius: 'var(--border-radius-sm)', border: '1px dashed var(--border-color)', marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-primary)' }}>Define Variant Stocks per Color Selected</label>
-                  <div className="variant-stocks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
-                    {selectedColors.map((color) => (
-                      <div key={color} className="variant-stock-input-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', backgroundColor: 'var(--card-bg)', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="variant-color-badge" style={{ backgroundColor: color.toLowerCase(), border: '1px solid #ccc', display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                          <span className="variant-color-label" style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)' }}>{color} Stock:</span>
-                        </div>
-                        <input 
-                          type="number"
-                          className="variant-stock-field inline-edit-input"
-                          style={{ width: '100%', padding: '6px 8px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
-                          value={colorStocks[color] || 0}
-                          onChange={(e) => {
-                            setColorStocks({
-                              ...colorStocks,
-                              [color]: Math.max(0, Number(e.target.value))
-                            });
-                          }}
-                          placeholder="Stock count"
-                          min="0"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="form-group">
-                <label>Product Display Image</label>
-                <div className="image-upload-wrapper">
-                  <label className="image-upload-label" style={{ border: '2px dashed var(--border-color)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', backgroundColor: 'var(--bg-primary)', cursor: 'default' }}>
-                    {image ? (
-                      <div className="image-preview-container" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <img src={image} alt="Preview" className="image-preview" style={{ maxWidth: '100%', maxHeight: '220px', borderRadius: '8px', objectFit: 'contain', boxShadow: 'var(--shadow-sm)' }} />
-                        <button 
-                          type="button" 
-                          className="remove-image-btn" 
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImage(false); }}
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            background: '#ef4444',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '30px',
-                            height: '30px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            transition: 'var(--transition-smooth)'
-                          }}
-                          title="Remove Image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="upload-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', width: '100%' }}>
-                        <Plus size={36} style={{ color: 'var(--accent-color)', marginBottom: '4px' }} />
-                        <p style={{ margin: 0, fontWeight: '700', fontSize: '1rem', color: 'var(--text-primary)' }}>Select Product Display Image</p>
-                        
-                        <div className="upload-options-buttons" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                          <button 
-                            type="button" 
-                            className="admin-upload-option-btn files-btn"
-                            onClick={() => document.getElementById('file-input').click()}
-                            style={{
-                              padding: '10px 18px',
-                              backgroundColor: 'var(--bg-tertiary)',
-                              color: 'var(--text-primary)',
-                              border: '1px solid var(--border-color)',
-                              borderRadius: '8px',
-                              fontSize: '0.85rem',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'var(--transition-smooth)'
-                            }}
-                          >
-                            📁 Choose File
-                          </button>
-                          <button 
-                            type="button" 
-                            className="admin-upload-option-btn camera-btn"
-                            onClick={() => document.getElementById('camera-input').click()}
-                            style={{
-                              padding: '10px 18px',
-                              backgroundColor: 'var(--accent-color)',
-                              color: '#ffffff',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '0.85rem',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              boxShadow: '0 2px 8px rgba(255, 65, 65, 0.25)',
-                              transition: 'var(--transition-smooth)'
-                            }}
-                          >
-                            📷 Take Photo
-                          </button>
-                        </div>
-                        <span className="upload-hint" style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '6px' }}>PNG, JPG or WEBP formats supported</span>
-                      </div>
-                    )}
-                  </label>
-                  <input 
-                    type="file" 
-                    id="file-input" 
-                    accept="image/*" 
-                    onChange={imageHandler} 
-                    style={{ display: 'none' }}
-                  />
-                  <input 
-                    type="file" 
-                    id="camera-input" 
-                    accept="image/*" 
-                    capture="environment"
-                    onChange={imageHandler} 
-                    style={{ display: 'none' }}
-                  />
-                </div>
-              </div>
-
-              <button className="admin-submit-btn" onClick={addProduct}>
-                Create & Publish Product Listing
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#7f1d1d', lineHeight: '1.5' }}>
+                {fetchError}. If you are running locally, please ensure that your Node Express backend server is up and listening on port 4000.
+              </p>
+              <button
+                onClick={fetchAllAdminData}
+                style={{
+                  alignSelf: 'flex-start',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--border-radius-full)',
+                  fontSize: '0.8rem',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                <RefreshCw size={12} />
+                Retry connection
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TAB 3: USER ACCOUNTS & COLLAPSIBLE CARTS EXPLORER */}
-        {activeTab === "users" && (
-          <div className="admin-users-section animate-fade-in">
-            <h2>Accounts Directory & Active Carts</h2>
-            <p className="admin-helper-note">
-              💡 <strong>Carts Audit Mode:</strong> Click any user profile row in the directory below to expand their details and view active items inside their shopping carts. You can adjust administrative roles or terminate accounts as needed.
-            </p>
-            
-            <div className="table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>User Profile Name</th>
-                    <th>Email Address</th>
-                    <th>Administrative Role</th>
-                    <th>Cart Contents</th>
-                    <th>Controls</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u, i) => {
-                    const isExpanded = expandedUser === u.email;
-                    const normalizedItems = getNormalizedCartItems(u.cartData);
-                    const totalQty = calculateCartItemsCount(u.cartData);
+          {/* Render Active Tab */}
+          {activeTab === "dashboard" && (
+            <AdminDashboardTab 
+              products={products}
+              users={users}
+              orders={orders}
+              setActiveTab={setActiveTab}
+              recentActions={recentActions}
+            />
+          )}
 
-                    return (
-                      <React.Fragment key={i}>
-                        {/* USER MAIN ROW */}
-                        <tr 
-                          className={`user-main-row ${isExpanded ? "active-expanded" : ""} ${u.isAdmin ? "admin-account-tr" : ""}`}
-                          onClick={() => setExpandedUser(isExpanded ? null : u.email)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td className="user-name-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="expand-indicator" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                            </span>
-                            <User size={16} style={{ color: 'var(--text-secondary)' }} />
-                            <span>{u.name}</span>
-                          </td>
-                          <td className="user-email-cell">{u.email}</td>
-                          <td>
-                            <span className={`role-badge ${u.isAdmin ? 'admin' : 'customer'}`}>
-                              {u.isAdmin ? "ADMIN PRIVILEGES" : "STANDARD CUSTOMER"}
-                            </span>
-                          </td>
-                          <td className="user-cart-count-cell">
-                            <span className="user-items-added" style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
-                              <ShoppingCart size={14} style={{ color: 'var(--accent-color)' }} /> 
-                              <span>{totalQty} {totalQty === 1 ? 'Item' : 'Items'} Added</span>
-                            </span>
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="action-buttons-wrapper">
-                              <motion.button 
-                                className="user-role-toggle-btn"
-                                onClick={() => handleToggleRole(u.email, u.isAdmin)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Settings size={12} style={{ marginRight: '4px' }} /> Flip Role
-                              </motion.button>
-                              <motion.button 
-                                className="user-delete-btn"
-                                onClick={() => handleDeleteUser(u.email)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Trash2 size={12} style={{ marginRight: '4px' }} /> Terminate
-                              </motion.button>
-                            </div>
-                          </td>
-                        </tr>
+          {activeTab === "list" && (
+            <AdminCatalogTab 
+              products={products}
+              onRefreshProducts={fetchAllAdminData}
+              addToast={addToast}
+              triggerConfirm={triggerConfirm}
+              logAction={logAction}
+            />
+          )}
 
-                        {/* COLLAPSIBLE USER CART DETAIL DRAWER */}
-                        {isExpanded && (
-                          <tr className="user-detail-drawer-row">
-                            <td colSpan="5" className="drawer-container-td">
-                              <div className="user-drawer-card animate-slide-down">
-                                <h4>🛒 Active Basket Audit for {u.name}</h4>
-                                {normalizedItems.length === 0 ? (
-                                  <p className="empty-drawer-note">No items currently stored inside this user's shopping basket.</p>
-                                ) : (
-                                  <div className="drawer-cart-list">
-                                    {normalizedItems.map((cartItem, idx) => {
-                                      const prodDetails = products.find(p => p.id === cartItem.id);
-                                      return (
-                                        <div key={idx} className="drawer-cart-item-row">
-                                          {prodDetails ? (
-                                            <>
-                                              <img src={prodDetails.image} alt={prodDetails.name} className="drawer-prod-thumb" />
-                                              <div className="drawer-prod-info">
-                                                <span className="item-title">{prodDetails.name}</span>
-                                                <div className="item-specs">
-                                                  <span>Size: <strong>{cartItem.size}</strong></span>
-                                                  <span>Color: <strong>{cartItem.color}</strong></span>
-                                                  <span>Qty: <strong>{cartItem.quantity}</strong></span>
-                                                  <span>Unit Price: <strong>${prodDetails.new_price}</strong></span>
-                                                </div>
-                                              </div>
-                                              <div className="drawer-item-total">
-                                                <span>Total: <strong>${prodDetails.new_price * cartItem.quantity}</strong></span>
-                                              </div>
-                                            </>
-                                          ) : (
-                                            <div className="drawer-corrupted-item">
-                                              <span>⚠️ Legacy Product ID #{cartItem.id} | Size: {cartItem.size} | Color: {cartItem.color} | Qty: {cartItem.quantity}</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                  {users.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="no-products">No registered users found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+          {activeTab === "add" && (
+            <AdminAddProductTab 
+              onProductAdded={() => {
+                fetchAllAdminData();
+                setActiveTab("list");
+              }}
+              addToast={addToast}
+              logAction={logAction}
+            />
+          )}
 
-        {/* TAB 4: ORDERS TRACKING */}
-        {activeTab === "orders" && (
-          <div className="admin-orders-section animate-fade-in">
-            <h2>Order Tracking & Management</h2>
-            <p className="admin-helper-note">
-              💡 <strong>Order Management:</strong> View and track customer orders, update delivery status, and inspect items purchased. Click on an order row to view full address details and purchased item lists.
-            </p>
+          {activeTab === "users" && (
+            <AdminUsersTab 
+              users={users}
+              products={products}
+              onRefreshUsers={fetchAllAdminData}
+              addToast={addToast}
+              triggerConfirm={triggerConfirm}
+              logAction={logAction}
+            />
+          )}
 
-            <div className="table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name & Email</th>
-                    <th>Date</th>
-                    <th>Total Amount</th>
-                    <th>Payment Status</th>
-                    <th>Delivery Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => {
-                    const isExpanded = expandedOrder && expandedOrder._id === o._id;
-                    const orderDate = new Date(o.date).toLocaleDateString('en-IN', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
+          {activeTab === "orders" && (
+            <AdminOrdersTab 
+              orders={orders}
+              products={products}
+              onRefreshOrders={fetchAllAdminData}
+              addToast={addToast}
+              logAction={logAction}
+            />
+          )}
 
-                    return (
-                      <React.Fragment key={o._id}>
-                        {/* ORDER ROW */}
-                        <tr 
-                          className={`order-main-row ${isExpanded ? "active-expanded" : ""}`}
-                          onClick={() => setExpandedOrder(isExpanded ? null : o)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td className="order-id-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="expand-indicator">
-                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                            </span>
-                            <strong>{o._id}</strong>
-                          </td>
-                          <td>
-                            <div className="user-info-stack">
-                              <span className="prod-name-bold">{o.userName || o.address?.fullName}</span>
-                              <span className="prod-params-meta">{o.userEmail}</span>
-                            </div>
-                          </td>
-                          <td>{orderDate}</td>
-                          <td className="price-cell">${o.amount}</td>
-                          <td>
-                            <span className={`payment-status-badge ${o.payment ? 'paid' : 'unpaid'}`}>
-                              {o.payment ? "PAID" : "UNPAID"}
-                            </span>
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <select
-                              className="order-status-select"
-                              value={o.status}
-                              onChange={(e) => updateOrderStatus(o._id, e.target.value)}
-                            >
-                              <option value="Pending">Pending</option>
-                              <option value="Processing">Processing</option>
-                              <option value="Shipped">Shipped</option>
-                              <option value="Delivered">Delivered</option>
-                            </select>
-                          </td>
-                        </tr>
-
-                        {/* ORDER DETAIL DRAWER */}
-                        {isExpanded && (
-                          <tr className="order-detail-drawer-row">
-                            <td colSpan="6" className="drawer-container-td">
-                              <div className="user-drawer-card animate-slide-down">
-                                <div className="order-drawer-grid">
-                                  {/* Shipping Address Column */}
-                                  <div className="drawer-address-col">
-                                    <h4>📍 Shipping Destination</h4>
-                                    <div className="address-card">
-                                      <p><strong>Name:</strong> {o.address?.fullName}</p>
-                                      <p><strong>Street:</strong> {o.address?.addressLine}</p>
-                                      <p><strong>City/State:</strong> {o.address?.city}, {o.address?.state} - {o.address?.postalCode}</p>
-                                      <p><strong>Phone:</strong> {o.address?.phone}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* Items Purchased Column */}
-                                  <div className="drawer-items-col">
-                                    <h4>📦 Purchased Items</h4>
-                                    <div className="drawer-cart-list">
-                                      {o.items.map((item, idx) => {
-                                        const prodDetails = products.find(p => p.id === item.productId);
-                                        return (
-                                          <div key={idx} className="drawer-cart-item-row">
-                                            <img 
-                                              src={prodDetails?.image || item.image || "https://placehold.co/100x120?text=Product"} 
-                                              alt={item.name} 
-                                              className="drawer-prod-thumb" 
-                                            />
-                                            <div className="drawer-prod-info">
-                                              <span className="item-title">{item.name}</span>
-                                              <div className="item-specs">
-                                                <span>Size: <strong>{item.size}</strong></span>
-                                                <span>Color: <strong>{item.color}</strong></span>
-                                                <span>Qty: <strong>{item.quantity}</strong></span>
-                                                <span>Unit Price: <strong>${item.price}</strong></span>
-                                              </div>
-                                            </div>
-                                            <div className="drawer-item-total">
-                                              <span>Total: <strong>${item.price * item.quantity}</strong></span>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                    {(() => {
-                                      const subtotal = o.items.reduce((acc, cur) => acc + (cur.price * cur.quantity), 0);
-                                      const discount = subtotal - o.amount;
-                                      return (
-                                        <div className="drawer-order-totals" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                            <span>Subtotal:</span>
-                                            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>${subtotal}</span>
-                                          </div>
-                                          {discount > 0 && (
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#22c55e', fontWeight: 700, marginBottom: '8px' }}>
-                                              <span>Coupon Discount ({o.couponCode || 'Promo'}):</span>
-                                              <span>−${discount}</span>
-                                            </div>
-                                          )}
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                                            <span>Total Paid:</span>
-                                            <span style={{ color: 'var(--accent-color)' }}>${o.amount}</span>
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                  {orders.length === 0 && (
-                    <tr>
-                      <td colSpan="6" className="no-products">No orders found in the database.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: COUPON & OFFERS MANAGER */}
-        {activeTab === "coupons" && (
-          <div className="coupon-manager-section animate-fade-in">
-            <h2>Offers & Coupon Codes</h2>
-
-            <div className="coupon-manager-grid">
-              {/* CREATE COUPON CARD */}
-              <div className="coupon-create-card">
-                <h3>Create New Coupon</h3>
-                <form onSubmit={handleCreateCoupon} className="coupon-form">
-                  <div className="coupon-form-group">
-                    <label>Coupon Code</label>
-                    <input 
-                      type="text" 
-                      name="code" 
-                      value={couponDetails.code} 
-                      onChange={handleCouponChange} 
-                      placeholder="e.g. SAVE20" 
-                      className="coupon-form-input code-input"
-                      required 
-                    />
-                  </div>
-
-                  <div className="coupon-form-row">
-                    <div className="coupon-form-group">
-                      <label>Discount Type</label>
-                      <select 
-                        name="discountType" 
-                        value={couponDetails.discountType} 
-                        onChange={handleCouponChange}
-                        className="coupon-form-select"
-                      >
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="flat">Flat ($)</option>
-                      </select>
-                    </div>
-
-                    <div className="coupon-form-group">
-                      <label>Value</label>
-                      <input 
-                        type="number" 
-                        name="discountValue" 
-                        value={couponDetails.discountValue} 
-                        onChange={handleCouponChange} 
-                        placeholder={couponDetails.discountType === 'percentage' ? "20" : "150"} 
-                        className="coupon-form-input"
-                        min="1"
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="coupon-form-row">
-                    <div className="coupon-form-group">
-                      <label>Min Order ($)</label>
-                      <input 
-                        type="number" 
-                        name="minOrderAmount" 
-                        value={couponDetails.minOrderAmount} 
-                        onChange={handleCouponChange} 
-                        placeholder="0" 
-                        className="coupon-form-input"
-                        min="0"
-                      />
-                    </div>
-
-                    <div className="coupon-form-group">
-                      <label>Max Uses</label>
-                      <input 
-                        type="number" 
-                        name="maxUses" 
-                        value={couponDetails.maxUses} 
-                        onChange={handleCouponChange} 
-                        placeholder="0 (unlimited)" 
-                        className="coupon-form-input"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="coupon-form-group">
-                    <label>Expiry Date</label>
-                    <input 
-                      type="date" 
-                      name="expiresAt" 
-                      value={couponDetails.expiresAt} 
-                      onChange={handleCouponChange} 
-                      className="coupon-form-input"
-                    />
-                  </div>
-
-                  <button type="submit" className="coupon-submit-btn">
-                    Create Coupon Code
-                  </button>
-                </form>
-              </div>
-
-              {/* LIST OF COUPONS */}
-              <div className="coupon-list-card">
-                <h3>Active Coupon Listings</h3>
-                <div className="coupons-scroll-container">
-                  {coupons.map((c) => {
-                    const isExpired = c.expiresAt && new Date() > new Date(c.expiresAt);
-                    return (
-                      <div key={c._id} className={`coupon-item-card ${!c.isActive || isExpired ? 'inactive' : ''}`}>
-                        <div className="coupon-card-header">
-                          <span className="coupon-badge-code">{c.code}</span>
-                          <div className="coupon-card-actions">
-                            <button 
-                              type="button" 
-                              onClick={() => handleToggleCoupon(c._id)} 
-                              className={`coupon-status-btn ${c.isActive ? 'btn-deactivate' : 'btn-activate'}`}
-                              title={c.isActive ? "Deactivate Coupon" : "Activate Coupon"}
-                            >
-                              {c.isActive ? "Deactivate" : "Activate"}
-                            </button>
-                            <button 
-                              type="button" 
-                              onClick={() => handleDeleteCoupon(c._id)} 
-                              className="coupon-delete-btn"
-                              title="Delete Coupon"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="coupon-card-body">
-                          <p>
-                            Discount: <strong>{c.discountType === 'percentage' ? `${c.discountValue}%` : `$${c.discountValue}`} Off</strong>
-                          </p>
-                          {c.minOrderAmount > 0 && (
-                            <p>Min. Order Amount: <strong>${c.minOrderAmount}</strong></p>
-                          )}
-                          <p>
-                            Uses: <strong>{c.usedCount}</strong> {c.maxUses > 0 ? ` / ${c.maxUses}` : " (unlimited)"}
-                          </p>
-                          {c.expiresAt ? (
-                            <p className={isExpired ? 'expired-text' : ''}>
-                              Expires: <strong>{new Date(c.expiresAt).toLocaleDateString()}</strong> {isExpired && "⚠️"}
-                            </p>
-                          ) : (
-                            <p>Expires: <strong>Never</strong></p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {coupons.length === 0 && (
-                    <div className="no-coupons-placeholder">
-                      <p>No coupons created yet. Fill out the form to add your first promotion!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
+          {activeTab === "coupons" && (
+            <AdminCouponsTab 
+              coupons={coupons}
+              onRefreshCoupons={fetchAllAdminData}
+              addToast={addToast}
+              triggerConfirm={triggerConfirm}
+              logAction={logAction}
+            />
+          )}
+        </main>
       </div>
+
+      {/* Toast Alert overlay */}
+      <Toast toasts={toasts} removeToast={removeToast} />
+
+      {/* Confirmation Modal overlay */}
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };

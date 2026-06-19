@@ -243,3 +243,19 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
+
+// Admin: Verify admin token credentials
+exports.verifyAdmin = async (req, res) => {
+  try {
+    // req.user has already been set and validated by fetchAdmin middleware
+    const user = await User.findById(req.user.id, { name: 1, email: 1, isAdmin: 1 });
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ success: false, error: "Access denied. Admin privileges required." });
+    }
+    res.json({ success: true, user: { name: user.name, email: user.email, isAdmin: user.isAdmin } });
+  } catch (error) {
+    console.error("Error verifying admin status:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
