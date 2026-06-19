@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 // User Registration / Signup
 exports.signup = async (req, res) => {
   try {
-    let check = await User.findOne({ email: req.body.email });
+    let check = await User.findOne({ email: { $regex: new RegExp("^" + req.body.email + "$", "i") } });
     if (check) {
       return res.status(400).json({ success: false, errors: "Existing user found with same email address" });
     }
@@ -40,7 +40,7 @@ exports.signup = async (req, res) => {
 // User Login
 exports.login = async (req, res) => {
   try {
-    let user = await User.findOne({ email: req.body.email });
+    let user = await User.findOne({ email: { $regex: new RegExp("^" + req.body.email + "$", "i") } });
     if (user) {
       const passCompare = req.body.password === user.password;
       if (passCompare) {
@@ -211,7 +211,7 @@ exports.updateUserRole = async (req, res) => {
   try {
     const { email, isAdmin } = req.body;
     const updatedUser = await User.findOneAndUpdate(
-      { email: email.toLowerCase() },
+      { email: { $regex: new RegExp("^" + email + "$", "i") } },
       { $set: { isAdmin: Boolean(isAdmin) } },
       { new: true }
     );
@@ -231,7 +231,7 @@ exports.updateUserRole = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const { email } = req.body;
-    const deletedUser = await User.findOneAndDelete({ email: email.toLowerCase() });
+    const deletedUser = await User.findOneAndDelete({ email: { $regex: new RegExp("^" + email + "$", "i") } });
     if (deletedUser) {
       console.log(`Deleted user account: ${email}`);
       res.json({ success: true, message: "User deleted successfully" });

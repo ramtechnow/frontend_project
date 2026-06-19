@@ -98,7 +98,7 @@ async function seedDatabase() {
     console.log("✅ Seeded 36 products into MongoDB successfully!");
   }
 
-  const adminCheck = await User.findOne({ email: "Admin@gmail.com" });
+  const adminCheck = await User.findOne({ email: { $regex: new RegExp("^Admin@gmail.com$", "i") } });
   if (!adminCheck) {
     console.log("🌱 Seeding Admin user...");
     const admin = new User({
