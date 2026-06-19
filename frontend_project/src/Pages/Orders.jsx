@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BACKEND_URL } from '../config';
-import './CSS/Orders.css';
+import '../styles/orders.css';
+import { ShopContext } from '../Context/ShopContext';
+import products from '../data/products';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronDown, ChevronUp, Calendar, MapPin, Package, RefreshCw, CheckCircle2, Truck, Clock3, Circle } from 'lucide-react';
 
@@ -14,13 +16,16 @@ const STATUS_ICONS = {
   Delivered: <CheckCircle2 size={16} />,
 };
 
-export const Orders = () => {
+const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const navigate = useNavigate();
+
+  const { all_product } = useContext(ShopContext) || { all_product: [] };
+  const productsList = all_product.length > 0 ? all_product : products;
 
   const fetchUserOrders = useCallback(async (isRefresh = false) => {
     const token = localStorage.getItem('auth-token');
@@ -50,12 +55,12 @@ export const Orders = () => {
       setOrders([
         {
           _id: 'ORD-987216',
-          amount: 200,
+          amount: 175.00,
           status: 'Processing',
           payment: true,
           date: new Date().toISOString(),
           address: {
-            fullName: 'Emily Watson',
+            fullName: 'Sophia Martinez',
             addressLine: 'Apt 4B, 12 Park Ave',
             city: 'New York',
             state: 'NY',
@@ -63,18 +68,18 @@ export const Orders = () => {
             phone: '+1 212-555-0199'
           },
           items: [
-            { productId: 1, name: 'Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse', size: 'M', color: 'Black', quantity: 2, price: 50.0, image: null },
-            { productId: 4, name: 'Premium Cotton Casual Shirt', size: 'L', color: 'White', quantity: 1, price: 100.0, image: null }
+            { productId: 1, name: 'Classic Beige Trench Coat', size: 'M', color: 'Beige', quantity: 1, price: 120.00 },
+            { fontSize: 13, productId: 5, name: 'Charcoal Fleece Hooded Sweatshirt', size: 'L', color: 'Charcoal', quantity: 1, price: 55.00 }
           ]
         },
         {
           _id: 'ORD-128456',
-          amount: 85,
+          amount: 65.00,
           status: 'Delivered',
           payment: true,
           date: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
           address: {
-            fullName: 'Emily Watson',
+            fullName: 'Sophia Martinez',
             addressLine: '456 Oak St',
             city: 'Seattle',
             state: 'WA',
@@ -82,7 +87,7 @@ export const Orders = () => {
             phone: '+1 206-555-0145'
           },
           items: [
-            { productId: 2, name: 'Classic Slim Fit Chino Trousers', size: 'L', color: 'Beige', quantity: 1, price: 85.0, image: null }
+            { productId: 2, name: 'Slim Fit Indigo Denim Jacket', size: 'L', color: 'Navy', quantity: 1, price: 65.00 }
           ]
         }
       ]);
@@ -98,233 +103,196 @@ export const Orders = () => {
     fetchUserOrders(false);
   }, [fetchUserOrders]);
 
-  // Real-time polling every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchUserOrders(true);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [fetchUserOrders]);
-
-  const toggleExpand = (orderId) => {
-    setExpandedOrderId(prev => prev === orderId ? null : orderId);
+  const toggleExpand = (id) => {
+    setExpandedOrderId(expandedOrderId === id ? null : id);
   };
 
-  const getStatusIndex = (status) => STATUS_STEPS.indexOf(status);
-
-  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-IN', {
-    year: 'numeric', month: 'short', day: 'numeric'
-  });
-  const formatTime = (dateStr) => new Date(dateStr).toLocaleTimeString('en-IN', {
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  if (loading) {
-    return (
-      <div className="orders-loading-container">
-        <div className="orders-spinner" />
-        <p>Loading your orders...</p>
-      </div>
-    );
-  }
+  const getStepIndex = (status) => STATUS_STEPS.indexOf(status);
 
   return (
-    <div className="orders-page-container">
-      {/* Header */}
+    <main className="orders-page-container">
+      {/* Header row */}
       <div className="orders-header-row">
         <div className="orders-title-block">
-          <h2><ShoppingBag size={24} className="orders-title-icon" /> My Orders</h2>
-          <p>Track your deliveries and review past purchases in real time.</p>
+          <h2>
+            <ShoppingBag className="orders-title-icon" size={28} />
+            My Orders
+          </h2>
+          <p>View, track, and monitor your current purchases (Simulated)</p>
         </div>
+
         <div className="orders-header-actions">
           {lastUpdated && (
-            <span className="orders-last-updated">
-              <span className="live-dot" /> Live · Updated {formatTime(lastUpdated)}
-            </span>
+            <div className="orders-last-updated">
+              <span className="live-dot" />
+              Last sync: {lastUpdated.toLocaleTimeString()}
+            </div>
           )}
-          <motion.button
-            className="refresh-btn"
+          <button
             onClick={() => fetchUserOrders(true)}
+            className="refresh-btn"
             disabled={refreshing}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <motion.span
-              animate={{ rotate: refreshing ? 360 : 0 }}
-              transition={{ duration: 0.8, repeat: refreshing ? Infinity : 0, ease: 'linear' }}
-            >
-              <RefreshCw size={15} />
-            </motion.span>
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </motion.button>
+            <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
+            {refreshing ? 'Syncing...' : 'Sync Orders'}
+          </button>
         </div>
       </div>
 
-      {/* Empty state */}
-      {orders.length === 0 ? (
+      {loading ? (
+        <div className="orders-loading-container">
+          <div className="orders-spinner" />
+          <p>Retreiving your order details...</p>
+        </div>
+      ) : orders.length === 0 ? (
         <div className="orders-empty-state">
           <div className="empty-icon-wrapper">
-            <Package size={52} />
+            <Package size={48} />
           </div>
-          <h3>No Orders Yet</h3>
-          <p>You haven't placed any orders yet. Explore our catalog and find something you love!</p>
-          <motion.button
-            className="shop-now-btn"
-            onClick={() => navigate('/')}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Start Shopping
-          </motion.button>
+          <h3>No Orders Found</h3>
+          <p>You haven't placed any purchases yet. Start shopping and verify checkout details!</p>
+          <Link to="/">
+            <button className="shop-now-btn">Start Browsing</button>
+          </Link>
         </div>
       ) : (
         <div className="orders-list">
           {orders.map((order) => {
             const isExpanded = expandedOrderId === order._id;
-            const statusIdx = getStatusIndex(order.status);
-            const totalItems = order.items.reduce((acc, cur) => acc + cur.quantity, 0);
+            const currentStep = getStepIndex(order.status);
 
             return (
               <div key={order._id} className={`order-card ${isExpanded ? 'expanded' : ''}`}>
-
-                {/* ORDER SUMMARY BAR */}
+                {/* Collapsed summary bar */}
                 <div className="order-summary-bar" onClick={() => toggleExpand(order._id)}>
                   <div className="order-meta">
-                    <span className="order-id">#{order._id}</span>
+                    <span className="order-id">{order._id}</span>
                     <span className="order-date">
-                      <Calendar size={12} /> {formatDate(order.date)}
+                      <Calendar size={14} />
+                      {new Date(order.date).toLocaleDateString()}
                     </span>
-                    <span className="order-items-count">{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
+                    <span className="order-items-count">
+                      {order.items.reduce((acc, it) => acc + it.quantity, 0)} Items
+                    </span>
                   </div>
 
                   <div className="order-status-amount">
+                    <span className="order-amount">${Number(order.amount).toFixed(2)}</span>
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
-                      {STATUS_ICONS[order.status]} {order.status}
+                      {STATUS_ICONS[order.status] || <Circle size={16} />}
+                      {order.status}
                     </span>
-                    <span className="order-amount">${order.amount}</span>
-                    <button className="expand-btn" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
+                    <button className="expand-btn" aria-label="Expand details">
                       {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
                   </div>
                 </div>
 
-                {/* EXPANDABLE DETAIL PANEL */}
+                {/* Expanded details container */}
                 <AnimatePresence initial={false}>
                   {isExpanded && (
                     <motion.div
-                      key="details"
                       className="order-details-panel"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: 'easeInOut' }}
+                      initial={{ height: 0 }}
+                      animate={{ height: 'auto' }}
+                      exit={{ height: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
                     >
-                      {/* STATUS TRACKER TIMELINE */}
+                      {/* Timeline status tracker */}
                       <div className="status-tracker">
                         {STATUS_STEPS.map((step, idx) => {
-                          const done = idx <= statusIdx;
-                          const current = idx === statusIdx;
+                          const isDone = idx <= currentStep;
+                          const isCurrent = idx === currentStep;
                           return (
                             <React.Fragment key={step}>
-                              <div className={`tracker-step ${done ? 'done' : ''} ${current ? 'current' : ''}`}>
+                              <div className={`tracker-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
                                 <div className="tracker-dot">
-                                  {done ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                                  {STATUS_ICONS[step]}
                                 </div>
                                 <span className="tracker-label">{step}</span>
                               </div>
                               {idx < STATUS_STEPS.length - 1 && (
-                                <div className={`tracker-line ${idx < statusIdx ? 'done' : ''}`} />
+                                <div className={`tracker-line ${idx < currentStep ? 'done' : ''}`} />
                               )}
                             </React.Fragment>
                           );
                         })}
                       </div>
 
+                      {/* Detail information panel */}
                       <div className="order-detail-grid">
-                        {/* ITEMS SECTION */}
-                        <div className="detail-items-col">
-                          <h4 className="detail-section-title">Items Ordered</h4>
+                        {/* Left side items table */}
+                        <div>
+                          <h4 className="detail-section-title">Order Items</h4>
                           <div className="items-stack">
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className="item-row">
-                                <div className="item-img-wrap">
-                                  {item.image
-                                    ? <img src={item.image} alt={item.name} />
-                                    : <div className="item-img-placeholder"><Package size={20} /></div>
-                                  }
-                                </div>
-                                <div className="item-info">
-                                  <Link
-                                    to={`/product/${item.productId}`}
-                                    className="item-title-link"
-                                    onClick={e => e.stopPropagation()}
-                                  >
-                                    {item.name}
-                                  </Link>
-                                  <div className="item-tags">
-                                    <span className="item-tag">Size: {item.size}</span>
-                                    <span className="item-tag">Color: {item.color}</span>
-                                    <span className="item-tag">Qty: {item.quantity}</span>
-                                  </div>
-                                </div>
-                                <div className="item-price-col">
-                                  <span className="item-unit-price">${item.price} ea</span>
-                                  <span className="item-total">${item.price * item.quantity}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                            {order.items.map((item, idx) => {
+                              // Resolve product images
+                              const originalProduct = productsList.find(p => p.id === item.productId);
+                              const imageSrc = originalProduct?.image || item.image;
 
-                          {/* ORDER TOTALS */}
-                          {(() => {
-                            const subtotal = order.items.reduce((acc, cur) => acc + (cur.price * cur.quantity), 0);
-                            const discount = subtotal - order.amount;
-                            return (
-                              <div className="order-totals">
-                                <div className="total-row">
-                                  <span>Subtotal</span><span>${subtotal}</span>
-                                </div>
-                                {discount > 0 && (
-                                  <div className="total-row discount-row" style={{ color: '#22c55e', fontWeight: 700 }}>
-                                    <span>Coupon ({order.couponCode || 'Promo'})</span><span>−${discount}</span>
+                              return (
+                                <div key={idx} className="item-row">
+                                  <div className="item-img-wrap">
+                                    {imageSrc ? (
+                                      <img src={imageSrc} alt={item.name} />
+                                    ) : (
+                                      <div className="item-img-placeholder">
+                                        <Package size={20} />
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                                <div className="total-row">
-                                  <span>Delivery</span><span className="free-tag">FREE</span>
+
+                                  <div className="item-info">
+                                    <Link to={`/product/${item.productId}`} className="item-title-link">
+                                      {item.name}
+                                    </Link>
+                                    <div className="item-tags">
+                                      <span className="item-tag">Size: {item.size}</span>
+                                      <span className="item-tag">Color: {item.color || 'White'}</span>
+                                      <span className="item-tag">Qty: {item.quantity}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="item-price-col">
+                                    <span className="item-unit-price">${Number(item.price).toFixed(2)} each</span>
+                                    <span className="item-total">${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                                  </div>
                                 </div>
-                                <div className="total-row grand">
-                                  <span>Grand Total</span><span>${order.amount}</span>
-                                </div>
-                              </div>
-                            );
-                          })()}
+                              );
+                            })}
+                          </div>
                         </div>
 
-                        {/* SHIPPING & PAYMENT */}
+                        {/* Right side shipping/payments detail panel */}
                         <div className="detail-info-col">
                           <div className="info-card">
-                            <h4><MapPin size={15} /> Shipping Address</h4>
-                            <p className="addr-name">{order.address?.fullName}</p>
-                            <p>{order.address?.addressLine}</p>
-                            <p>{order.address?.city}, {order.address?.state} {order.address?.postalCode}</p>
-                            <p className="addr-phone">📞 {order.address?.phone}</p>
+                            <h4>
+                              <MapPin size={16} />
+                              Shipping Address
+                            </h4>
+                            <p className="addr-name">{order.address.fullName}</p>
+                            <p>{order.address.addressLine}</p>
+                            <p>{order.address.city}, {order.address.state} {order.address.postalCode}</p>
+                            <p className="addr-phone">Phone: {order.address.phone}</p>
                           </div>
 
                           <div className="info-card">
-                            <h4>💳 Payment</h4>
+                            <h4>Simulated Checkout Details</h4>
                             <div className="payment-row">
-                              <span>Status</span>
+                              <span>Payment Status:</span>
                               <span className={`pay-badge ${order.payment ? 'paid' : 'unpaid'}`}>
-                                {order.payment ? '✓ Paid' : '✗ Unpaid'}
+                                {order.payment ? 'PAID (DEMO)' : 'UNPAID'}
                               </span>
                             </div>
                             <div className="payment-row">
-                              <span>Method</span>
-                              <span>Card (Demo)</span>
+                              <span>Shipping Method:</span>
+                              <span style={{ fontWeight: 600 }}>Standard Ground</span>
                             </div>
                             <div className="payment-row">
-                              <span>Order Date</span>
-                              <span>{formatDate(order.date)}</span>
+                              <span>Simulated Total:</span>
+                              <span style={{ fontWeight: 700, color: 'var(--accent-pink)' }}>
+                                ${Number(order.amount).toFixed(2)}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -337,7 +305,7 @@ export const Orders = () => {
           })}
         </div>
       )}
-    </div>
+    </main>
   );
 };
 

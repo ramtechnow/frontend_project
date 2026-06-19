@@ -75,6 +75,22 @@ button {
   box-shadow: var(--shadow-sm);
 }
 
+@media (max-width: 768px) {
+  .offers, .new-collections, .popular, .newsletter {
+    padding: 20px 12px !important;
+    margin: 16px 8px !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .offers, .new-collections, .popular, .newsletter {
+    padding: 16px 8px !important;
+    margin: 12px 6px !important;
+    border-radius: 6px !important;
+  }
+}
+
 .item {
   background: var(--card-bg) !important;
   border-radius: var(--border-radius-md);

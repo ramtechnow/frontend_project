@@ -1,47 +1,92 @@
 :root {
-  /* Common variables */
-  --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --border-radius-sm: 8px;
-  --border-radius-md: 16px;
-  --border-radius-lg: 24px;
+  /* Fonts */
+  --font-primary: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Typography Design Tokens */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-md: 1rem;        /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+
+  /* Spacing Tokens */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* Borders & Radius */
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
   --border-radius-full: 9999px;
 
-  /* Light Theme Color tokens */
+  /* Transition Curve */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Light Theme Color Tokens */
   --bg-primary: #fcfaf7;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f5f2eb;
   --text-primary: #1a1e26;
   --text-secondary: #5c6270;
-  --text-tertiary: #a0a6b5;
-  --accent-color: #f23e70;
+  --text-muted: #8b92a0;
+  --text-light: #ffffff;
+  
+  --accent-pink: #f23e70;
+  --accent-color: #f23e70; /* Fallback alias */
   --accent-hover: #d62f5f;
   --accent-light: #fff0f3;
+  
   --border-color: #ebdacf;
-  --shadow-sm: 0 4px 12px rgba(92, 98, 112, 0.05);
-  --shadow-md: 0 12px 30px rgba(92, 98, 112, 0.08);
-  --shadow-lg: 0 24px 50px rgba(92, 98, 112, 0.12);
-  --nav-bg: rgba(255, 255, 255, 0.9);
+  --border-focus: #f23e70;
+  
+  --shadow-sm: 0 4px 12px rgba(92, 98, 112, 0.04);
+  --shadow-md: 0 10px 25px rgba(92, 98, 112, 0.08);
+  --shadow-lg: 0 20px 40px rgba(92, 98, 112, 0.12);
+  
+  --nav-bg: rgba(255, 255, 255, 0.85);
   --card-bg: #ffffff;
   --input-bg: #ffffff;
+  --overlay-bg: rgba(15, 17, 21, 0.6);
+  --success-color: #10b981;
 }
 
-/* Dark Theme overrides */
+/* Dark Theme Overrides */
 .dark-theme {
   --bg-primary: #0f1115;
   --bg-secondary: #161920;
-  --bg-tertiary: #1f242e;
+  --bg-tertiary: #1e222b;
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
-  --text-tertiary: #6b7280;
-  --accent-color: #ff5c5c;
-  --accent-hover: #ff7878;
-  --accent-light: #3b1e1e;
-  --border-color: #2a303c;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  --text-muted: #6b7280;
+  --text-light: #ffffff;
+  
+  --accent-pink: #ff5c7d;
+  --accent-color: #ff5c7d;
+  --accent-hover: #e04a69;
+  --accent-light: #2d181c;
+  
+  --border-color: #262c38;
+  --border-focus: #ff5c7d;
+  
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+  
   --nav-bg: rgba(22, 25, 32, 0.85);
   --card-bg: #161920;
-  --input-bg: #1f242e;
+  --input-bg: #1e222b;
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --success-color: #34d399;
 }

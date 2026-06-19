@@ -1,0 +1,211 @@
+/* Mobile Responsive Overrides for SHOPPER Store */
+
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .nav-menu {
+    display: none; /* Hide desktop menu link list */
+  }
+
+  .nav-hamburger {
+    display: flex; /* Show menu toggle */
+  }
+
+  .nav-login-btn {
+    display: none; /* Hide login button from navbar directly, moved inside MobileMenu */
+  }
+  
+  .nav-avatar-name {
+    display: none; /* Hide text name, show only avatar initial */
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(1, 1fr); /* 1 Column category list on mobile for better flow */
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr); /* Keep 2 items per row on narrow screens, with smaller card content */
+    gap: 8px;
+  }
+
+  .product-card-info {
+    padding: var(--space-2);
+  }
+
+  .product-card-title {
+    font-size: 11px;
+    height: 32px;
+    margin-bottom: var(--space-1);
+  }
+
+  .product-card-rating {
+    margin-bottom: var(--space-1);
+    gap: 2px;
+  }
+
+  .product-card-rating svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .product-card-price-row {
+    gap: var(--space-1);
+  }
+
+  .product-card-new-price {
+    font-size: var(--text-sm);
+  }
+
+  .product-card-old-price {
+    font-size: 10px;
+  }
+
+  .product-card-badge {
+    top: 6px;
+    left: 6px;
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+
+  .product-card-wishlist-btn {
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .product-card-wishlist-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Mobile Sidebar Drawer Overlay */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1001;
+}
+
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  max-width: 80%;
+  height: 100vh;
+  background-color: var(--bg-secondary);
+  box-shadow: var(--shadow-lg);
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-5);
+  box-sizing: border-box;
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.mobile-menu-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mobile-menu-logo img {
+  width: 28px;
+  height: 28px;
+}
+
+.mobile-menu-logo span {
+  font-size: var(--text-md);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.mobile-menu-close-btn {
+  width: 36px;
+  height: 36px;
+  min-height: auto;
+  border-radius: 50%;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-menu-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.mobile-menu-links li {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mobile-menu-links li a {
+  display: block;
+  padding: var(--space-2) 0;
+}
+
+.mobile-menu-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-color);
+}
+
+.mobile-menu-action-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.mobile-menu-login-btn {
+  background-color: var(--text-primary);
+  color: var(--bg-secondary);
+}
+
+.mobile-menu-logout-btn {
+  background-color: #ef4444;
+  color: white;
+}

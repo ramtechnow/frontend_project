@@ -1,0 +1,247 @@
+// Realistic product data for SHOPPER portfolio store
+// Using high-quality, lightweight Unsplash fashion photos for realistic styling
+
+const products = [
+  {
+    id: 1,
+    name: "Classic Beige Trench Coat",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=600&auto=format&fit=crop",
+    new_price: 120.0,
+    old_price: 180.0,
+    rating: 4.8,
+    discount: 33,
+    reviewsCount: 124,
+    description: "A timeless double-breasted trench coat with an adjustable belt. Perfect for layering during transitional seasons."
+  },
+  {
+    id: 2,
+    name: "Slim Fit Indigo Denim Jacket",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=600&auto=format&fit=crop",
+    new_price: 65.0,
+    old_price: 95.0,
+    rating: 4.6,
+    discount: 31,
+    reviewsCount: 88,
+    description: "Classic stretch denim jacket in an indigo wash. Features button-flap chest pockets and adjustable waist tabs."
+  },
+  {
+    id: 3,
+    name: "Kids Pastel Yellow Raincoat",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop",
+    new_price: 35.0,
+    old_price: 50.0,
+    rating: 4.7,
+    discount: 30,
+    reviewsCount: 45,
+    description: "Waterproof pastel yellow raincoat with a soft striped cotton lining. Keeps your little ones dry and cozy."
+  },
+  {
+    id: 4,
+    name: "Minimalist White Linen Blouse",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=600&auto=format&fit=crop",
+    new_price: 45.0,
+    old_price: 60.0,
+    rating: 4.4,
+    discount: 25,
+    reviewsCount: 52,
+    description: "Breathable pure linen blouse featuring a relaxed fit, drop shoulders, and shell buttons."
+  },
+  {
+    id: 5,
+    name: "Charcoal Fleece Hooded Sweatshirt",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
+    new_price: 55.0,
+    old_price: 75.0,
+    rating: 4.5,
+    discount: 26,
+    reviewsCount: 110,
+    description: "Ultra-soft cotton blend pullover hoodie with a brushed fleece interior and kangaroo pocket."
+  },
+  {
+    id: 6,
+    name: "Kids Cotton Overalls Set",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=600&auto=format&fit=crop",
+    new_price: 28.0,
+    old_price: 40.0,
+    rating: 4.9,
+    discount: 30,
+    reviewsCount: 38,
+    description: "Durable cotton dungarees paired with a striped long-sleeve tee. Designed for everyday adventures."
+  },
+  {
+    id: 7,
+    name: "Vintage Floral Wrap Dress",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop",
+    new_price: 85.0,
+    old_price: 110.0,
+    rating: 4.7,
+    discount: 22,
+    reviewsCount: 93,
+    description: "Flattering wrap silhouette with an adjustable waist tie and all-over vintage floral print."
+  },
+  {
+    id: 8,
+    name: "Tailored Navy Blue Blazer",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
+    new_price: 140.0,
+    old_price: 200.0,
+    rating: 4.8,
+    discount: 30,
+    reviewsCount: 74,
+    description: "Modern slim-cut blazer crafted from lightweight wool blend. Unstructured shoulders for smart-casual wear."
+  },
+  {
+    id: 9,
+    name: "Kids Hooded Puffer Jacket",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1520113112154-12dbffba7740?q=80&w=600&auto=format&fit=crop",
+    new_price: 48.0,
+    old_price: 80.0,
+    rating: 4.6,
+    discount: 40,
+    reviewsCount: 57,
+    description: "Lightweight yet warm quilted puffer jacket with wind-resistant shell and elasticized cuffs."
+  },
+  {
+    id: 10,
+    name: "Emerald Green Satin Slip Midi Skirt",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop",
+    new_price: 52.0,
+    old_price: 75.0,
+    rating: 4.3,
+    discount: 30,
+    reviewsCount: 61,
+    description: "High-waisted bias-cut midi skirt with an elastic waistband and luxurious satin finish."
+  },
+  {
+    id: 11,
+    name: "Textured Knit Crewneck Sweater",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1614975058789-41316d0e2e9c?q=80&w=600&auto=format&fit=crop",
+    new_price: 58.0,
+    old_price: 85.0,
+    rating: 4.5,
+    discount: 31,
+    reviewsCount: 79,
+    description: "Waffle-knit long sleeve sweater knitted from organic cotton yarn. Ribbed collar and hem."
+  },
+  {
+    id: 12,
+    name: "Kids Floral Cotton Summer Dress",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?q=80&w=600&auto=format&fit=crop",
+    new_price: 25.0,
+    old_price: 35.0,
+    rating: 4.7,
+    discount: 28,
+    reviewsCount: 29,
+    description: "Breathable sleeveless sundress with an adjustable cross-back tie, perfect for warm summer afternoons."
+  },
+  {
+    id: 13,
+    name: "Oversized Cashmere Turtleneck",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop",
+    new_price: 150.0,
+    old_price: 220.0,
+    rating: 4.9,
+    discount: 31,
+    reviewsCount: 142,
+    description: "Luxurious 100% Mongolian cashmere turtleneck sweater. Soft, warm, and elegantly oversized."
+  },
+  {
+    id: 14,
+    name: "Classic Fit Oxford Cotton Shirt",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=600&auto=format&fit=crop",
+    new_price: 45.0,
+    old_price: 65.0,
+    rating: 4.4,
+    discount: 30,
+    reviewsCount: 89,
+    description: "Traditional button-down collar Oxford shirt in organic long-staple cotton."
+  },
+  {
+    id: 15,
+    name: "Kids Denim Dungaree Shorts",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1471286174240-e6458db745cd?q=80&w=600&auto=format&fit=crop",
+    new_price: 22.0,
+    old_price: 32.0,
+    rating: 4.5,
+    discount: 31,
+    reviewsCount: 20,
+    description: "Washed denim bib shorts with adjustable buckles and functional side pockets."
+  },
+  {
+    id: 16,
+    name: "Off-Shoulder Ribbed Crop Top",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
+    new_price: 24.0,
+    old_price: 35.0,
+    rating: 4.2,
+    discount: 31,
+    reviewsCount: 47,
+    description: "Stretchy ribbed-knit off-shoulder top. Short sleeves and a fitted, cropped hemline."
+  },
+  {
+    id: 17,
+    name: "Stretch Chino Trousers",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=600&auto=format&fit=crop",
+    new_price: 48.0,
+    old_price: 70.0,
+    rating: 4.6,
+    discount: 31,
+    reviewsCount: 95,
+    description: "Versatile stretch chinos crafted from durable twill cotton. Features a slim fit design."
+  },
+  {
+    id: 18,
+    name: "Kids Striped Cotton Pajamas",
+    category: "kid",
+    image: "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?q=80&w=600&auto=format&fit=crop",
+    new_price: 18.0,
+    old_price: 25.0,
+    rating: 4.8,
+    discount: 28,
+    reviewsCount: 31,
+    description: "Cozy two-piece sleepwear set with elasticized cuffs. Made from breathable organic cotton."
+  },
+  {
+    id: 19,
+    name: "Silk V-Neck Cami Tank",
+    category: "women",
+    image: "https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?q=80&w=600&auto=format&fit=crop",
+    new_price: 38.0,
+    old_price: 55.0,
+    rating: 4.5,
+    discount: 30,
+    reviewsCount: 55,
+    description: "Elegant pure mulberry silk camisole tank top with adjustable spaghetti straps."
+  },
+  {
+    id: 20,
+    name: "Water-Resistant Windbreaker",
+    category: "men",
+    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop",
+    new_price: 75.0,
+    old_price: 110.0,
+    rating: 4.6,
+    discount: 31,
+    reviewsCount: 68,
+    description: "Packable windproof active jacket with zip pockets, adjustable hood, and mesh inner lining."
+  }
+];
+
+export default products;
