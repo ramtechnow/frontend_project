@@ -1,3 +1,8 @@
 node_modules/
 .env
-upload/
+upload/*
+!upload/images/
+upload/images/*
+!upload/images/product_[1-9].png
+!upload/images/product_[1-2][0-9].png
+!upload/images/product_3[0-6].png
