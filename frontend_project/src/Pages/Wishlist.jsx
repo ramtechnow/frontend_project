@@ -1,12 +1,21 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { WishlistContext } from "../Context/WishlistContext";
+import { ShopContext } from "../Context/ShopContext";
+import products from "../data/products";
 import ProductCard from "../components/ProductCard";
 import { HeartCrack } from "lucide-react";
 import "../styles/productGrid.css";
 
 const Wishlist = () => {
   const { wishlistItems, clearWishlist } = useContext(WishlistContext);
+  const { all_product } = useContext(ShopContext) || { all_product: [] };
+  const productsList = all_product.length > 0 ? all_product : products;
+
+  // Filter products in wishlist
+  const wishlistedProducts = productsList.filter(prod => 
+    wishlistItems.includes(Number(prod.id))
+  );
 
   return (
     <main className="container" style={{ padding: "var(--space-6) var(--space-4) var(--space-12) var(--space-4)", minHeight: "60vh" }}>
@@ -18,7 +27,7 @@ const Wishlist = () => {
             Saved styles you are currently eyeing.
           </p>
         </div>
-        {wishlistItems.length > 0 && (
+        {wishlistedProducts.length > 0 && (
           <button
             onClick={clearWishlist}
             style={{ color: "#ef4444", fontSize: "13px", fontWeight: "600", borderBottom: "1px solid #fca5a5", minHeight: "auto" }}
@@ -29,7 +38,7 @@ const Wishlist = () => {
       </div>
 
       {/* Grid displays */}
-      {wishlistItems.length === 0 ? (
+      {wishlistedProducts.length === 0 ? (
         <div 
           style={{ 
             textAlign: "center", 
@@ -65,7 +74,7 @@ const Wishlist = () => {
         </div>
       ) : (
         <div className="product-grid">
-          {wishlistItems.map((prod) => (
+          {wishlistedProducts.map((prod) => (
             <ProductCard key={prod.id} product={prod} />
           ))}
         </div>

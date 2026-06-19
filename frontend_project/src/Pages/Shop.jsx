@@ -1,18 +1,39 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import products from "../data/products";
 import { ShopContext } from "../Context/ShopContext";
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import "../styles/productGrid.css";
 
-const Shop = () => {
+const Shop = ({ category = "all" }) => {
   const { all_product } = useContext(ShopContext) || { all_product: [] };
   const productsList = all_product.length > 0 ? all_product : products;
+  const navigate = useNavigate();
 
   // States
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState(category);
   const [sortOption, setSortOption] = useState("default");
   const [priceRange, setPriceRange] = useState(200); // Max price slider limit
+
+  // Sync selectedCategory state with category prop changes
+  useEffect(() => {
+    setSelectedCategory(category);
+  }, [category]);
+
+  // Handle dropdown change by navigating to category route
+  const handleCategoryChange = (newCat) => {
+    setSelectedCategory(newCat);
+    if (newCat === "all") {
+      navigate("/catalog");
+    } else if (newCat === "men") {
+      navigate("/mens");
+    } else if (newCat === "women") {
+      navigate("/womens");
+    } else if (newCat === "kid") {
+      navigate("/kids");
+    }
+  };
 
   // Filtered & Sorted items calculation
   const processedProducts = useMemo(() => {
@@ -20,7 +41,7 @@ const Shop = () => {
 
     // Filter by Category
     if (selectedCategory !== "all") {
-      result = result.filter(p => p.category === selectedCategory);
+      result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
     }
 
     // Filter by Price
@@ -42,7 +63,12 @@ const Shop = () => {
     <main className="container" style={{ padding: "var(--space-6) var(--space-4) var(--space-12) var(--space-4)" }}>
       {/* Page Title */}
       <div style={{ marginBottom: "var(--space-6)" }}>
-        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: "800" }}>All Apparel Catalog</h1>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: "800" }}>
+          {selectedCategory === "all" ? "All Apparel Catalog" : 
+           selectedCategory === "men" ? "Men's Apparel" : 
+           selectedCategory === "women" ? "Women's Apparel" : 
+           selectedCategory === "kid" ? "Kids Collection" : "Apparel Catalog"}
+        </h1>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
           Browse our organic cotton and premium linen collections with custom filters.
         </p>
@@ -68,7 +94,7 @@ const Shop = () => {
           <span style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Category:</span>
           <select 
             value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => handleCategoryChange(e.target.value)}
             style={{ height: "36px", padding: "0 8px", outline: "none", cursor: "pointer" }}
           >
             <option value="all">All Items</option>

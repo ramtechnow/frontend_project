@@ -10,6 +10,7 @@ import Checkout from './Pages/Checkout';
 import Orders from './Pages/Orders';
 import Login from './Pages/Login';
 import AdminPanel from './Pages/AdminPanel';
+import NotFound from './Pages/NotFound';
 import Footer from './Components/Footer';
 
 // Global Contexts Providers
@@ -51,6 +52,7 @@ function App() {
                     <Route path='/orders' element={<Orders />} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/admin' element={<AdminPanel />} />
+                    <Route path='*' element={<NotFound />} />
                   </Routes>
                 </div>
                 
