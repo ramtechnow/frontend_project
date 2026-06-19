@@ -139,7 +139,7 @@ export const AdminCouponsTab = ({
                   style={{ width: '100%', height: '40px', padding: '0 8px', border: '1px solid var(--border-color)', borderRadius: '8px', outline: 'none' }}
                 >
                   <option value="percentage">Percentage (%)</option>
-                  <option value="flat">Flat ($)</option>
+                  <option value="flat">Flat (₹)</option>
                 </select>
               </div>
 
@@ -160,7 +160,7 @@ export const AdminCouponsTab = ({
 
             <div className="coupon-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="coupon-form-group">
-                <label style={{ fontSize: '0.8rem', fontWeight: '700' }}>Min Order ($)</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700' }}>Min Order (₹)</label>
                 <input 
                   type="number" 
                   value={minOrderAmount} 
@@ -316,10 +316,10 @@ export const AdminCouponsTab = ({
 
                   <div className="coupon-card-body" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <p style={{ margin: 0 }}>
-                      Discount: <strong>{c.discountType === 'percentage' ? `${c.discountValue}%` : `$${c.discountValue}`} Off</strong>
+                      Discount: <strong>{c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`} Off</strong>
                     </p>
                     {c.minOrderAmount > 0 && (
-                      <p style={{ margin: 0 }}>Min. Order Amount: <strong>${c.minOrderAmount}</strong></p>
+                      <p style={{ margin: 0 }}>Min. Order Amount: <strong>₹{c.minOrderAmount}</strong></p>
                     )}
                     <p style={{ margin: 0 }}>
                       Uses: <strong>{c.usedCount}</strong> {c.maxUses > 0 ? ` / ${c.maxUses}` : " (unlimited)"}

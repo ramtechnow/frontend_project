@@ -1,5 +1,8 @@
 const User = require('../models/User');
+const OTP = require('../models/OTP');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 // User Registration / Signup
 exports.signup = async (req, res) => {
@@ -12,10 +15,13 @@ exports.signup = async (req, res) => {
     // Initialize an empty cart object
     let cart = {};
 
+    // Hash the password with bcrypt
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
     const user = new User({
       name: req.body.username,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPassword,
       cartData: cart,
     });
 
@@ -42,7 +48,22 @@ exports.login = async (req, res) => {
   try {
     let user = await User.findOne({ email: { $regex: new RegExp("^" + req.body.email + "$", "i") } });
     if (user) {
-      const passCompare = req.body.password === user.password;
+      let passCompare = false;
+      
+      // Compatibility and secure migration check:
+      if (user.password && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$'))) {
+        passCompare = await bcrypt.compare(req.body.password, user.password);
+      } else {
+        // Plain text fallback (for legacy database entries)
+        passCompare = req.body.password === user.password;
+        if (passCompare) {
+          // Migrate plain text password to secure bcrypt hash on-the-fly
+          user.password = await bcrypt.hash(req.body.password, 10);
+          await user.save();
+          console.log(`🔒 Migrated plain text password for ${user.email} to bcrypt hash on login.`);
+        }
+      }
+
       if (passCompare) {
         const data = {
           user: {
@@ -258,4 +279,254 @@ exports.verifyAdmin = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
+
+// Provider-agnostic SMS OTP sender helper
+async function sendSMS(phone, otp) {
+  console.log(`\n======================================================`);
+  console.log(`📱 SMS OTP SENT TO: ${phone}`);
+  console.log(`💬 CODE: [ ${otp} ]`);
+  console.log(`======================================================\n`);
+  
+  // Real provider integration goes here (e.g. MSG91, Twilio, etc.)
+  return true;
+}
+
+// Transactional Email OTP sender helper using Nodemailer
+async function sendEmail(email, subject, html) {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: parseInt(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+      await transporter.sendMail({
+        from: `"SHOPPER Support" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: subject,
+        html: html
+      });
+      console.log(`✉️ Email successfully sent to ${email}`);
+      return true;
+    } catch (err) {
+      console.error("❌ Failed to send transactional email:", err);
+      return false;
+    }
+  } else {
+    console.log(`\n======================================================`);
+    console.log(`✉️ EMAIL (SIMULATED) SENT TO: ${email}`);
+    console.log(`🔑 SUBJECT: ${subject}`);
+    console.log(`📄 CONTENT:\n${html.replace(/<[^>]*>/g, ' ').trim()}`);
+    console.log(`======================================================\n`);
+    return true;
+  }
+}
+
+// POST: Send OTP to Indian phone number for login/registration
+exports.sendLoginOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || !/^\+91[6789]\d{9}$/.test(phone)) {
+      return res.status(400).json({ success: false, errors: "Invalid Indian mobile number. Format: +91XXXXXXXXXX" });
+    }
+
+    // Rate limiting: 60s cooldown per number
+    const lastOtp = await OTP.findOne({ target: phone, type: 'login' }).sort({ createdAt: -1 });
+    if (lastOtp) {
+      const diff = Date.now() - new Date(lastOtp.createdAt).getTime();
+      if (diff < 60000) {
+        return res.status(429).json({ success: false, errors: `Please wait ${Math.ceil((60000 - diff) / 1000)} seconds before requesting a new OTP.` });
+      }
+    }
+
+    // Generate random 6-digit OTP code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Overwrite any existing active OTP for this phone
+    await OTP.deleteMany({ target: phone, type: 'login' });
+    const otpDoc = new OTP({ target: phone, otp: otpCode, type: 'login' });
+    await otpDoc.save();
+
+    // Send SMS
+    await sendSMS(phone, otpCode);
+
+    res.json({ success: true, message: "OTP sent successfully to your mobile number.", cooldown: 60 });
+  } catch (error) {
+    console.error("Error in sendLoginOtp:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
+// POST: Verify Phone OTP and log user in / register them
+exports.verifyLoginOtp = async (req, res) => {
+  try {
+    const { phone, otp, name } = req.body;
+    if (!phone || !otp) {
+      return res.status(400).json({ success: false, errors: "Phone number and OTP code are required" });
+    }
+
+    // Find the latest OTP for the number
+    const otpRecord = await OTP.findOne({ target: phone, type: 'login' });
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, errors: "OTP code has expired or is invalid. Please request a new one." });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, errors: "Incorrect OTP. Please check the code and try again." });
+    }
+
+    // Delete verified OTP from database
+    await OTP.deleteOne({ _id: otpRecord._id });
+
+    // Check if user already exists by phone number
+    let user = await User.findOne({ phone });
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      // Auto-register user since their phone is verified
+      user = new User({
+        name: name || `Shopper_${phone.slice(-4)}`,
+        phone,
+        email: `${phone.replace('+', '')}@shopper.in`, // Generate fallback unique email
+        cartData: {},
+        wishlistData: []
+      });
+      await user.save();
+    }
+
+    const data = {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
+    };
+    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
+    
+    res.json({ 
+      success: true, 
+      token, 
+      isNewUser, 
+      user: { 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone, 
+        isAdmin: user.isAdmin 
+      } 
+    });
+  } catch (error) {
+    console.error("Error in verifyLoginOtp:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
+// POST: Forgot password (sends OTP code to email)
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({ success: false, errors: "Valid email address is required" });
+    }
+
+    const user = await User.findOne({ email: { $regex: new RegExp("^" + email + "$", "i") } });
+
+    // Always return generic success message to prevent user enumeration
+    const genericResponse = { 
+      success: true, 
+      message: "If your email is registered in our system, you will receive a 6-digit OTP code to reset your password shortly." 
+    };
+
+    if (!user) {
+      return res.json(genericResponse);
+    }
+
+    // Rate limiting: 60s cooldown per email
+    const lastOtp = await OTP.findOne({ target: email, type: 'reset' }).sort({ createdAt: -1 });
+    if (lastOtp) {
+      const diff = Date.now() - new Date(lastOtp.createdAt).getTime();
+      if (diff < 60000) {
+        return res.status(429).json({ success: false, errors: `Please wait ${Math.ceil((60000 - diff) / 1000)} seconds before requesting a new reset code.` });
+      }
+    }
+
+    // Generate 6-digit reset OTP code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Save/Overwrite OTP
+    await OTP.deleteMany({ target: email, type: 'reset' });
+    const otpDoc = new OTP({ target: email, otp: otpCode, type: 'reset' });
+    await otpDoc.save();
+
+    // Send email
+    const subject = "SHOPPER - Password Reset Verification Code";
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+        <h2 style="color: #ff4141; text-align: center;">SHOPPER Account Recovery</h2>
+        <p>Hello ${user.name || 'Shopper Customer'},</p>
+        <p>We received a request to reset your password. Use the verification code below to complete the reset process. This code is valid for 5 minutes.</p>
+        <div style="background-color: #f9f9f9; padding: 15px; text-align: center; border-radius: 6px; margin: 20px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #333;">${otpCode}</span>
+        </div>
+        <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        <p style="font-size: 11px; color: #888; text-align: center;">SHOPPER E-Commerce Team &bull; Secure Password Reset Service</p>
+      </div>
+    `;
+    await sendEmail(email, subject, html);
+
+    res.json(genericResponse);
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
+// POST: Reset password (verifies OTP code and sets new password)
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, errors: "Email, OTP code, and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, errors: "Password must be at least 6 characters long" });
+    }
+
+    // Verify OTP
+    const otpRecord = await OTP.findOne({ target: email, type: 'reset' });
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, errors: "Reset code has expired or is invalid. Please request a new code." });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, errors: "Incorrect verification code. Please try again." });
+    }
+
+    // Find user and update password
+    const user = await User.findOne({ email: { $regex: new RegExp("^" + email + "$", "i") } });
+    if (!user) {
+      return res.status(400).json({ success: false, errors: "We were unable to complete the request. User not found." });
+    }
+
+    // Hash new password using bcryptjs
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    // Delete verified OTP record
+    await OTP.deleteOne({ _id: otpRecord._id });
+
+    res.json({ success: true, message: "Your password has been successfully reset! You can now log in." });
+  } catch (error) {
+    console.error("Error in resetPassword:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
 

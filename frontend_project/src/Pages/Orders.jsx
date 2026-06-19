@@ -177,7 +177,7 @@ const Orders = () => {
                   </div>
 
                   <div className="order-status-amount">
-                    <span className="order-amount">${Number(order.amount).toFixed(2)}</span>
+                    <span className="order-amount">₹{Number(order.amount).toFixed(2)}</span>
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
                       {STATUS_ICONS[order.status] || <Circle size={16} />}
                       {order.status}
@@ -254,8 +254,8 @@ const Orders = () => {
                                   </div>
 
                                   <div className="item-price-col">
-                                    <span className="item-unit-price">${Number(item.price).toFixed(2)} each</span>
-                                    <span className="item-total">${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                                    <span className="item-unit-price">₹{Number(item.price).toFixed(2)} each</span>
+                                    <span className="item-total">₹{(Number(item.price) * item.quantity).toFixed(2)}</span>
                                   </div>
                                 </div>
                               );
@@ -291,7 +291,7 @@ const Orders = () => {
                             <div className="payment-row">
                               <span>Simulated Total:</span>
                               <span style={{ fontWeight: 700, color: 'var(--accent-pink)' }}>
-                                ${Number(order.amount).toFixed(2)}
+                                ₹{Number(order.amount).toFixed(2)}
                               </span>
                             </div>
                           </div>

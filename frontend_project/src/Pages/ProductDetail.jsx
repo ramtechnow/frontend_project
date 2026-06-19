@@ -122,11 +122,11 @@ const ProductDetail = () => {
           {/* Price Box */}
           <div style={{ display: "flex", alignItems: "baseline", gap: "10px", margin: "var(--space-1) 0" }}>
             <span style={{ fontSize: "var(--text-2xl)", fontWeight: "800", color: "var(--text-primary)" }}>
-              ${product.new_price.toFixed(2)}
+              ₹{product.new_price.toFixed(2)}
             </span>
             {product.old_price && (
               <span style={{ fontSize: "var(--text-md)", textDecoration: "line-through", color: "var(--text-muted)" }}>
-                ${product.old_price.toFixed(2)}
+                ₹{product.old_price.toFixed(2)}
               </span>
             )}
           </div>

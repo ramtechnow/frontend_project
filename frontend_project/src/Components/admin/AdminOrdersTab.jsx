@@ -81,7 +81,7 @@ export const AdminOrdersTab = ({
                     
                     <td style={{ verticalAlign: 'middle' }}>{orderDate}</td>
                     
-                    <td className="price-cell" style={{ verticalAlign: 'middle', fontWeight: '700' }}>${o.amount}</td>
+                    <td className="price-cell" style={{ verticalAlign: 'middle', fontWeight: '700' }}>₹{o.amount}</td>
                     
                     <td style={{ verticalAlign: 'middle' }}>
                       <span className={`payment-status-badge ${o.payment ? 'paid' : 'unpaid'}`} style={{
@@ -180,12 +180,12 @@ export const AdminOrdersTab = ({
                                             <span>Size: <strong>{item.size}</strong></span>
                                             <span>Color: <strong>{item.color}</strong></span>
                                             <span>Qty: <strong>{item.quantity}</strong></span>
-                                            <span>Unit Price: <strong>${item.price}</strong></span>
+                                            <span>Unit Price: <strong>₹{item.price}</strong></span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="drawer-item-total" style={{ fontSize: '0.85rem', fontWeight: '700' }}>
-                                        <span>Total: <strong>${item.price * item.quantity}</strong></span>
+                                        <span>Total: <strong>₹{item.price * item.quantity}</strong></span>
                                       </div>
                                     </div>
                                   );
@@ -206,17 +206,17 @@ export const AdminOrdersTab = ({
                                   }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                       <span>Subtotal:</span>
-                                      <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>${subtotal}</span>
+                                      <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{subtotal}</span>
                                     </div>
                                     {discount > 0 && (
                                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981', fontWeight: 700, marginBottom: '8px' }}>
                                         <span>Coupon Discount ({o.couponCode || 'Promo'}):</span>
-                                        <span>−${discount}</span>
+                                        <span>−₹{discount}</span>
                                       </div>
                                     )}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
                                       <span>Total Paid:</span>
-                                      <span style={{ color: 'var(--accent-color)' }}>${o.amount}</span>
+                                      <span style={{ color: 'var(--accent-color)' }}>₹{o.amount}</span>
                                     </div>
                                   </div>
                                 );

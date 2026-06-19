@@ -167,7 +167,7 @@ export const AdminAddProductTab = ({
           </div>
 
           <div className="form-group">
-            <label style={{ color: 'var(--text-primary)', fontWeight: '700' }}>Promo Price ($)</label>
+            <label style={{ color: 'var(--text-primary)', fontWeight: '700' }}>Promo Price (₹)</label>
             <input 
               type="number" 
               value={newPrice} 
@@ -180,7 +180,7 @@ export const AdminAddProductTab = ({
           </div>
 
           <div className="form-group">
-            <label style={{ color: 'var(--text-primary)', fontWeight: '700' }}>MSRP Original ($)</label>
+            <label style={{ color: 'var(--text-primary)', fontWeight: '700' }}>MSRP Original (₹)</label>
             <input 
               type="number" 
               value={oldPrice} 

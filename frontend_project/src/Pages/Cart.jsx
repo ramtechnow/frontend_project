@@ -109,7 +109,7 @@ const Cart = () => {
                       <span>Color: <strong>{item.color || "White"}</strong></span>
                     </div>
                     <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--accent-pink)", marginTop: "4px" }}>
-                      ${product.new_price.toFixed(2)}
+                      ₹{product.new_price.toFixed(2)}
                     </span>
                   </div>
 
@@ -162,7 +162,7 @@ const Cart = () => {
             
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
               <span>Items Total:</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>₹{totalAmount.toFixed(2)}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
               <span>Simulated Shipping:</span>
@@ -173,7 +173,7 @@ const Cart = () => {
 
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-md)", fontWeight: "800" }}>
               <span>Subtotal:</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>₹{totalAmount.toFixed(2)}</span>
             </div>
 
             {/* Simulated Checkout Buttons */}

@@ -7,8 +7,7 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithPhoneNumber
+  sendPasswordResetEmail
 } from "../Services/firebase";
 import { BACKEND_URL } from "../config";
 
@@ -253,6 +252,84 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 1. Send Login OTP to Indian mobile number
+  const sendLoginOtp = async (phone) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/send-login-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return { success: false, errors: error.message || "Network connection error" };
+    }
+  };
+
+  // 2. Verify Phone OTP and log in / register
+  const verifyLoginOtp = async (phone, otp, name) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/verify-login-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, otp, name }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem("auth-token", data.token);
+        window.dispatchEvent(new Event('auth-change'));
+        const decoded = decodeToken(data.token);
+        
+        localStorage.setItem("user-email", data.user.email || `${phone.replace('+', '')}@shopper.in`);
+        localStorage.setItem("user-name", data.user.name);
+
+        const userObj = {
+          uid: decoded?.id,
+          email: data.user.email,
+          displayName: data.user.name,
+          isAdmin: decoded?.isAdmin || false,
+          isFirebase: false
+        };
+        setCurrentUser(userObj);
+      }
+      return data;
+    } catch (error) {
+      return { success: false, errors: error.message || "Network connection error" };
+    }
+  };
+
+  // 3. Send Forgot Password OTP
+  const sendForgotPasswordOtp = async (email) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return { success: false, errors: error.message || "Network connection error" };
+    }
+  };
+
+  // 4. Reset Password with OTP
+  const resetPasswordWithOtp = async (email, otp, newPassword) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return { success: false, errors: error.message || "Network connection error" };
+    }
+  };
+
   const value = {
     currentUser,
     loading,
@@ -262,7 +339,11 @@ export const AuthProvider = ({ children }) => {
     sendPasswordReset,
     loginWithPhone,
     verifyPhoneOTP,
-    isFirebaseSimulated
+    isFirebaseSimulated,
+    sendLoginOtp,
+    verifyLoginOtp,
+    sendForgotPasswordOtp,
+    resetPasswordWithOtp
   };
 
   return (

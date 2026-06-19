@@ -369,10 +369,10 @@ const Checkout = () => {
               {/* Submit button */}
               <button type="submit" className="checkout-submit-btn">
                 {savings > 0 && (
-                  <span className="savings-badge">Saving ${savings.toFixed(2)}</span>
+                  <span className="savings-badge">Saving ₹{savings.toFixed(2)}</span>
                 )}
                 <ShieldCheck size={18} />
-                Pay &amp; Finalize Order (${finalPayable.toFixed(2)})
+                Pay &amp; Finalize Order (₹{finalPayable.toFixed(2)})
               </button>
             </form>
           </div>
@@ -399,7 +399,7 @@ const Checkout = () => {
                         <h4 className="summary-item-name">{product.name}</h4>
                         <p className="summary-item-meta">Size: {item.size} | Qty: {item.quantity}</p>
                       </div>
-                      <span className="summary-item-price">${(product.new_price * item.quantity).toFixed(2)}</span>
+                      <span className="summary-item-price">₹{(product.new_price * item.quantity).toFixed(2)}</span>
                     </div>
                   );
                 })}
@@ -448,12 +448,12 @@ const Checkout = () => {
               <div className="summary-totals">
                 <div className="total-line">
                   <span>Cart Total:</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span>₹{cartTotal.toFixed(2)}</span>
                 </div>
                 {savings > 0 && (
                   <div className="total-line discount-line">
                     <span>Discount:</span>
-                    <span>-${savings.toFixed(2)}</span>
+                    <span>-₹{savings.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="total-line">
@@ -462,7 +462,7 @@ const Checkout = () => {
                 </div>
                 <div className="total-line grand-total">
                   <span>Payable Amount:</span>
-                  <span>${finalPayable.toFixed(2)}</span>
+                  <span>₹{finalPayable.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -505,12 +505,12 @@ const Checkout = () => {
                   </div>
                   <div className="success-row">
                     <span>Amount Charged:</span>
-                    <strong style={{ color: 'white' }}>${finalPayable.toFixed(2)}</strong>
+                    <strong style={{ color: 'white' }}>₹{finalPayable.toFixed(2)}</strong>
                   </div>
                   {savings > 0 && (
                     <div className="success-row savings-row">
                       <span>Simulated Savings:</span>
-                      <strong>${savings.toFixed(2)}</strong>
+                      <strong>₹{savings.toFixed(2)}</strong>
                     </div>
                   )}
                 </div>

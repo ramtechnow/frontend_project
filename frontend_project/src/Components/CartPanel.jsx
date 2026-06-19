@@ -100,7 +100,7 @@ const CartPanel = ({ isOpen, onClose }) => {
                     </span>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
                       <span style={{ fontSize: "11px", fontWeight: "700" }}>
-                        {item.quantity} &times; ${product.new_price.toFixed(2)}
+                        {item.quantity} &times; ₹{product.new_price.toFixed(2)}
                       </span>
                       <button 
                         style={{ fontSize: "11px", color: "#ef4444", minHeight: "auto" }}
@@ -121,7 +121,7 @@ const CartPanel = ({ isOpen, onClose }) => {
           <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "700", fontSize: "var(--text-md)" }}>
               <span>Subtotal:</span>
-              <span>${getTotalCartAmount().toFixed(2)}</span>
+              <span>₹{getTotalCartAmount().toFixed(2)}</span>
             </div>
             <button 
               className="interactive-target"

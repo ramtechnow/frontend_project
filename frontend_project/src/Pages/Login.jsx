@@ -1,11 +1,15 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
 import { CartContext } from "../Context/CartContext";
-import { AlertCircle, Lock, Mail, User, ShieldAlert } from "lucide-react";
+import PhoneOtpForm from "../Components/auth/PhoneOtpForm";
+import ForgotPasswordForm from "../Components/auth/ForgotPasswordForm";
+import { AlertCircle, Lock, Mail, User, ShieldAlert, Sparkles, Smartphone, LogIn } from "lucide-react";
+import "../Styles/auth.css";
 
 const Login = () => {
   const [isLoginState, setIsLoginState] = useState(true);
+  const [authMethod, setAuthMethod] = useState("otp"); // "otp" or "password"
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,16 +17,22 @@ const Login = () => {
   });
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const { login, signup } = useContext(AuthContext);
   const { clearCart } = useContext(CartContext);
   const navigate = useNavigate();
 
+  // Reset errors on state/method toggles
+  useEffect(() => {
+    setErrorMsg("");
+  }, [isLoginState, authMethod]);
+
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setLoading(true);
@@ -39,28 +49,32 @@ const Login = () => {
 
     try {
       if (isLoginState) {
-        // Run login
         const res = await login(emailVal, passVal);
         if (res.success) {
-          clearCart(); // Clear old local cart to load user synced cart
+          clearCart(); // Clear old local cart to load database cart
           navigate("/");
         } else {
-          setErrorMsg(res.error || "Failed to login. Check credentials.");
+          setErrorMsg(res.errors || "Failed to login. Please check credentials.");
         }
       } else {
-        // Run signup
-        const res = await signup(emailVal, passVal, nameVal);
+        const res = await signup(nameVal, emailVal, passVal);
         if (res.success) {
+          clearCart();
           navigate("/");
         } else {
-          setErrorMsg(res.error || "Failed to create account. Check inputs.");
+          setErrorMsg(res.errors || "Failed to create account. Please try again.");
         }
       }
     } catch (err) {
-      setErrorMsg("An unexpected server error occurred.");
+      setErrorMsg("An unexpected server connection error occurred.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOtpSuccess = (res) => {
+    clearCart();
+    navigate("/");
   };
 
   return (
@@ -76,7 +90,7 @@ const Login = () => {
       <div 
         style={{
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "420px",
           backgroundColor: "var(--bg-secondary)",
           border: "1px solid var(--border-color)",
           borderRadius: "var(--border-radius-lg)",
@@ -87,141 +101,212 @@ const Login = () => {
           gap: "var(--space-5)"
         }}
       >
-        {/* Title */}
+        {/* Title & Copy */}
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: "800" }}>
-            {isLoginState ? "Sign In" : "Create Account"}
+          <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+            <Sparkles size={20} style={{ color: "var(--accent-pink)" }} />
+            {isLoginState ? "Welcome Back" : "Join SHOPPER"}
           </h1>
-          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: "4px" }}>
-            {isLoginState ? "Access your cart, wishlist, and orders" : "Sign up to track purchases"}
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: "6px" }}>
+            {isLoginState 
+              ? "Sign in to access your orders, cart, and exclusive rewards." 
+              : "Create an account to track your orders and enjoy fast checkout."}
           </p>
         </div>
 
-        {/* Demo Details Note */}
-        <div 
-          style={{ 
-            backgroundColor: "var(--accent-light)", 
-            color: "var(--accent-pink)", 
-            fontSize: "11px", 
-            padding: "8px 10px", 
-            borderRadius: "6px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "700" }}>
-            <ShieldAlert size={12} />
-            <span>Demo Credentials Available:</span>
+        {/* Credentials Tip (Email mode only) */}
+        {authMethod === "password" && (
+          <div 
+            style={{ 
+              backgroundColor: "var(--accent-light)", 
+              color: "var(--accent-pink)", 
+              fontSize: "11px", 
+              padding: "10px", 
+              borderRadius: "6px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "2px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "700" }}>
+              <ShieldAlert size={12} />
+              <span>Quick Login Credentials:</span>
+            </div>
+            <span>Email: <strong>user@gmail.com</strong> | Pass: <strong>user123</strong></span>
+            <span>Admin: <strong>Admin@gmail.com</strong> | Pass: <strong>Admin@1234</strong></span>
           </div>
-          <span>Email: <strong>user@gmail.com</strong> | Password: <strong>user123</strong></span>
-          <span>Admin: <strong>admin@gmail.com</strong> | Password: <strong>admin123</strong></span>
+        )}
+
+        {/* Auth Method Selection Tabs */}
+        <div className="auth-tabs-container" role="tablist">
+          <button
+            role="tab"
+            aria-selected={authMethod === "otp"}
+            className={`auth-tab-btn ${authMethod === "otp" ? "active" : ""}`}
+            onClick={() => setAuthMethod("otp")}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+              <Smartphone size={14} />
+              <span>Mobile OTP</span>
+            </div>
+          </button>
+          <button
+            role="tab"
+            aria-selected={authMethod === "password"}
+            className={`auth-tab-btn ${authMethod === "password" ? "active" : ""}`}
+            onClick={() => setAuthMethod("password")}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+              <LogIn size={14} />
+              <span>Email & Password</span>
+            </div>
+          </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-          {errorMsg && (
-            <div 
-              style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: "8px", 
-                backgroundColor: "#fef2f2", 
-                border: "1px solid #fecaca", 
-                borderRadius: "var(--border-radius-sm)", 
-                padding: "10px 12px",
-                color: "#ef4444",
-                fontSize: "13px"
-              }}
-            >
-              <AlertCircle size={16} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+        {/* Error message banner */}
+        {errorMsg && (
+          <div 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "8px", 
+              backgroundColor: "#fef2f2", 
+              border: "1px solid #fecaca", 
+              borderRadius: "var(--border-radius-sm)", 
+              padding: "10px 12px",
+              color: "#ef4444",
+              fontSize: "13px"
+            }}
+          >
+            <AlertCircle size={16} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
-          {/* Name input (only for signup) */}
-          {!isLoginState && (
+        {/* Render Selected Authentication Method Form */}
+        {authMethod === "otp" ? (
+          <PhoneOtpForm 
+            isSignup={!isLoginState} 
+            onSuccess={handleOtpSuccess} 
+            onError={setErrorMsg} 
+          />
+        ) : (
+          <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+            {/* Name Input (Signup Only) */}
+            {!isLoginState && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label htmlFor="name" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Full Name</label>
+                <div style={{ position: "relative" }}>
+                  <User size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+                  <input 
+                    type="text" 
+                    id="name"
+                    name="name"
+                    placeholder="E.g., Shriram Kumar"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Email Input */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label htmlFor="name" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Full Name</label>
+              <label htmlFor="email" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Email Address</label>
               <div style={{ position: "relative" }}>
-                <User size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+                <Mail size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
                 <input 
-                  type="text" 
-                  id="name"
-                  name="name"
-                  placeholder="John Doe"
-                  value={formData.name}
+                  type="email" 
+                  id="email"
+                  name="email"
+                  placeholder="name@gmail.com"
+                  value={formData.email}
                   onChange={handleInputChange}
                   style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
+                  disabled={loading}
+                  required
                 />
               </div>
             </div>
-          )}
 
-          {/* Email input */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label htmlFor="email" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Email Address</label>
-            <div style={{ position: "relative" }}>
-              <Mail size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
-              <input 
-                type="email" 
-                id="email"
-                name="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleInputChange}
-                style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
-              />
+            {/* Password Input */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label htmlFor="password" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Password</label>
+                {isLoginState && (
+                  <button 
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    style={{ 
+                      fontSize: "11px", 
+                      color: "var(--accent-pink)", 
+                      fontWeight: "700",
+                      background: "none", 
+                      border: "none", 
+                      cursor: "pointer",
+                      minHeight: "auto",
+                      padding: 0
+                    }}
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+              <div style={{ position: "relative" }}>
+                <Lock size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+                <input 
+                  type="password" 
+                  id="password"
+                  name="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
+                  disabled={loading}
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Password input */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label htmlFor="password" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Password</label>
-            <div style={{ position: "relative" }}>
-              <Lock size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
-              <input 
-                type="password" 
-                id="password"
-                name="password"
-                placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
-                value={formData.password}
-                onChange={handleInputChange}
-                style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
-              />
-            </div>
-          </div>
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              className="interactive-target"
+              disabled={loading}
+              style={{
+                width: "100%",
+                height: "44px",
+                backgroundColor: "var(--text-primary)",
+                color: "var(--bg-secondary)",
+                fontWeight: "700",
+                borderRadius: "var(--border-radius-sm)",
+                fontSize: "13px",
+                marginTop: "4px"
+              }}
+            >
+              {loading ? "Please wait..." : isLoginState ? "Sign In" : "Sign Up"}
+            </button>
+          </form>
+        )}
 
-          {/* Submit btn */}
-          <button 
-            type="submit" 
-            className="interactive-target"
-            disabled={loading}
-            style={{
-              width: "100%",
-              height: "44px",
-              backgroundColor: "var(--text-primary)",
-              color: "var(--bg-secondary)",
-              fontWeight: "700",
-              borderRadius: "var(--border-radius-sm)",
-              fontSize: "13px",
-              marginTop: "4px"
-            }}
-          >
-            {loading ? "Please wait..." : isLoginState ? "Sign In" : "Sign Up"}
-          </button>
-        </form>
-
-        {/* State Toggle links */}
+        {/* Toggle sign in / sign up state links */}
         <div style={{ textAlign: "center", borderTop: "1px solid var(--border-color)", paddingTop: "var(--space-4)" }}>
           <button 
             style={{ fontSize: "var(--text-xs)", color: "var(--accent-pink)", fontWeight: "600", minHeight: "auto" }}
             onClick={() => { setIsLoginState(!isLoginState); setErrorMsg(""); }}
           >
-            {isLoginState ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+            {isLoginState ? "New to SHOPPER? Sign Up" : "Already have an account? Sign In"}
           </button>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <ForgotPasswordForm onClose={() => setShowForgotPassword(false)} />
+      )}
     </main>
   );
 };

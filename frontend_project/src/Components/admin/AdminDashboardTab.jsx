@@ -40,7 +40,7 @@ export const AdminDashboardTab = ({
         <div className="metric-card val">
           <div className="metric-details">
             <span className="metric-title">Catalog Asset Value</span>
-            <span className="metric-value">${catalogValue.toLocaleString('en-US')}</span>
+            <span className="metric-value">₹{catalogValue.toLocaleString('en-US')}</span>
           </div>
           <span className="metric-icon" style={{ fontSize: '1.5rem' }}>💰</span>
         </div>

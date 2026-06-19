@@ -122,7 +122,7 @@ const Shop = ({ category = "all" }) => {
 
         {/* Price slider */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1, minWidth: "200px" }}>
-          <span style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Max Price: ${priceRange}</span>
+          <span style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Max Price: ₹{priceRange}</span>
           <input 
             type="range" 
             min="10" 
