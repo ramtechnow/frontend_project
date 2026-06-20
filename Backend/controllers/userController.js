@@ -328,7 +328,7 @@ async function sendSMS(phone, otp) {
 // Transactional Email OTP sender helper using Nodemailer
 async function sendEmail(email, subject, html) {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT) || 587;
+  const port = parseInt(process.env.SMTP_PORT) || 465;
   const user = process.env.SMTP_USER || 'bvhss20@gmail.com';
   const pass = process.env.SMTP_PASS || 'yqup nkss xket bpkt';
 
@@ -337,7 +337,10 @@ async function sendEmail(email, subject, html) {
       host,
       port,
       secure: port === 465,
-      auth: { user, pass }
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false // Avoid connection drops due to local certificate issues
+      }
     });
     await transporter.sendMail({
       from: `"SHOPPER Support" <${user}>`,
