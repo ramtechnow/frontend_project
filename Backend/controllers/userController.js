@@ -328,7 +328,7 @@ async function sendSMS(phone, otp) {
 
 // Transactional Email OTP sender helper using Nodemailer
 async function sendEmail(email, subject, html) {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const host = process.env.SMTP_HOST || process.env.SMTP_SERVER || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT) || 465;
   const user = process.env.SMTP_USER || 'bvhss20@gmail.com';
   const pass = process.env.SMTP_PASS || 'yqup nkss xket bpkt';
