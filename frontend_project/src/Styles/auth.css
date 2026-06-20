@@ -167,6 +167,28 @@
   animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Login Page Container */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-4);
+  min-height: calc(100vh - 160px);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
 @keyframes modalSlideUp {
   from {
     opacity: 0;
@@ -175,5 +197,70 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Mobile Optimizations for All Authentication Elements */
+@media (max-width: 480px) {
+  .login-container {
+    padding: var(--space-6) var(--space-3);
+    min-height: auto;
+  }
+  
+  .login-card {
+    padding: var(--space-5) var(--space-4) !important;
+    gap: var(--space-4) !important;
+    border-radius: var(--border-radius-md) !important;
+  }
+
+  .login-card h1 {
+    font-size: var(--text-lg) !important;
+  }
+
+  .login-card p {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+  }
+
+  .login-card label,
+  .auth-modal-content label {
+    font-size: 11px !important;
+  }
+
+  .login-card input,
+  .auth-modal-content input {
+    height: 38px !important;
+    font-size: 13px !important;
+  }
+
+  .login-card button[type="submit"],
+  .auth-modal-content button[type="submit"] {
+    height: 38px !important;
+    font-size: 13px !important;
+  }
+
+  .auth-modal-overlay {
+    padding: 10px !important;
+  }
+
+  .auth-modal-content {
+    padding: var(--space-5) var(--space-4) !important;
+    gap: var(--space-4) !important;
+    border-radius: var(--border-radius-md) !important;
+  }
+
+  .auth-modal-content h2 {
+    font-size: var(--text-md) !important;
+  }
+
+  .otp-container {
+    gap: 6px !important;
+  }
+
+  .otp-box {
+    width: 36px !important;
+    height: 42px !important;
+    font-size: 16px !important;
+    border-radius: 4px !important;
   }
 }

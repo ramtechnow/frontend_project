@@ -83,29 +83,8 @@ const Login = () => {
 
 
   return (
-    <main 
-      className="container"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "var(--space-12) var(--space-4)"
-      }}
-    >
-      <div 
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          backgroundColor: "var(--bg-secondary)",
-          border: "1px solid var(--border-color)",
-          borderRadius: "var(--border-radius-lg)",
-          padding: "var(--space-8)",
-          boxShadow: "var(--shadow-lg)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-5)"
-        }}
-      >
+    <main className="login-container">
+      <div className="login-card">
         {/* Title & Copy */}
         <div style={{ textAlign: "center" }}>
           <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>

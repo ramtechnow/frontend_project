@@ -358,6 +358,9 @@ async function sendEmail(email, subject, html) {
       port,
       secure: port === 465,
       auth: { user, pass },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 5000,
       tls: {
         servername: host, // Ensure TLS SNI is sent correctly for certificate verification
         rejectUnauthorized: false // Avoid connection drops due to local certificate issues
@@ -529,7 +532,8 @@ exports.forgotPassword = async (req, res) => {
         <p style="font-size: 11px; color: #888; text-align: center;">SHOPPER E-Commerce Team &bull; Secure Password Reset Service</p>
       </div>
     `;
-    await sendEmail(email, subject, html);
+    // Send email asynchronously in the background
+    sendEmail(email, subject, html);
 
     res.json(genericResponse);
   } catch (error) {

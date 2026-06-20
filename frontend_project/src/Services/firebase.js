@@ -11,13 +11,13 @@ import {
 
 // Environment variables configuration
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyAbhOjpXJb88Dan3-tWS9rkBUOX0ND_6kI",
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "ecommerce-website-dfd55.firebaseapp.com",
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "ecommerce-website-dfd55",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "ecommerce-website-dfd55.firebasestorage.app",
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "128549464864",
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:128549464864:web:f6d80c86bf13ccdd30c545",
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || "G-L194PK372N"
 };
 
 let app = null;
