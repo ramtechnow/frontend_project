@@ -1,41 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../Context/AuthContext';
 import { adminApi } from '../Utils/adminApi';
 
 export const useAdminAuth = () => {
+  const { currentUser, loading: authLoading } = useContext(AuthContext);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('auth-token');
-      if (!token) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
+    // If the global auth context is still loading, wait.
+    if (authLoading) {
+      return;
+    }
 
-      // Safe local check first to avoid unnecessary backend calls if clearly invalid
-      try {
-        const parts = token.split('.');
-        if (parts.length !== 3) {
-          throw new Error("Invalid token format");
-        }
-        const payload = JSON.parse(atob(parts[1]));
-        if (!payload.user || !payload.user.isAdmin) {
-          setIsAdmin(false);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.error("Local token validation check failed:", err);
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
+    // If AuthContext finished loading, and there is no user or user is not admin, deny access.
+    if (!currentUser || !currentUser.isAdmin) {
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
 
-      // Backend verification
+    const verifyBackend = async () => {
       try {
         const data = await adminApi.verifyAdmin();
         if (data.success && data.user && data.user.isAdmin) {
@@ -53,8 +40,8 @@ export const useAdminAuth = () => {
       }
     };
 
-    checkAuth();
-  }, []);
+    verifyBackend();
+  }, [authLoading, currentUser]);
 
-  return { isAdmin, loading, error, adminUser };
+  return { isAdmin, loading: loading || authLoading, error, adminUser };
 };

@@ -50,7 +50,12 @@ const Login = () => {
         const res = await login(emailVal, passVal);
         if (res.success) {
           clearCart(); // Clear old local cart to load database cart
-          navigate("/");
+          const isUserAdmin = emailVal.toLowerCase() === "admin@gmail.com" || (res.user && res.user.isAdmin);
+          if (isUserAdmin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
         } else {
           setErrorMsg(res.errors || "Failed to login. Please check credentials.");
         }
@@ -58,7 +63,12 @@ const Login = () => {
         const res = await signup(nameVal, emailVal, passVal);
         if (res.success) {
           clearCart();
-          navigate("/");
+          const isUserAdmin = emailVal.toLowerCase() === "admin@gmail.com" || (res.user && res.user.isAdmin);
+          if (isUserAdmin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
         } else {
           setErrorMsg(res.errors || "Failed to create account. Please try again.");
         }

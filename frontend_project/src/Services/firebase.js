@@ -6,9 +6,7 @@ import {
   signOut, 
   updateProfile,
   onAuthStateChanged,
-  sendPasswordResetEmail,
-  RecaptchaVerifier,
-  signInWithPhoneNumber
+  sendPasswordResetEmail
 } from "firebase/auth";
 
 // Environment variables configuration
@@ -60,8 +58,6 @@ export {
   signOut,
   updateProfile,
   onAuthStateChanged,
-  sendPasswordResetEmail,
-  RecaptchaVerifier,
-  signInWithPhoneNumber
+  sendPasswordResetEmail
 };
 export default app;
