@@ -38,17 +38,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       {/* Drawer */}
       <div className="mobile-menu-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation Menu">
         <div className="mobile-menu-header">
-          <div className="mobile-menu-logo" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 20 H30 L45 70 H85 L95 35 H35" stroke="var(--accent-pink)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              <circle cx="50" cy="85" r="10" fill="var(--text-primary)" />
-              <circle cx="78" cy="85" r="10" fill="var(--text-primary)" />
-              <path d="M40 30 H75 L60 55 H45 Z" fill="var(--accent-pink)" opacity="0.8" />
-              <text x="48" y="52" fill="white" fontSize="22" fontWeight="900" textAnchor="middle" fontFamily="Poppins, sans-serif">R</text>
-            </svg>
-            <span style={{ fontWeight: "800", fontSize: "1.15rem", color: "var(--text-primary)" }}>
-              Ram<span style={{ color: "var(--accent-pink)" }}>Cart</span>
-            </span>
+          <div className="mobile-menu-logo" style={{ display: "flex", alignItems: "center" }}>
+            <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "36px", objectFit: "contain" }} />
           </div>
           <button className="mobile-menu-close-btn" onClick={onClose} aria-label="Close menu">
             <X size={24} />

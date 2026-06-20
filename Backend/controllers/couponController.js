@@ -40,8 +40,8 @@ exports.getAllCoupons = async (req, res) => {
 // ── Admin: Toggle coupon active/inactive ─────────────────────────────────────
 exports.toggleCoupon = async (req, res) => {
   try {
-    const { couponId } = req.body;
-    const coupon = await Coupon.findById(couponId);
+    const { couponId, code } = req.body;
+    const coupon = couponId ? await Coupon.findById(couponId) : await Coupon.findOne({ code: code.toUpperCase() });
     if (!coupon) return res.status(404).json({ success: false, error: 'Coupon not found' });
     coupon.isActive = !coupon.isActive;
     await coupon.save();
@@ -54,8 +54,12 @@ exports.toggleCoupon = async (req, res) => {
 // ── Admin: Delete coupon ──────────────────────────────────────────────────────
 exports.deleteCoupon = async (req, res) => {
   try {
-    const { couponId } = req.body;
-    await Coupon.findByIdAndDelete(couponId);
+    const { couponId, code } = req.body;
+    if (couponId) {
+      await Coupon.findByIdAndDelete(couponId);
+    } else if (code) {
+      await Coupon.findOneAndDelete({ code: code.toUpperCase() });
+    }
     res.json({ success: true, message: 'Coupon deleted' });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Internal Server Error' });

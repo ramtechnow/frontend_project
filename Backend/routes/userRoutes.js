@@ -16,6 +16,7 @@ router.post('/auth/firebase-sync', userController.firebaseSync);
 router.get('/getcart', fetchUser, userController.getCart);
 router.post('/addtocart', fetchUser, userController.addToCart);
 router.post('/removefromcart', fetchUser, userController.removeFromCart);
+router.post('/clearcart', fetchUser, userController.clearCart);
 
 // Wishlist routes
 router.get('/getwishlist', fetchUser, userController.getWishlist);

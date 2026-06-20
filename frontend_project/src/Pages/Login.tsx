@@ -13,7 +13,7 @@ import {
 import { Button } from "../Components/ui/Button";
 import { Input } from "../Components/ui/Input";
 import { Modal } from "../Components/ui/Modal";
-import { Mail, Lock, User, Sparkles } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 
 export const Login: React.FC = () => {
   const [isLoginState, setIsLoginState] = useState(true);
@@ -87,9 +87,9 @@ export const Login: React.FC = () => {
         className="w-full max-w-[420px] bg-bg-secondary border border-border rounded-lg shadow-xl p-8 flex flex-col gap-6"
       >
         {/* Header */}
-        <div className="text-center flex flex-col gap-1">
-          <h1 className="text-2xl font-extrabold text-text-primary flex items-center justify-center gap-2">
-            <Sparkles size={20} className="text-accent-pink" />
+        <div className="text-center flex flex-col items-center gap-2">
+          <img src="/RamCart_brand_logo.png" alt="RamCart Brand Logo" style={{ height: "64px", objectFit: "contain", marginBottom: "4px" }} />
+          <h1 className="text-xl font-extrabold text-text-primary flex items-center justify-center gap-2">
             {isLoginState ? "Welcome Back" : "Join RamCart"}
           </h1>
           <p className="text-xs text-text-muted">

@@ -109,26 +109,32 @@ exports.addToCart = async (req, res) => {
     const size = req.body.size;
     const color = req.body.color;
     const key = (size && color) ? `${itemKey}-${size}-${color}` : (size ? `${itemKey}-${size}` : `${itemKey}`);
+    const qty = Number(req.body.qty !== undefined ? req.body.qty : 1);
+    const setQty = req.body.setQty === true;
 
     if (!userData.cartData) {
       userData.cartData = {};
     }
 
     if (userData.cartData[key]) {
-      userData.cartData[key].quantity += 1;
+      if (setQty) {
+        userData.cartData[key].quantity = qty;
+      } else {
+        userData.cartData[key].quantity += qty;
+      }
     } else {
       userData.cartData[key] = {
-        id: Number(itemKey),
+        id: Number(itemKey) || itemKey,
         size: size || "M",
         color: color || "White",
-        quantity: 1
+        quantity: qty
       };
     }
 
     userData.markModified('cartData');
     await userData.save();
     console.log("Added to cart database successfully!");
-    res.send({ success: true, message: "Added to cart successfully" });
+    res.send({ success: true, message: "Added to cart successfully", cartData: userData.cartData });
   } catch (error) {
     console.error("Error in addtocart:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
@@ -140,9 +146,10 @@ exports.removeFromCart = async (req, res) => {
   try {
     let userData = await User.findOne({ _id: req.user.id });
     const key = req.body.key || req.body.itemId; 
+    const removeAll = req.body.removeAll === true;
 
     if (userData.cartData && userData.cartData[key]) {
-      if (userData.cartData[key].quantity > 1) {
+      if (userData.cartData[key].quantity > 1 && !removeAll) {
         userData.cartData[key].quantity -= 1;
       } else {
         delete userData.cartData[key];
@@ -150,12 +157,27 @@ exports.removeFromCart = async (req, res) => {
       userData.markModified('cartData');
       await userData.save();
       console.log("Removed from cart database successfully!");
-      res.send({ success: true, message: "Removed from cart successfully" });
+      res.send({ success: true, message: "Removed from cart successfully", cartData: userData.cartData });
     } else {
       res.status(400).send({ success: false, error: "Item not in cart" });
     }
   } catch (error) {
     console.error("Error in removefromcart:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// Clear entire cart
+exports.clearCart = async (req, res) => {
+  try {
+    let userData = await User.findOne({ _id: req.user.id });
+    userData.cartData = {};
+    userData.markModified('cartData');
+    await userData.save();
+    console.log("Cleared user cart successfully!");
+    res.send({ success: true, message: "Cart cleared successfully" });
+  } catch (error) {
+    console.error("Error in clearcart:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };

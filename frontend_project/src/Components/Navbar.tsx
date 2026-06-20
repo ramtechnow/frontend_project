@@ -51,24 +51,8 @@ export const Navbar: React.FC = () => {
     <>
       <nav className="navbar" aria-label="Main Navigation">
         {/* LOGO - RamCart Rebranded */}
-        <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ gap: "10px" }}>
-          {/* Custom Sleek SVG logo styled like RamCart logo */}
-          <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: "visible" }}>
-            <path d="M10 20 H30 L45 70 H85 L95 35 H35" stroke="var(--accent-pink)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <circle cx="50" cy="85" r="10" fill="var(--text-primary)" />
-            <circle cx="78" cy="85" r="10" fill="var(--text-primary)" />
-            <path d="M40 30 H75 L60 55 H45 Z" fill="var(--accent-pink)" opacity="0.8" />
-            {/* The elegant R character inside */}
-            <text x="48" y="52" fill="white" fontSize="22" fontWeight="900" textAnchor="middle" fontFamily="Poppins, sans-serif">R</text>
-          </svg>
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: "1" }}>
-            <span style={{ fontSize: "20px", fontWeight: "900", letterSpacing: "0.5px", color: "var(--text-primary)" }}>
-              Ram<span style={{ color: "var(--accent-pink)" }}>Cart</span>
-            </span>
-            <span style={{ fontSize: "8px", fontWeight: "500", letterSpacing: "1px", color: "var(--text-muted)", textTransform: "uppercase", marginTop: "2px" }}>
-              by RamTechnow
-            </span>
-          </div>
+        <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center" }}>
+          <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "42px", objectFit: "contain" }} />
         </Link>
 
         {/* DESKTOP NAV LINKS */}

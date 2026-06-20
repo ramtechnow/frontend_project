@@ -108,6 +108,7 @@ export const useAuth = () => {
     dispatch(setAuthLoading(true));
     try {
       await signOut(auth);
+      localStorage.removeItem("auth-token");
       dispatch(clearAuth());
       dispatch(addToast({ message: "Signed out successfully.", type: "info" }));
       return { success: true };

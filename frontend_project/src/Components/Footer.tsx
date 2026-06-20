@@ -10,17 +10,8 @@ export const Footer: React.FC = () => {
         <div className="footer-grid">
           {/* Brand Info */}
           <div className="footer-brand-column">
-            <div className="footer-logo-row" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 20 H30 L45 70 H85 L95 35 H35" stroke="var(--accent-pink)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <circle cx="50" cy="85" r="10" fill="var(--text-primary)" />
-                <circle cx="78" cy="85" r="10" fill="var(--text-primary)" />
-                <path d="M40 30 H75 L60 55 H45 Z" fill="var(--accent-pink)" opacity="0.8" />
-                <text x="48" y="52" fill="white" fontSize="22" fontWeight="900" textAnchor="middle" fontFamily="Poppins, sans-serif">R</text>
-              </svg>
-              <span style={{ fontWeight: "800", fontSize: "1.2rem", color: "var(--text-primary)" }}>
-                Ram<span style={{ color: "var(--accent-pink)" }}>Cart</span>
-              </span>
+            <div className="footer-logo-row" style={{ display: "flex", alignItems: "center" }}>
+              <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "40px", objectFit: "contain", filter: "brightness(0.95)" }} />
             </div>
             <p className="footer-brand-description">
               RamCart is an enterprise-grade portfolio eCommerce platform designed by RamTechnow Technologies, featuring premium design details, real-time data flow, and advanced administrative capabilities.

@@ -1,42 +1,55 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  query, 
-  where, 
-  setDoc, 
-  deleteDoc
-} from "firebase/firestore";
-import { db } from "../../../config/firebase";
+import { BACKEND_URL } from "../../../config";
 
-// Fetch user's wishlist from Firestore
-export const fetchUserWishlist = async (userId: string): Promise<string[]> => {
-  const wishlistRef = collection(db, "wishlists");
-  const q = query(wishlistRef, where("userId", "==", userId));
-  const snapshot = await getDocs(q);
-
-  const productIds: string[] = [];
-  snapshot.forEach((docSnap) => {
-    productIds.push(docSnap.data().productId);
+// Fetch user's wishlist from Express backend
+export const fetchUserWishlist = async (_userId: string): Promise<string[]> => {
+  const token = localStorage.getItem("auth-token");
+  if (!token) return [];
+  
+  const res = await fetch(`${BACKEND_URL}/getwishlist`, {
+    method: "GET",
+    headers: {
+      "auth-token": token,
+      "Content-Type": "application/json"
+    }
   });
-
-  return productIds;
+  
+  if (!res.ok) throw new Error("Failed to fetch wishlist");
+  const data = await res.json();
+  // Map values to string since database might return numbers or strings
+  return data.map((id: any) => String(id));
 };
 
-// Add item to wishlist in Firestore
-export const addWishlistItem = async (userId: string, productId: string): Promise<void> => {
-  const docId = `${userId}_${productId}`;
-  const docRef = doc(db, "wishlists", docId);
-  await setDoc(docRef, {
-    userId,
-    productId,
-    addedAt: new Date()
+// Add item to wishlist in backend
+export const addWishlistItem = async (_userId: string, productId: string): Promise<void> => {
+  const token = localStorage.getItem("auth-token");
+  if (!token) return;
+  
+  const res = await fetch(`${BACKEND_URL}/addtowishlist`, {
+    method: "POST",
+    headers: {
+      "auth-token": token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ itemId: Number(productId) || productId })
   });
+  
+  if (!res.ok) throw new Error("Failed to add to wishlist");
 };
 
-// Remove item from wishlist in Firestore
-export const deleteWishlistItem = async (userId: string, productId: string): Promise<void> => {
-  const docId = `${userId}_${productId}`;
-  const docRef = doc(db, "wishlists", docId);
-  await deleteDoc(docRef);
+// Remove item from wishlist in backend
+export const deleteWishlistItem = async (_userId: string, productId: string): Promise<void> => {
+  const token = localStorage.getItem("auth-token");
+  if (!token) return;
+  
+  const res = await fetch(`${BACKEND_URL}/removefromwishlist`, {
+    method: "POST",
+    headers: {
+      "auth-token": token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ itemId: Number(productId) || productId })
+  });
+  
+  if (!res.ok) throw new Error("Failed to remove from wishlist");
 };
+

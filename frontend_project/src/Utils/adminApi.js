@@ -1,23 +1,9 @@
-import { auth, db } from "../config/firebase";
 import { adminService } from "../features/admin/services/adminService";
-import { collection, query, where, getDocs } from "firebase/firestore";
 
 export const adminApi = {
   // Auth Verification
   async verifyAdmin() {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error("No authenticated session found.");
-    }
-    const isAdmin = await adminService.verifyAdmin(user.uid);
-    return { 
-      success: isAdmin, 
-      user: { 
-        email: user.email, 
-        name: user.displayName || user.email?.split("@")[0] || "Admin",
-        isAdmin 
-      } 
-    };
+    return adminService.verifyAdmin();
   },
 
   // Products CRUD
@@ -26,35 +12,12 @@ export const adminApi = {
   },
 
   async addProduct(productData) {
-    // Convert old price fields if necessary
-    const formatted = {
-      name: productData.name,
-      description: productData.description || "",
-      category: productData.category,
-      newPrice: Number(productData.newPrice || productData.new_price) || 0,
-      oldPrice: Number(productData.oldPrice || productData.old_price) || 0,
-      sizes: productData.sizes || [],
-      colors: productData.colors || [],
-      variants: productData.variants || [],
-      stockCount: Number(productData.stockCount) || 0,
-      image: productData.image || "",
-      available: productData.available !== false
-    };
-    await adminService.addProduct(formatted);
+    await adminService.addProduct(productData);
     return { success: true };
   },
 
   async updateProduct(productData) {
-    const id = productData.id;
-    if (!id) throw new Error("Product ID is required for update.");
-    
-    const formatted = {
-      ...productData,
-      newPrice: productData.newPrice !== undefined ? Number(productData.newPrice) : undefined,
-      oldPrice: productData.oldPrice !== undefined ? Number(productData.oldPrice) : undefined,
-      stockCount: productData.stockCount !== undefined ? Number(productData.stockCount) : undefined
-    };
-    await adminService.updateProduct(id, formatted);
+    await adminService.updateProduct(productData.id, productData);
     return { success: true };
   },
 
@@ -64,7 +27,7 @@ export const adminApi = {
   },
 
   async updateVariantStock(id, color, change) {
-    await adminService.updateVariantStock(id, color, Number(change));
+    await adminService.updateVariantStock(id, color, change);
     return { success: true };
   },
 
@@ -74,35 +37,22 @@ export const adminApi = {
   },
 
   async updateUserRole(email, isAdmin) {
-    const q = query(collection(db, "users"), where("email", "==", email));
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      throw new Error(`User with email "${email}" not found.`);
-    }
-    const userId = snap.docs[0].id;
-    await adminService.updateUserRole(userId, isAdmin ? "admin" : "customer");
+    await adminService.updateUserRole(email, isAdmin);
     return { success: true };
   },
 
   async deleteUser(email) {
-    const q = query(collection(db, "users"), where("email", "==", email));
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      throw new Error(`User with email "${email}" not found.`);
-    }
-    const userId = snap.docs[0].id;
-    await adminService.deleteUser(userId);
+    await adminService.deleteUser(email);
     return { success: true };
   },
 
   // Orders Management
   async fetchOrders() {
-    // Map order fields back to the old order schema properties (e.g. _id instead of id, date instead of createdAt)
     const list = await adminService.fetchOrders();
     return list.map((order) => ({
       ...order,
       _id: order.id,
-      date: order.createdAt?.toDate ? order.createdAt.toDate().toISOString() : new Date(order.createdAt).toISOString()
+      date: order.createdAt
     }));
   },
 
@@ -118,15 +68,7 @@ export const adminApi = {
   },
 
   async createCoupon(couponData) {
-    await adminService.createCoupon({
-      code: couponData.code,
-      discountType: couponData.discountType,
-      discountValue: Number(couponData.discountValue),
-      minOrderAmount: Number(couponData.minOrderAmount || 0),
-      maxUses: Number(couponData.maxUses || 0),
-      isActive: true,
-      expiresAt: couponData.expiresAt ? new Date(couponData.expiresAt) : null
-    });
+    await adminService.createCoupon(couponData);
     return { success: true };
   },
 
@@ -140,3 +82,4 @@ export const adminApi = {
     return { success: true };
   }
 };
+
