@@ -3,7 +3,7 @@ const categories = [
   {
     id: "women",
     name: "Women",
-    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop",
+    image: "/women_category.png",
     link: "/womens",
     count: 382,
     description: "Elegant dresses, blouses, skirts, and premium cashmere outerwear."
@@ -11,7 +11,7 @@ const categories = [
   {
     id: "men",
     name: "Men",
-    image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop",
+    image: "/men_category.png",
     link: "/mens",
     count: 245,
     description: "Sharp blazers, organic cotton shirts, jackets, and stretch chinos."
@@ -19,7 +19,7 @@ const categories = [
   {
     id: "kid",
     name: "Kids",
-    image: "https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?q=80&w=600&auto=format&fit=crop",
+    image: "/kids_category.png",
     link: "/kids",
     count: 189,
     description: "Cute dungarees, cozy pajamas, water-resistant raincoats, and puffer jackets."
