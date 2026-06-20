@@ -7,7 +7,8 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signInWithPhoneNumber
 } from "../Services/firebase";
 import { BACKEND_URL } from "../config";
 
@@ -252,49 +253,91 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 1. Send Login OTP to Indian mobile number
-  const sendLoginOtp = async (phone) => {
+  // 1. Send Login OTP to Indian mobile number (Supports Firebase Auth & Fallback)
+  const sendLoginOtp = async (phone, recaptchaVerifier = null) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/send-login-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
-      });
-      const data = await response.json();
-      return data;
+      if (!isFirebaseSimulated && auth && recaptchaVerifier) {
+        // Real Firebase Phone Authentication
+        const confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+        return { success: true, isFirebase: true, confirmationResult };
+      } else {
+        // Fallback to custom backend OTP flow
+        const response = await fetch(`${BACKEND_URL}/auth/send-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        });
+        const data = await response.json();
+        return { ...data, isFirebase: false };
+      }
     } catch (error) {
       return { success: false, errors: error.message || "Network connection error" };
     }
   };
 
-  // 2. Verify Phone OTP and log in / register
-  const verifyLoginOtp = async (phone, otp, name) => {
+  // 2. Verify Phone OTP and log in / register (Supports Firebase Auth & Fallback)
+  const verifyLoginOtp = async (phone, otp, name, confirmationResult = null) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/verify-login-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp, name }),
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem("auth-token", data.token);
-        window.dispatchEvent(new Event('auth-change'));
-        const decoded = decodeToken(data.token);
+      if (confirmationResult) {
+        // Real Firebase Phone Auth confirmation
+        const result = await confirmationResult.confirm(otp);
+        const user = result.user;
+        const idToken = await user.getIdToken();
         
-        localStorage.setItem("user-email", data.user.email || `${phone.replace('+', '')}@shopper.in`);
-        localStorage.setItem("user-name", data.user.name);
+        // Sync with backend database
+        const response = await fetch(`${BACKEND_URL}/auth/firebase-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, uid: user.uid, name, idToken }),
+        });
+        const data = await response.json();
 
-        const userObj = {
-          uid: decoded?.id,
-          email: data.user.email,
-          displayName: data.user.name,
-          isAdmin: decoded?.isAdmin || false,
-          isFirebase: false
-        };
-        setCurrentUser(userObj);
+        if (data.success) {
+          localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
+          const decoded = decodeToken(data.token);
+          
+          localStorage.setItem("user-email", data.user.email || `${phone.replace('+', '')}@shopper.in`);
+          localStorage.setItem("user-name", data.user.name);
+
+          const userObj = {
+            uid: decoded?.id || user.uid,
+            email: data.user.email,
+            displayName: data.user.name,
+            isAdmin: decoded?.isAdmin || false,
+            isFirebase: true
+          };
+          setCurrentUser(userObj);
+        }
+        return data;
+      } else {
+        // Custom backend / simulation verification
+        const response = await fetch(`${BACKEND_URL}/auth/verify-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, otp, name }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
+          const decoded = decodeToken(data.token);
+          
+          localStorage.setItem("user-email", data.user.email || `${phone.replace('+', '')}@shopper.in`);
+          localStorage.setItem("user-name", data.user.name);
+
+          const userObj = {
+            uid: decoded?.id,
+            email: data.user.email,
+            displayName: data.user.name,
+            isAdmin: decoded?.isAdmin || false,
+            isFirebase: false
+          };
+          setCurrentUser(userObj);
+        }
+        return data;
       }
-      return data;
     } catch (error) {
       return { success: false, errors: error.message || "Network connection error" };
     }

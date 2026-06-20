@@ -563,4 +563,57 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+// POST: Firebase Authentication user synchronization
+exports.firebaseSync = async (req, res) => {
+  try {
+    const { phone, uid, name } = req.body;
+    if (!phone) {
+      return res.status(400).json({ success: false, errors: "Phone number is required for user sync" });
+    }
+
+    // Find user by phone number
+    let user = await User.findOne({ phone });
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      // Auto-register user since their phone is verified by Firebase
+      user = new User({
+        name: name || `Shopper_${phone.slice(-4)}`,
+        phone,
+        email: `${phone.replace('+', '')}@shopper.in`, // Generate unique placeholder email
+        cartData: {},
+        wishlistData: []
+      });
+      await user.save();
+    }
+
+    const data = {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
+    };
+    
+    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
+    
+    res.json({
+      success: true,
+      token,
+      isNewUser,
+      user: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        isAdmin: user.isAdmin
+      }
+    });
+  } catch (error) {
+    console.error("Error in firebaseSync:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
 

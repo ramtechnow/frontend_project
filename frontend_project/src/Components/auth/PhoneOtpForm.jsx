@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { AuthContext } from "../../Context/AuthContext";
+import { auth, RecaptchaVerifier } from "../../Services/firebase";
 import { validateIndianPhone, formatIndianPhone } from "../../Utils/validators";
 import { useOtpTimer } from "../../Hooks/useOtpTimer";
 import { CheckCircle2, User } from "lucide-react";
 
 const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
-  const { sendLoginOtp, verifyLoginOtp } = useContext(AuthContext);
+  const { sendLoginOtp, verifyLoginOtp, isFirebaseSimulated } = useContext(AuthContext);
   
   const [phoneNumber, setPhoneNumber] = useState("");
   const [name, setName] = useState("");
@@ -14,6 +15,7 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   const { secondsLeft, startTimer, isTimerActive } = useOtpTimer(0);
   const inputRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
@@ -26,7 +28,36 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
     setOtpValues(["", "", "", "", "", ""]);
     setMessage("");
     setValidationError("");
+    setConfirmationResult(null);
   }, [isSignup]);
+
+  // Setup reCAPTCHA Verifier for Firebase Phone Auth
+  useEffect(() => {
+    if (!isFirebaseSimulated && auth) {
+      if (!window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+            size: "invisible",
+            callback: (response) => {
+              // reCAPTCHA solved
+            }
+          });
+        } catch (error) {
+          console.error("reCAPTCHA initialization failed:", error);
+        }
+      }
+    }
+    return () => {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+  }, [isFirebaseSimulated]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -42,10 +73,16 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
     setLoading(true);
     const formattedPhone = formatIndianPhone(phoneNumber);
     try {
-      const res = await sendLoginOtp(formattedPhone);
+      const verifier = !isFirebaseSimulated ? window.recaptchaVerifier : null;
+      const res = await sendLoginOtp(formattedPhone, verifier);
       if (res.success) {
         setStep(2);
-        setMessage(`OTP sent successfully to ${formattedPhone}`);
+        if (res.isFirebase) {
+          setConfirmationResult(res.confirmationResult);
+          setMessage(`Verification code sent to ${formattedPhone} via Firebase`);
+        } else {
+          setMessage(`OTP sent successfully to ${formattedPhone}`);
+        }
         startTimer(60);
         // Focus first OTP input on next render tick
         setTimeout(() => {
@@ -69,10 +106,14 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
 
     const formattedPhone = formatIndianPhone(phoneNumber);
     try {
-      const res = await sendLoginOtp(formattedPhone);
+      const verifier = !isFirebaseSimulated ? window.recaptchaVerifier : null;
+      const res = await sendLoginOtp(formattedPhone, verifier);
       if (res.success) {
-        setMessage("A fresh OTP verification code has been sent!");
+        setMessage("A fresh verification code has been sent!");
         setOtpValues(["", "", "", "", "", ""]);
+        if (res.isFirebase) {
+          setConfirmationResult(res.confirmationResult);
+        }
         startTimer(60);
         if (inputRefs[0].current) inputRefs[0].current.focus();
       } else {
@@ -135,11 +176,12 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
     setLoading(true);
     const formattedPhone = formatIndianPhone(phoneNumber);
     try {
-      const res = await verifyLoginOtp(formattedPhone, fullOtp, isSignup ? name.trim() : "");
+      const verifierResult = !isFirebaseSimulated ? confirmationResult : null;
+      const res = await verifyLoginOtp(formattedPhone, fullOtp, isSignup ? name.trim() : "", verifierResult);
       if (res.success) {
         onSuccess(res);
       } else {
-        onError(res.errors || "Incorrect OTP. Please try again.");
+        onError(res.errors || "Incorrect verification code. Please try again.");
       }
     } catch (err) {
       onError("OTP verification failed due to network error.");
@@ -150,6 +192,9 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+      {/* Invisible Recaptcha Anchor for Firebase Phone Auth */}
+      <div id="recaptcha-container"></div>
+
       {message && (
         <div style={{
           display: "flex",
@@ -198,6 +243,7 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
             type="submit"
             className="interactive-target"
             disabled={loading}
+            id="send-otp-btn"
             style={{
               width: "100%",
               height: "44px",
@@ -209,7 +255,7 @@ const PhoneOtpForm = ({ isSignup, onSuccess, onError }) => {
               marginTop: "4px"
             }}
           >
-            {loading ? "Sending OTP..." : "Request 6-Digit OTP"}
+            {loading ? "Initializing..." : "Request 6-Digit OTP"}
           </button>
         </form>
       ) : (

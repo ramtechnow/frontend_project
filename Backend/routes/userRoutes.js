@@ -10,6 +10,7 @@ router.post('/auth/send-login-otp', userController.sendLoginOtp);
 router.post('/auth/verify-login-otp', userController.verifyLoginOtp);
 router.post('/auth/forgot-password', userController.forgotPassword);
 router.post('/auth/reset-password', userController.resetPassword);
+router.post('/auth/firebase-sync', userController.firebaseSync);
 
 // Cart routes
 router.get('/getcart', fetchUser, userController.getCart);
