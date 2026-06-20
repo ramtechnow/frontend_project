@@ -120,7 +120,29 @@ const Checkout = () => {
     }
 
     try {
+      // Build items array for the backend order schema
+      const orderItems = [];
+      for (const key in cartItems) {
+        const item = cartItems[key];
+        if (!item || typeof item !== 'object' || (Number(item.quantity) || 0) <= 0) continue;
+        
+        const product = productsList.find((p) => p.id === item.id);
+        if (product) {
+          orderItems.push({
+            productId: product.id,
+            name: product.name,
+            image: product.image,
+            size: item.size || 'M',
+            color: item.color || 'White',
+            quantity: Number(item.quantity),
+            price: Number(product.new_price),
+          });
+        }
+      }
+
       const payload = {
+        items: orderItems,
+        amount: finalPayable,
         address: addressForm,
         couponCode: couponCode || null,
       };
@@ -141,7 +163,7 @@ const Checkout = () => {
         clearCart();
         if (fetchWishlist) fetchWishlist();
       } else {
-        alert(data.message || "Failed to submit order. Try again.");
+        alert(data.error || data.message || "Failed to submit order. Try again.");
         setIsProcessing(false);
       }
     } catch (error) {
