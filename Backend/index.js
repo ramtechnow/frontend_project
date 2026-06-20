@@ -1,4 +1,9 @@
 require('dotenv').config();
+const dns = require('dns');
+// Prioritize IPv4 DNS resolution globally to bypass IPv6 network routing issues on Render
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 const port = process.env.PORT || 4000;
 const express = require("express");
 const app = express();

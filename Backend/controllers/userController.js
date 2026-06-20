@@ -3,6 +3,7 @@ const OTP = require('../models/OTP');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const dns = require('dns').promises;
 
 // User Registration / Signup
 exports.signup = async (req, res) => {
@@ -332,13 +333,28 @@ async function sendEmail(email, subject, html) {
   const user = process.env.SMTP_USER || 'bvhss20@gmail.com';
   const pass = process.env.SMTP_PASS || 'yqup nkss xket bpkt';
 
+  let resolvedHost = host;
+  // Resolve host to IPv4 to bypass IPv6 ENETUNREACH errors on cloud platforms like Render
+  if (host === 'smtp.gmail.com') {
+    try {
+      const addresses = await dns.resolve4(host);
+      if (addresses && addresses.length > 0) {
+        resolvedHost = addresses[0];
+        console.log(`Resolved SMTP host ${host} to IPv4 address: ${resolvedHost}`);
+      }
+    } catch (dnsErr) {
+      console.warn(`Failed to resolve SMTP host ${host} to IPv4:`, dnsErr);
+    }
+  }
+
   try {
     const transporter = nodemailer.createTransport({
-      host,
+      host: resolvedHost,
       port,
       secure: port === 465,
       auth: { user, pass },
       tls: {
+        servername: host, // Ensure TLS SNI is sent correctly for certificate verification
         rejectUnauthorized: false // Avoid connection drops due to local certificate issues
       }
     });
