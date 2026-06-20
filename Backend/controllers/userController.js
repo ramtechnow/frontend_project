@@ -327,36 +327,29 @@ async function sendSMS(phone, otp) {
 
 // Transactional Email OTP sender helper using Nodemailer
 async function sendEmail(email, subject, html) {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: parseInt(process.env.SMTP_PORT) === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-      await transporter.sendMail({
-        from: `"SHOPPER Support" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: subject,
-        html: html
-      });
-      console.log(`✉️ Email successfully sent to ${email}`);
-      return true;
-    } catch (err) {
-      console.error("❌ Failed to send transactional email:", err);
-      return false;
-    }
-  } else {
-    console.log(`\n======================================================`);
-    console.log(`✉️ EMAIL (SIMULATED) SENT TO: ${email}`);
-    console.log(`🔑 SUBJECT: ${subject}`);
-    console.log(`📄 CONTENT:\n${html.replace(/<[^>]*>/g, ' ').trim()}`);
-    console.log(`======================================================\n`);
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT) || 587;
+  const user = process.env.SMTP_USER || 'bvhss20@gmail.com';
+  const pass = process.env.SMTP_PASS || 'yqup nkss xket bpkt';
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass }
+    });
+    await transporter.sendMail({
+      from: `"SHOPPER Support" <${user}>`,
+      to: email,
+      subject: subject,
+      html: html
+    });
+    console.log(`✉️ Email successfully sent to ${email}`);
     return true;
+  } catch (err) {
+    console.error("❌ Failed to send transactional email:", err);
+    return false;
   }
 }
 
