@@ -60,9 +60,17 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem("user-email", user.email);
                 localStorage.setItem("user-name", user.displayName || user.email.split('@')[0]);
                 window.dispatchEvent(new Event('auth-change'));
+              } else {
+                console.warn("Backend sync failed on reload:", data.errors || data.error);
+                localStorage.removeItem("auth-token");
+                setCurrentUser(null);
+                await signOut(auth);
               }
             } catch (err) {
               console.error("Failed to sync on reload:", err);
+              localStorage.removeItem("auth-token");
+              setCurrentUser(null);
+              await signOut(auth);
             }
           }
         } else {
