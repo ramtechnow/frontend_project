@@ -10,10 +10,31 @@ export const syncUserProfile = async (firebaseUser: FirebaseUser, customName?: s
 
   if (userSnapshot.exists()) {
     const data = userSnapshot.data();
+    
+    // Sync verification status or other missing fields to Firestore
+    const needsSync = 
+      data.emailVerified !== firebaseUser.emailVerified || 
+      !data.email || 
+      !data.name ||
+      (data.name === "Customer" && firebaseUser.displayName && data.name !== firebaseUser.displayName);
+
+    if (needsSync) {
+      try {
+        await setDoc(userDocRef, {
+          email: firebaseUser.email || data.email || "",
+          name: data.name || customName || firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Customer",
+          emailVerified: firebaseUser.emailVerified,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Failed to update user profile in Firestore:", e);
+      }
+    }
+
     return {
       uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      name: data.name || firebaseUser.displayName,
+      email: firebaseUser.email || data.email || null,
+      name: data.name || firebaseUser.displayName || "Customer",
       role: data.role || "customer",
       emailVerified: firebaseUser.emailVerified
     };
@@ -33,6 +54,7 @@ export const syncUserProfile = async (firebaseUser: FirebaseUser, customName?: s
     name: userProfile.name,
     email: userProfile.email,
     role: userProfile.role,
+    emailVerified: userProfile.emailVerified,
     createdAt: serverTimestamp()
   });
 

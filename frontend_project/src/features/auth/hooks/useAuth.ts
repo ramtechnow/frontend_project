@@ -12,7 +12,8 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   sendPasswordResetEmail,
-  updateProfile
+  updateProfile,
+  sendEmailVerification
 } from "firebase/auth";
 
 export const useAuth = () => {
@@ -46,6 +47,14 @@ export const useAuth = () => {
       const profile = await syncUserProfile(result.user);
       dispatch(setUser(profile));
       dispatch(addToast({ message: "Logged in successfully!", type: "success" }));
+      
+      if (!result.user.emailVerified) {
+        dispatch(addToast({ 
+          message: "Reminder: Your email is not verified yet. Please check your inbox.", 
+          type: "warning" 
+        }));
+      }
+      
       return { success: true };
     } catch (err: any) {
       dispatch(setAuthError(err.message));
@@ -59,6 +68,15 @@ export const useAuth = () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(result.user, { displayName: name });
+      
+      // Dispatch email verification link
+      try {
+        await sendEmailVerification(result.user);
+        dispatch(addToast({ message: "Verification link sent to your email!", type: "info" }));
+      } catch (verifyErr) {
+        console.warn("Failed to dispatch initial email verification:", verifyErr);
+      }
+      
       const profile = await syncUserProfile(result.user, name);
       dispatch(setUser(profile));
       dispatch(addToast({ message: "Account created successfully!", type: "success" }));
@@ -110,6 +128,20 @@ export const useAuth = () => {
     }
   };
 
+  const resendVerificationEmail = async () => {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        dispatch(addToast({ message: "Verification link sent to your email!", type: "success" }));
+        return { success: true };
+      } catch (err: any) {
+        dispatch(addToast({ message: err.message || "Failed to resend verification email", type: "error" }));
+        return { success: false, error: err.message };
+      }
+    }
+    return { success: false, error: "No user currently authenticated" };
+  };
+
   return {
     user,
     loading,
@@ -118,6 +150,7 @@ export const useAuth = () => {
     signupWithEmail,
     loginWithGoogle,
     logoutUser,
-    sendForgotPasswordReset
+    sendForgotPasswordReset,
+    resendVerificationEmail
   };
 };

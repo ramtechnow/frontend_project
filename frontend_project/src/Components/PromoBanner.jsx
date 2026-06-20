@@ -25,7 +25,7 @@ const PromoBanner = () => {
         }}
       >
         <ShieldAlert size={14} />
-        <span>SHOPPER Portfolio Project: This is a demo site. No real transactions are processed or shipped.</span>
+        <span>RamCart Portfolio Project: This is a demo site. No real transactions are processed or shipped.</span>
       </div>
 
       {/* Hero Banner Container */}

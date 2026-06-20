@@ -54,7 +54,7 @@ const Newsletter = () => {
       </div>
 
       <h2 style={{ fontSize: "var(--text-xl)", fontWeight: "800", color: "var(--text-primary)" }}>
-        Subscribe to SHOPPER Newsletter
+        Subscribe to RamCart Newsletter
       </h2>
       <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "450px" }}>
         Stay updated on special season offers, styling tutorials, and portfolio code enhancements. Direct updates to your inbox.

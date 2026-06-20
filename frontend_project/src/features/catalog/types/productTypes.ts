@@ -1,11 +1,13 @@
 export interface ProductVariant {
+  sku: string;
+  size: string;
   color: string;
   stock: number;
   price?: number;
 }
 
 export interface Product {
-  id: string; // Document ID (e.g. "prod_123" or MongoDB-style string)
+  id: string; // Document ID (e.g. "prod_123" or Firestore ID)
   name: string;
   description: string;
   category: string; // "men" | "women" | "kid"
@@ -15,7 +17,8 @@ export interface Product {
   colors: string[];
   variants: ProductVariant[];
   stockCount: number;
-  image: string; // Storage or static URL
+  image: string; // Primary image URL
+  images?: string[]; // Multiple image URLs list
   available: boolean;
   createdAt: any;
 }

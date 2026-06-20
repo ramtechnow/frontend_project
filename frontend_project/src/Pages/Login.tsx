@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
         <div className="text-center flex flex-col gap-1">
           <h1 className="text-2xl font-extrabold text-text-primary flex items-center justify-center gap-2">
             <Sparkles size={20} className="text-accent-pink" />
-            {isLoginState ? "Welcome Back" : "Join SHOPPER"}
+            {isLoginState ? "Welcome Back" : "Join RamCart"}
           </h1>
           <p className="text-xs text-text-muted">
             {isLoginState 
@@ -194,7 +194,7 @@ export const Login: React.FC = () => {
             onClick={() => setIsLoginState(!isLoginState)}
             className="text-xs text-accent-pink font-semibold hover:underline"
           >
-            {isLoginState ? "New to SHOPPER? Sign Up" : "Already have an account? Sign In"}
+            {isLoginState ? "New to RamCart? Sign Up" : "Already have an account? Sign In"}
           </button>
         </div>
       </motion.div>

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useEffect, useState } from "react";
 import PromoBanner from "../Components/PromoBanner";
 import CategoryCard from "../Components/CategoryCard";
 import ProductCard from "../Components/ProductCard";
@@ -6,21 +6,44 @@ import ProcessSteps from "../Components/ProcessSteps";
 import Testimonials from "../Components/Testimonials";
 import Newsletter from "../Components/Newsletter";
 import categories from "../data/categories";
-import products from "../data/products";
-import { ShopContext } from "../Context/ShopContext";
-import "../styles/productGrid.css";
+import { fetchProducts } from "../features/catalog/services/productService";
+import { Product } from "../features/catalog/types/productTypes";
+import { Loader2 } from "lucide-react";
+import "../Styles/productGrid.css";
 
-const Home = () => {
-  // Use context products if loaded, otherwise fallback to local products list
-  const { all_product } = useContext(ShopContext) || { all_product: [] };
-  const productsList = all_product.length > 0 ? all_product : products;
+export const Home: React.FC = () => {
+  const [productsList, setProductsList] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setProductsList(data);
+      } catch (err) {
+        console.error("Failed to load products for home page:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
 
   // Curate special selections
   const newCollections = productsList.slice(0, 4);
   const popularInWomen = productsList.filter(p => p.category === "women").slice(0, 4);
 
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-bg-primary text-text-primary">
+        <Loader2 size={36} className="animate-spin text-accent-pink mb-4" />
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Preparing collection catalogs...</span>
+      </div>
+    );
+  }
+
   return (
-    <main className="container" id="main-content" style={{ paddingBottom: "var(--space-12)" }}>
+    <main className="container" id="main-content" style={{ paddingBottom: "var(--space-12)", color: 'var(--text-primary)' }}>
       {/* 1. Hero Promo Banner */}
       <PromoBanner />
 
