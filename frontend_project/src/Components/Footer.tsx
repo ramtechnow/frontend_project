@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="footer-brand-column">
             <div className="footer-logo-row" style={{ display: "flex", alignItems: "center" }}>
-              <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "40px", objectFit: "contain", filter: "brightness(0.95)" }} />
+              <img src="/RamCart_logo_v2.png" alt="RamCart Logo" style={{ height: "40px", objectFit: "contain", filter: "brightness(0.95)" }} />
             </div>
             <p className="footer-brand-description">
               RamCart is an enterprise-grade portfolio eCommerce platform designed by RamTechnow Technologies, featuring premium design details, real-time data flow, and advanced administrative capabilities.

@@ -52,7 +52,7 @@ export const Navbar: React.FC = () => {
       <nav className="navbar" aria-label="Main Navigation">
         {/* LOGO - RamCart Rebranded */}
         <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "42px", objectFit: "contain" }} />
+          <img src="/RamCart_logo_v2.png" alt="RamCart Logo" style={{ height: "42px", objectFit: "contain" }} />
         </Link>
 
         {/* DESKTOP NAV LINKS */}

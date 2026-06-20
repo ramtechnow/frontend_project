@@ -39,7 +39,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       <div className="mobile-menu-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation Menu">
         <div className="mobile-menu-header">
           <div className="mobile-menu-logo" style={{ display: "flex", alignItems: "center" }}>
-            <img src="/RamCart_logo.png" alt="RamCart Logo" style={{ height: "36px", objectFit: "contain" }} />
+            <img src="/RamCart_logo_v2.png" alt="RamCart Logo" style={{ height: "36px", objectFit: "contain" }} />
           </div>
           <button className="mobile-menu-close-btn" onClick={onClose} aria-label="Close menu">
             <X size={24} />

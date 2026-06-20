@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
       >
         {/* Header */}
         <div className="text-center flex flex-col items-center gap-2">
-          <img src="/RamCart_brand_logo.png" alt="RamCart Brand Logo" style={{ height: "64px", objectFit: "contain", marginBottom: "4px" }} />
+          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Brand Logo" style={{ height: "64px", objectFit: "contain", marginBottom: "4px" }} />
           <h1 className="text-xl font-extrabold text-text-primary flex items-center justify-center gap-2">
             {isLoginState ? "Welcome Back" : "Join RamCart"}
           </h1>
