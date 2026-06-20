@@ -344,15 +344,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   // 3. Send Forgot Password OTP
+  // When Firebase is configured → uses Firebase sendPasswordResetEmail (free, no SMTP)
+  // When Firebase is not configured → falls back to backend OTP email via SMTP
   const sendForgotPasswordOtp = async (email) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json();
-      return data;
+      if (!isFirebaseSimulated && auth) {
+        // Firebase sends the reset email directly — no SMTP or Render involved
+        await sendPasswordResetEmail(auth, email);
+        return {
+          success: true,
+          isFirebase: true,
+          message: "Password reset link sent to your email via Firebase. Check your inbox (and spam folder)."
+        };
+      } else {
+        // Fallback: backend OTP email via SMTP
+        const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json();
+        return { ...data, isFirebase: false };
+      }
     } catch (error) {
       return { success: false, errors: error.message || "Network connection error" };
     }

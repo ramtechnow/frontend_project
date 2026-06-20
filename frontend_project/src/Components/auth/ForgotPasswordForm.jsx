@@ -35,12 +35,22 @@ const ForgotPasswordForm = ({ onClose }) => {
     try {
       const res = await sendForgotPasswordOtp(email.trim());
       if (res.success) {
-        setStep(2);
-        setMessage(res.message || "Reset code dispatched successfully!");
-        startTimer(60);
-        setTimeout(() => {
-          if (inputRefs[0].current) inputRefs[0].current.focus();
-        }, 100);
+        if (res.isFirebase) {
+          // Firebase sends a password reset LINK (not OTP) — show done screen
+          setMessage(
+            res.message ||
+            "Password reset email sent! Check your inbox and click the link to set a new password."
+          );
+          // Stay on step 1 showing the success banner — no OTP entry needed
+        } else {
+          // Backend OTP mode — advance to OTP + new password step
+          setStep(2);
+          setMessage(res.message || "Reset code dispatched successfully!");
+          startTimer(60);
+          setTimeout(() => {
+            if (inputRefs[0].current) inputRefs[0].current.focus();
+          }, 100);
+        }
       } else {
         setErrorMsg(res.errors || "Failed to dispatch reset code. Please try again.");
       }
