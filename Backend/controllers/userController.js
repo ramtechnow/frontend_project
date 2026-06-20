@@ -338,24 +338,11 @@ async function sendEmail(email, subject, html) {
     return false;
   }
 
-  let resolvedHost = host;
-  // Resolve host to IPv4 to bypass IPv6 ENETUNREACH errors on cloud platforms like Render
-  if (host === 'smtp.gmail.com') {
-    try {
-      const addresses = await dns.resolve4(host);
-      if (addresses && addresses.length > 0) {
-        resolvedHost = addresses[0];
-        console.log(`Resolved SMTP host ${host} to IPv4 address: ${resolvedHost}`);
-      }
-    } catch (dnsErr) {
-      console.warn(`Failed to resolve SMTP host ${host} to IPv4:`, dnsErr);
-    }
-  }
-
   try {
     const transporter = nodemailer.createTransport({
-      host: resolvedHost,
+      host,
       port,
+      family: 4, // Force IPv4 resolution to bypass IPv6 ENETUNREACH errors on Render
       secure: port === 465,
       auth: { user, pass },
       connectionTimeout: 5000,
