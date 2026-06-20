@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { WishlistContext } from "../Context/WishlistContext";
 import { ShopContext } from "../Context/ShopContext";
 import products from "../data/products";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../Components/ProductCard";
 import { HeartCrack } from "lucide-react";
 import "../styles/productGrid.css";
 

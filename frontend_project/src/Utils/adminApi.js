@@ -1,207 +1,142 @@
-import { BACKEND_URL } from '../config';
-
-const getHeaders = () => {
-  const token = localStorage.getItem('auth-token');
-  return {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    ...(token ? { 'auth-token': token } : {})
-  };
-};
+import { auth, db } from "../config/firebase";
+import { adminService } from "../features/admin/services/adminService";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export const adminApi = {
   // Auth Verification
   async verifyAdmin() {
-    const res = await fetch(`${BACKEND_URL}/admin/verify`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error(`Auth failed with status ${res.status}`);
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("No authenticated session found.");
     }
-    return res.json();
+    const isAdmin = await adminService.verifyAdmin(user.uid);
+    return { 
+      success: isAdmin, 
+      user: { 
+        email: user.email, 
+        name: user.displayName || user.email?.split("@")[0] || "Admin",
+        isAdmin 
+      } 
+    };
   },
 
   // Products CRUD
   async fetchProducts() {
-    const res = await fetch(`${BACKEND_URL}/allproducts`);
-    if (!res.ok) {
-      throw new Error('Failed to fetch product catalog');
-    }
-    return res.json();
+    return adminService.fetchProducts();
   },
 
   async addProduct(productData) {
-    const res = await fetch(`${BACKEND_URL}/addproduct`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(productData),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.errors || 'Failed to add product');
-    }
-    return data;
+    // Convert old price fields if necessary
+    const formatted = {
+      name: productData.name,
+      description: productData.description || "",
+      category: productData.category,
+      newPrice: Number(productData.newPrice || productData.new_price) || 0,
+      oldPrice: Number(productData.oldPrice || productData.old_price) || 0,
+      sizes: productData.sizes || [],
+      colors: productData.colors || [],
+      variants: productData.variants || [],
+      stockCount: Number(productData.stockCount) || 0,
+      image: productData.image || "",
+      available: productData.available !== false
+    };
+    await adminService.addProduct(formatted);
+    return { success: true };
   },
 
   async updateProduct(productData) {
-    const res = await fetch(`${BACKEND_URL}/updateproduct`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(productData),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to update product');
-    }
-    return data;
+    const id = productData.id;
+    if (!id) throw new Error("Product ID is required for update.");
+    
+    const formatted = {
+      ...productData,
+      newPrice: productData.newPrice !== undefined ? Number(productData.newPrice) : undefined,
+      oldPrice: productData.oldPrice !== undefined ? Number(productData.oldPrice) : undefined,
+      stockCount: productData.stockCount !== undefined ? Number(productData.stockCount) : undefined
+    };
+    await adminService.updateProduct(id, formatted);
+    return { success: true };
   },
 
   async removeProduct(id) {
-    const res = await fetch(`${BACKEND_URL}/removeproduct`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ id }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.errors || 'Failed to delete product');
-    }
-    return data;
+    await adminService.removeProduct(id);
+    return { success: true };
   },
 
   async updateVariantStock(id, color, change) {
-    const res = await fetch(`${BACKEND_URL}/admin/updatevariantstock`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ id, color, change: Number(change) }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to update variant stock');
-    }
-    return data;
+    await adminService.updateVariantStock(id, color, Number(change));
+    return { success: true };
   },
 
   // Users Directory
   async fetchUsers() {
-    const res = await fetch(`${BACKEND_URL}/admin/users`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch accounts directory');
-    }
-    return res.json();
+    return adminService.fetchUsers();
   },
 
   async updateUserRole(email, isAdmin) {
-    const res = await fetch(`${BACKEND_URL}/admin/updateuserrole`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ email, isAdmin: Boolean(isAdmin) }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to update user role');
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      throw new Error(`User with email "${email}" not found.`);
     }
-    return data;
+    const userId = snap.docs[0].id;
+    await adminService.updateUserRole(userId, isAdmin ? "admin" : "customer");
+    return { success: true };
   },
 
   async deleteUser(email) {
-    const res = await fetch(`${BACKEND_URL}/admin/deleteuser`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to delete user account');
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      throw new Error(`User with email "${email}" not found.`);
     }
-    return data;
+    const userId = snap.docs[0].id;
+    await adminService.deleteUser(userId);
+    return { success: true };
   },
 
   // Orders Management
   async fetchOrders() {
-    const res = await fetch(`${BACKEND_URL}/admin/orders`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch order history');
-    }
-    return res.json();
+    // Map order fields back to the old order schema properties (e.g. _id instead of id, date instead of createdAt)
+    const list = await adminService.fetchOrders();
+    return list.map((order) => ({
+      ...order,
+      _id: order.id,
+      date: order.createdAt?.toDate ? order.createdAt.toDate().toISOString() : new Date(order.createdAt).toISOString()
+    }));
   },
 
   async updateOrderStatus(orderId, status) {
-    const res = await fetch(`${BACKEND_URL}/admin/orders/status`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ orderId, status }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to update order status');
-    }
-    return data;
+    await adminService.updateOrderStatus(orderId, status);
+    return { success: true };
   },
 
   // Coupons / Promotions
   async fetchCoupons() {
-    const res = await fetch(`${BACKEND_URL}/admin/coupons`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch coupons');
-    }
-    return data.coupons;
+    const coupons = await adminService.fetchCoupons();
+    return { success: true, coupons };
   },
 
   async createCoupon(couponData) {
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/create`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        code: couponData.code,
-        discountType: couponData.discountType,
-        discountValue: Number(couponData.discountValue),
-        minOrderAmount: couponData.minOrderAmount ? Number(couponData.minOrderAmount) : 0,
-        maxUses: couponData.maxUses ? Number(couponData.maxUses) : 0,
-        expiresAt: couponData.expiresAt || null,
-      }),
+    await adminService.createCoupon({
+      code: couponData.code,
+      discountType: couponData.discountType,
+      discountValue: Number(couponData.discountValue),
+      minOrderAmount: Number(couponData.minOrderAmount || 0),
+      maxUses: Number(couponData.maxUses || 0),
+      isActive: true,
+      expiresAt: couponData.expiresAt ? new Date(couponData.expiresAt) : null
     });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to create coupon');
-    }
-    return data;
+    return { success: true };
   },
 
   async toggleCoupon(couponId) {
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/toggle`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ couponId }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to toggle coupon status');
-    }
-    return data;
+    await adminService.toggleCoupon(couponId);
+    return { success: true };
   },
 
   async deleteCoupon(couponId) {
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/delete`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ couponId }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to delete coupon');
-    }
-    return data;
+    await adminService.deleteCoupon(couponId);
+    return { success: true };
   }
 };

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../Components/ProductCard";
 import products from "../data/products";
 import { ShopContext } from "../Context/ShopContext";
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";

@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
-import PromoBanner from "../components/PromoBanner";
-import CategoryCard from "../components/CategoryCard";
-import ProductCard from "../components/ProductCard";
-import ProcessSteps from "../components/ProcessSteps";
-import Testimonials from "../components/Testimonials";
-import Newsletter from "../components/Newsletter";
+import PromoBanner from "../Components/PromoBanner";
+import CategoryCard from "../Components/CategoryCard";
+import ProductCard from "../Components/ProductCard";
+import ProcessSteps from "../Components/ProcessSteps";
+import Testimonials from "../Components/Testimonials";
+import Newsletter from "../Components/Newsletter";
 import categories from "../data/categories";
 import products from "../data/products";
 import { ShopContext } from "../Context/ShopContext";

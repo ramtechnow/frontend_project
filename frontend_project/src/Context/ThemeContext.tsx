@@ -1,11 +1,16 @@
 import React, { createContext, useState, useEffect } from "react";
 
-export const ThemeContext = createContext(null);
+interface ThemeContextType {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
 
-export const ThemeProvider = ({ children }) => {
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 1. Initialize theme based on localStorage or user system preference
+  // Initialize theme based on localStorage or user system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {

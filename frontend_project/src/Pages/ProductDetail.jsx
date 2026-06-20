@@ -4,7 +4,7 @@ import { ShopContext } from "../Context/ShopContext";
 import { CartContext } from "../Context/CartContext";
 import { WishlistContext } from "../Context/WishlistContext";
 import products from "../data/products";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../Components/ProductCard";
 import { Star, Heart, ShoppingBag, ShieldCheck, Check } from "lucide-react";
 import "../styles/productGrid.css";
 
