@@ -278,7 +278,11 @@ exports.deleteUser = async (req, res) => {
     const deletedUser = await User.findOneAndDelete({ email: { $regex: new RegExp("^" + email + "$", "i") } });
     if (deletedUser) {
       console.log(`Deleted user account: ${email}`);
-      res.json({ success: true, message: "User deleted successfully" });
+      // Clean up orders associated with this user
+      const Order = require('../models/Order');
+      const deleteResult = await Order.deleteMany({ userId: deletedUser._id.toString() });
+      console.log(`Deleted ${deleteResult.deletedCount} orders for user ${deletedUser._id}`);
+      res.json({ success: true, message: "User and associated orders deleted successfully" });
     } else {
       res.status(404).json({ success: false, error: "User not found" });
     }

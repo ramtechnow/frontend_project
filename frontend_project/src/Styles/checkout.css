@@ -476,3 +476,109 @@
   .card-scene { height: 160px; max-width: 280px; }
   .card-number-display { font-size: 0.9rem; letter-spacing: 2px; }
 }
+
+/* ==========================================================================
+   BILLING SWITCH, BRAND THEMES & ANIMATIONS
+   ========================================================================== */
+
+/* Billing Address Toggle Switch */
+.switch-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.switch-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--bg-tertiary);
+  border: 1.5px solid var(--border-color);
+  transition: var(--transition-fast);
+  border-radius: 99px;
+}
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 2.5px;
+  background-color: var(--text-muted);
+  transition: var(--transition-fast);
+  border-radius: 50%;
+}
+.switch-toggle input:checked + .switch-slider {
+  background-color: var(--accent-pink);
+  border-color: var(--accent-pink);
+}
+.switch-toggle input:checked + .switch-slider:before {
+  transform: translateX(18px);
+  background-color: white;
+}
+
+/* Card Brand Themes & Badges */
+.animated-credit-card.brand-visa .card-front {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.animated-credit-card.brand-mastercard .card-front {
+  background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #c2410c 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.animated-credit-card.brand-amex .card-front {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #115e59 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.animated-credit-card.brand-discover .card-front {
+  background: linear-gradient(135deg, #374151 0%, #f97316 60%, #1f2937 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-brand-badge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Billing Form Wrapper */
+.billing-form-wrapper {
+  overflow: hidden;
+}
+
+/* Field Validation Error Display */
+.error-hint {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ef4444;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: slideInDown 0.2s ease-out;
+}
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Transaction Error Shaking animation */
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+

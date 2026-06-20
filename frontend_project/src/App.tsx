@@ -1,9 +1,14 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { ToastContainer } from "./Components/ui/ToastContainer";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./config/firebase";
+import { syncUserProfile } from "./features/auth/services/authService";
+import { setUser, setAuthLoading, setAuthError, clearAuth } from "./store/slices/authSlice";
+import { useAppDispatch } from "./store/hooks";
 
 // Lazy load pages for code splitting and optimized bundles
 const Home = lazy(() => import("./Pages/Home"));
@@ -18,6 +23,26 @@ const AdminPanel = lazy(() => import("./Pages/AdminPanel"));
 const NotFound = lazy(() => import("./Pages/NotFound"));
 
 export const App: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setAuthLoading(true));
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const profile = await syncUserProfile(firebaseUser);
+          dispatch(setUser(profile));
+        } catch (err: any) {
+          console.error("Failed to sync user profile:", err);
+          dispatch(setAuthError(err.message || "Failed to load user profile"));
+        }
+      } else {
+        dispatch(clearAuth());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
   return (
     <BrowserRouter>
       <div 

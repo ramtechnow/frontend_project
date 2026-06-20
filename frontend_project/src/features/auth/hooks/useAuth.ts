@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setUser, setAuthLoading, setAuthError, clearAuth } from "../../../store/slices/authSlice";
 import { addToast } from "../../../store/slices/toastSlice";
@@ -19,26 +17,6 @@ import {
 export const useAuth = () => {
   const dispatch = useAppDispatch();
   const { user, loading, error } = useAppSelector((state) => state.auth);
-
-  // Subscribe to Firebase Auth state updates on mount
-  useEffect(() => {
-    dispatch(setAuthLoading(true));
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const profile = await syncUserProfile(firebaseUser);
-          dispatch(setUser(profile));
-        } catch (err: any) {
-          console.error("Failed to sync user profile:", err);
-          dispatch(setAuthError(err.message || "Failed to load user profile"));
-        }
-      } else {
-        dispatch(clearAuth());
-      }
-    });
-
-    return () => unsubscribe();
-  }, [dispatch]);
 
   const loginWithEmail = async (email: string, pass: string) => {
     dispatch(setAuthLoading(true));

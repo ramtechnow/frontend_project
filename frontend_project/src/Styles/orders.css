@@ -287,12 +287,14 @@
   transition: all 0.3s ease;
 }
 .tracker-step.done .tracker-dot {
-  background: var(--accent-pink);
-  border-color: var(--accent-pink);
-  color: white;
+  background: var(--accent-pink) !important;
+  border-color: var(--accent-pink) !important;
+  color: white !important;
 }
 .tracker-step.current .tracker-dot {
-  box-shadow: 0 0 0 4px rgba(242,62,112,0.2);
+  box-shadow: 0 0 0 4px rgba(242, 62, 112, 0.2) !important;
+  border-color: var(--accent-pink) !important;
+  color: var(--accent-pink) !important;
 }
 .tracker-label {
   font-size: 0.7rem;
@@ -301,8 +303,8 @@
   text-align: center;
   white-space: nowrap;
 }
-.tracker-step.done .tracker-label { color: var(--accent-pink); }
-.tracker-step.current .tracker-label { color: var(--text-primary); }
+.tracker-step.done .tracker-label { color: var(--accent-pink) !important; }
+.tracker-step.current .tracker-label { color: var(--text-primary) !important; }
 
 .tracker-line {
   flex: 1;
@@ -313,7 +315,7 @@
   margin-bottom: 22px;
   transition: background-color 0.3s;
 }
-.tracker-line.done { background: var(--accent-pink); }
+.tracker-line.done { background: var(--accent-pink) !important; }
 
 /* DETAIL GRID */
 .order-detail-grid {

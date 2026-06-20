@@ -24,6 +24,8 @@ exports.addProduct = async (req, res) => {
       colors: req.body.colors,
       variants: req.body.variants || [],
       stockCount: req.body.variants ? req.body.variants.reduce((sum, v) => sum + Number(v.stock), 0) : Number(req.body.stockCount || 100),
+      images: req.body.images || [],
+      description: req.body.description || "",
     });
     
     await product.save();
@@ -99,10 +101,23 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-// Update a product (Admin Only)
 exports.updateProduct = async (req, res) => {
   try {
-    const { id, name, new_price, old_price, variants, stockCount, image } = req.body;
+    const { 
+      id, 
+      name, 
+      new_price, 
+      old_price, 
+      variants, 
+      stockCount, 
+      image, 
+      images, 
+      category, 
+      colors, 
+      sizes, 
+      description, 
+      available 
+    } = req.body;
     
     const updateData = { 
       name, 
@@ -110,13 +125,25 @@ exports.updateProduct = async (req, res) => {
       old_price: Number(old_price) 
     };
     
-    if (image) {
-      updateData.image = image;
-    }
+    if (image !== undefined) updateData.image = image;
+    if (images !== undefined) updateData.images = images;
+    if (category !== undefined) updateData.category = category;
+    if (colors !== undefined) updateData.colors = colors;
+    if (sizes !== undefined) updateData.sizes = sizes;
+    if (description !== undefined) updateData.description = description;
+    if (available !== undefined) updateData.available = available;
     
     if (variants) {
       updateData.variants = variants;
       updateData.stockCount = variants.reduce((sum, v) => sum + Number(v.stock), 0);
+      
+      // Auto-extract colors and sizes from variants to keep them in sync if not explicitly passed
+      if (!colors) {
+        updateData.colors = [...new Set(variants.map(v => v.color))];
+      }
+      if (!sizes) {
+        updateData.sizes = [...new Set(variants.map(v => v.size))];
+      }
     } else if (stockCount !== undefined) {
       updateData.stockCount = Number(stockCount);
     }

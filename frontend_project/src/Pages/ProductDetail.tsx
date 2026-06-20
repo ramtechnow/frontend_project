@@ -121,7 +121,7 @@ export const ProductDetail: React.FC = () => {
         }}
       >
         {/* Left column: Image wrapper */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '500px', width: '100%', margin: '0 auto' }}>
           <div 
             style={{ 
               backgroundColor: "var(--bg-secondary)", 

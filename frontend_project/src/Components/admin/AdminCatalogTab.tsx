@@ -28,6 +28,9 @@ interface EditFormState {
   variants: ProductVariant[];
   image: string;
   images: string[];
+  colors: string[];
+  sizes: string[];
+  description: string;
 }
 
 export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
@@ -72,6 +75,42 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
   }, [products, searchQuery, categoryFilter]);
 
   // Edit Handlers
+  const syncVariants = (
+    updatedColors: string[],
+    updatedSizes: string[],
+    currentVariants: ProductVariant[],
+    category: string,
+    name: string,
+    price: number
+  ) => {
+    const list: ProductVariant[] = [];
+    const baseSlugName = name
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '-')
+      .substring(0, 15) || "ITEM";
+
+    updatedColors.forEach(color => {
+      updatedSizes.forEach(size => {
+        const existing = currentVariants.find(
+          v => v.color.toLowerCase() === color.toLowerCase() && v.size.toLowerCase() === size.toLowerCase()
+        );
+        if (existing) {
+          list.push(existing);
+        } else {
+          list.push({
+            sku: `RC-${category.substring(0, 3).toUpperCase()}-${baseSlugName}-${color.toUpperCase()}-${size}`,
+            color,
+            size,
+            stock: 50,
+            price: price
+          });
+        }
+      });
+    });
+    return list;
+  };
+
   const startEditing = (prod: Product) => {
     setEditingProductId(prod.id);
     
@@ -104,7 +143,10 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
       oldPrice: prod.oldPrice || prod.newPrice * 1.5,
       variants: initialVariants,
       image: prod.image || "",
-      images: prod.images || (prod.image ? [prod.image] : [])
+      images: prod.images || (prod.image ? [prod.image] : []),
+      colors: prod.colors || [],
+      sizes: prod.sizes || [],
+      description: prod.description || ""
     });
   };
 
@@ -190,7 +232,10 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
       variants: editForm.variants,
       stockCount: calculatedStock,
       image: editForm.images[0] || "",
-      images: editForm.images
+      images: editForm.images,
+      colors: editForm.colors,
+      sizes: editForm.sizes,
+      description: editForm.description
     };
 
     try {
@@ -355,16 +400,53 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
                   {/* Name and Attributes */}
                   <td className="prod-title-cell" style={{ verticalAlign: 'middle' }}>
                     {isEditing && editForm ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <input 
-                          type="text" 
-                          value={editForm.name} 
-                          onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                          style={{ padding: '8px 12px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-                        />
-                        <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          <span>📏 Size: <strong>{prod.sizes.join(', ')}</strong></span>
-                          <span>🎨 Colors: <strong>{prod.colors.join(', ')}</strong></span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Title:</label>
+                          <input 
+                            type="text" 
+                            value={editForm.name} 
+                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>🎨 Colors (comma-separated):</label>
+                          <input 
+                            type="text" 
+                            value={editForm.colors ? editForm.colors.join(', ') : ''} 
+                            onChange={(e) => {
+                              const newColors = e.target.value.split(',').map(c => c.trim()).filter(Boolean);
+                              const newVariants = syncVariants(newColors, editForm.sizes || [], editForm.variants, editForm.category, editForm.name, editForm.newPrice);
+                              setEditForm({ ...editForm, colors: newColors, variants: newVariants });
+                            }}
+                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>📏 Sizes (comma-separated):</label>
+                          <input 
+                            type="text" 
+                            value={editForm.sizes ? editForm.sizes.join(', ') : ''} 
+                            onChange={(e) => {
+                              const newSizes = e.target.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                              const newVariants = syncVariants(editForm.colors || [], newSizes, editForm.variants, editForm.category, editForm.name, editForm.newPrice);
+                              setEditForm({ ...editForm, sizes: newSizes, variants: newVariants });
+                            }}
+                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>📝 Description:</label>
+                          <textarea 
+                            value={editForm.description || ''} 
+                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                            rows={2}
+                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem', resize: 'vertical' }}
+                          />
                         </div>
                       </div>
                     ) : (

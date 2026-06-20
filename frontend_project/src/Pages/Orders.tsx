@@ -12,7 +12,7 @@ import {
   CheckCircle2, 
   Truck, 
   Clock3, 
-  Circle 
+  Circle
 } from "lucide-react";
 
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -57,7 +57,7 @@ export const Orders: React.FC = () => {
       setOrders(fetchedOrders);
       setLastUpdated(new Date());
       if (isRefresh) {
-        dispatch(addToast({ message: "Orders synced successfully!", type: "success" }));
+        dispatch(addToast({ message: "Orders synchronized successfully!", type: "success" }));
       }
     } catch (err: any) {
       console.error("Failed to load user orders:", err);
@@ -87,36 +87,36 @@ export const Orders: React.FC = () => {
   const formatOrderDate = (createdAt: any) => {
     if (!createdAt) return "N/A";
     if (createdAt.toDate && typeof createdAt.toDate === "function") {
-      return createdAt.toDate().toLocaleDateString();
+      return createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     }
-    return new Date(createdAt).toLocaleDateString();
+    return new Date(createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   return (
     <main className="orders-page-container">
-      {/* Header row */}
+      {/* Header Panel */}
       <div className="orders-header-row">
         <div className="orders-title-block">
-          <h2 className="text-xl md:text-2xl font-extrabold text-text-primary flex items-center gap-2">
+          <h2>
             <ShoppingBag className="orders-title-icon" size={28} />
             My Orders
           </h2>
-          <p className="text-xs md:text-sm text-text-muted mt-1">
-            View, track, and monitor your current purchases
+          <p>
+            Track shipments, manage receipts, and check active purchase statuses.
           </p>
         </div>
 
-        <div className="orders-header-actions flex items-center gap-3">
+        <div className="orders-header-actions">
           {lastUpdated && (
-            <div className="orders-last-updated text-[10px] md:text-xs">
+            <div className="orders-last-updated text-[11px] md:text-xs">
               <span className="live-dot" />
               Last sync: {lastUpdated.toLocaleTimeString()}
             </div>
           )}
           <button
             onClick={() => loadOrders(true)}
-            className="refresh-btn cursor-pointer py-1.5 px-3 text-xs flex items-center gap-1.5 rounded-full hover:bg-bg-tertiary"
-            disabled={refreshing}
+            className="refresh-btn flex items-center gap-1.5"
+            disabled={refreshing || loading}
           >
             <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
             {refreshing ? "Syncing..." : "Sync Orders"}
@@ -125,22 +125,22 @@ export const Orders: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="orders-loading-container flex flex-col justify-center items-center py-20 gap-4">
+        <div className="orders-loading-container">
           <div className="orders-spinner animate-spin" />
-          <p className="text-sm text-text-muted">Retrieving your order details...</p>
+          <p>Retrieving your purchase specifications...</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="orders-empty-state max-w-md mx-auto text-center py-16 px-4 bg-bg-secondary border border-border rounded-2xl shadow-sm">
+        <div className="orders-empty-state max-w-md mx-auto text-center py-16 px-6 bg-bg-secondary border border-border rounded-2xl shadow-sm">
           <div className="empty-icon-wrapper mx-auto mb-4 w-16 h-16 bg-bg-tertiary flex items-center justify-center rounded-full text-text-muted">
-            <Package size={32} />
+            <Package size={30} />
           </div>
-          <h3 className="text-lg font-bold mb-2">No Orders Found</h3>
+          <h3>No Purchases Logged</h3>
           <p className="text-xs text-text-muted mb-6">
-            You haven't placed any purchases yet. Start shopping to verify the checkout details!
+            You haven't checked out any orders yet. Start adding items to your cart!
           </p>
           <Link to="/catalog">
-            <button className="shop-now-btn px-6 py-2 bg-accent-pink hover:bg-accent-pink/90 text-white font-bold text-xs rounded-full shadow-md transition-all">
-              Start Browsing
+            <button className="shop-now-btn px-6 py-2.5 bg-accent-pink hover:bg-accent-pink/90 text-white font-bold text-xs rounded-full shadow-md transition-all">
+              Browse Collections
             </button>
           </Link>
         </div>
@@ -150,15 +150,23 @@ export const Orders: React.FC = () => {
             const orderId = order.id || "";
             const isExpanded = expandedOrderId === orderId;
             const currentStep = getStepIndex(order.status);
-            const totalItemsCount = order.items.reduce((acc, it) => acc + it.quantity, 0);
+            const totalItemsCount = (order.items || []).reduce((acc, it) => acc + (it.quantity || 0), 0);
 
             return (
-              <div key={orderId} className={`order-card border border-border rounded-2xl overflow-hidden shadow-sm transition-all duration-200 ${isExpanded ? "border-accent-pink ring-1 ring-accent-pink/20" : ""}`}>
+              <div 
+                key={orderId} 
+                className={`order-card border border-border rounded-2xl overflow-hidden shadow-sm transition-all duration-200 ${
+                  isExpanded ? "border-accent-pink ring-1 ring-accent-pink/20" : ""
+                }`}
+              >
                 {/* Collapsed summary bar */}
-                <div className="order-summary-bar flex items-center justify-between p-4 bg-bg-secondary cursor-pointer hover:bg-bg-tertiary transition-colors" onClick={() => toggleExpand(orderId)}>
-                  <div className="order-meta flex items-center gap-3.5 flex-wrap">
+                <div 
+                  className="order-summary-bar flex items-center justify-between p-4 bg-bg-secondary cursor-pointer hover:bg-bg-tertiary transition-colors" 
+                  onClick={() => toggleExpand(orderId)}
+                >
+                  <div className="order-meta flex items-center gap-4 flex-wrap">
                     <span className="order-id text-xs md:text-sm font-extrabold text-accent-pink font-mono">{orderId}</span>
-                    <span className="order-date text-xs text-text-muted flex items-center gap-1">
+                    <span className="order-date text-xs text-text-muted flex items-center gap-1.5">
                       <Calendar size={12} />
                       {formatOrderDate(order.createdAt)}
                     </span>
@@ -168,12 +176,12 @@ export const Orders: React.FC = () => {
                   </div>
 
                   <div className="order-status-amount flex items-center gap-3">
-                    <span className="order-amount text-sm md:text-base font-extrabold text-text-primary">
-                      ₹{order.amount.toFixed(2)}
+                    <span className="order-amount text-sm md:text-base font-extrabold text-text-primary font-mono">
+                      ₹{(order.amount || 0).toFixed(2)}
                     </span>
-                    <span className={`status-badge text-[10px] py-1 px-2.5 rounded-full font-extrabold flex items-center gap-1 uppercase tracking-wide status-${order.status.toLowerCase()}`}>
-                      {STATUS_ICONS[order.status] || <Circle size={12} />}
-                      {order.status}
+                    <span className={`status-badge text-[10px] py-1 px-2.5 rounded-full font-extrabold flex items-center gap-1 uppercase tracking-wide status-${(order.status || "Pending").toLowerCase()}`}>
+                      {STATUS_ICONS[order.status || "Pending"] || <Circle size={12} />}
+                      {order.status || "Pending"}
                     </span>
                     <button className="expand-btn text-text-muted hover:text-text-primary" aria-label="Expand details">
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -189,7 +197,7 @@ export const Orders: React.FC = () => {
                       initial={{ height: 0 }}
                       animate={{ height: "auto" }}
                       exit={{ height: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      transition={{ duration: 0.22, ease: "easeInOut" }}
                     >
                       {/* Timeline status tracker */}
                       <div className="status-tracker flex items-center p-4 bg-bg-primary overflow-x-auto gap-1">
@@ -216,11 +224,11 @@ export const Orders: React.FC = () => {
                       <div className="order-detail-grid grid grid-cols-1 md:grid-cols-3 gap-6 p-4 border-t border-border bg-bg-secondary/40">
                         {/* Left side items table */}
                         <div className="md:col-span-2">
-                          <h4 className="detail-section-title text-xs md:text-sm font-extrabold text-text-primary mb-3">Order Items</h4>
-                          <div className="items-stack flex flex-col gap-2">
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className="item-row flex items-center gap-3 bg-bg-secondary border border-border rounded-xl p-3">
-                                <div className="item-img-wrap w-10 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-bg-tertiary">
+                          <h4 className="detail-section-title text-xs md:text-sm font-extrabold text-text-primary mb-3">Purchased Items</h4>
+                          <div className="items-stack flex flex-col gap-2.5">
+                            {(order.items || []).map((item, idx) => (
+                              <div key={idx} className="item-row flex items-center gap-3 bg-bg-secondary border border-border rounded-xl p-3 hover:border-accent-pink/40 transition-colors">
+                                <div className="item-img-wrap w-10 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-bg-tertiary border border-border">
                                   {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                   ) : (
@@ -242,9 +250,9 @@ export const Orders: React.FC = () => {
                                 </div>
 
                                 <div className="item-price-col text-right flex-shrink-0">
-                                  <span className="item-unit-price text-[10px] text-text-muted block">₹{item.price.toFixed(2)} each</span>
-                                  <span className="item-total text-xs font-extrabold text-text-primary">
-                                    ₹{(item.price * item.quantity).toFixed(2)}
+                                  <span className="item-unit-price text-[10px] text-text-muted block">₹{(item.price || 0).toFixed(2)} each</span>
+                                  <span className="item-total text-xs font-extrabold text-text-primary font-mono">
+                                    ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                                   </span>
                                 </div>
                               </div>
@@ -259,14 +267,18 @@ export const Orders: React.FC = () => {
                               <MapPin size={14} className="text-accent-pink" />
                               Shipping Address
                             </h4>
-                            <p className="addr-name text-xs font-bold text-text-primary">{order.address.fullName}</p>
-                            <p className="text-xs text-text-muted leading-relaxed mt-1">{order.address.addressLine}</p>
-                            <p className="text-xs text-text-muted leading-relaxed">{order.address.city}, {order.address.state} {order.address.postalCode}</p>
-                            <p className="addr-phone text-[10px] text-text-muted mt-2 border-t border-border pt-1.5">Phone: {order.address.phone}</p>
+                            <p className="addr-name text-xs font-bold text-text-primary">{order.address?.fullName || "N/A"}</p>
+                            <p className="text-xs text-text-muted leading-relaxed mt-1">{order.address?.addressLine || ""}</p>
+                            <p className="text-xs text-text-muted leading-relaxed">
+                              {order.address ? `${order.address.city || ""}, ${order.address.state || ""} ${order.address.postalCode || ""}` : ""}
+                            </p>
+                            <p className="addr-phone text-[10px] text-text-muted mt-2 border-t border-border pt-1.5">
+                              Phone: {order.address?.phone || "N/A"}
+                            </p>
                           </div>
 
                           <div className="info-card bg-bg-secondary border border-border rounded-xl p-4">
-                            <h4 className="text-xs font-extrabold text-text-primary mb-2.5">Simulated Details</h4>
+                            <h4 className="text-xs font-extrabold text-text-primary mb-2.5">Simulated Receipt</h4>
                             <div className="payment-row flex justify-between text-xs py-1.5 border-b border-border">
                               <span>Payment Status:</span>
                               <span className={`pay-badge text-[9px] font-bold py-0.5 px-2 rounded-full ${order.payment ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
@@ -275,10 +287,10 @@ export const Orders: React.FC = () => {
                             </div>
                             <div className="payment-row flex justify-between text-xs py-1.5 border-b border-border">
                               <span>Shipping Method:</span>
-                              <span className="font-semibold text-text-muted">Standard Ground</span>
+                              <span className="font-semibold text-text-muted">Standard Free Ground</span>
                             </div>
                             <div className="payment-row flex justify-between text-xs py-1.5 border-b-0">
-                              <span>Coupon Applied:</span>
+                              <span>Promo Applied:</span>
                               <span className="font-semibold text-text-muted">{order.couponCode || "None"}</span>
                             </div>
                           </div>

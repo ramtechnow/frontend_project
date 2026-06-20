@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { 
   CreditCard, 
   MapPin, 
@@ -12,10 +12,11 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Loader2, 
-  Landmark, 
   Tag, 
   X, 
-  AlertCircle 
+  AlertCircle,
+  Lock,
+  ChevronRight
 } from "lucide-react";
 
 import { useCart } from "../features/checkout/hooks/useCart";
@@ -33,13 +34,23 @@ import { addToast } from "../store/slices/toastSlice";
 
 import "../Styles/checkout.css";
 
+// Helper to detect card brand
+const getCardBrand = (cardNumber: string): "visa" | "mastercard" | "amex" | "discover" | "unknown" => {
+  const cleanNumber = cardNumber.replace(/\D/g, "");
+  if (cleanNumber.startsWith("4")) return "visa";
+  if (/^(5[1-5]|2[2-7])/.test(cleanNumber)) return "mastercard";
+  if (/^3[47]/.test(cleanNumber)) return "amex";
+  if (/^(6011|65)/.test(cleanNumber)) return "discover";
+  return "unknown";
+};
+
 export const Checkout: React.FC = () => {
   const { cartItems, cartTotal, cartCount, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // ── Coupon State ─────────────────────────────────────────────────────────────
+  // ── States ───────────────────────────────────────────────────────────────────
   const [couponInput, setCouponInput] = useState("");
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [couponResult, setCouponResult] = useState<{
@@ -51,7 +62,6 @@ export const Checkout: React.FC = () => {
   } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
 
-  // ── UI States ────────────────────────────────────────────────────────────────
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
@@ -59,11 +69,22 @@ export const Checkout: React.FC = () => {
   const [createdOrderId, setCreatedOrderId] = useState("");
   const [transactionError, setTransactionError] = useState<string | null>(null);
 
+  // Billing address state
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  const [billingAddress, setBillingAddress] = useState({
+    fullName: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    phone: ""
+  });
+
   const steps = [
-    "Establishing secure connection...",
-    "Verifying payment credentials...",
-    "Authorizing transaction with issuing bank...",
-    "Finalizing your order in database..."
+    "Establishing SSL connection...",
+    "Securing credit card details...",
+    "Authorizing with bank partner...",
+    "Finalizing purchase in DB..."
   ];
 
   const finalPayable = couponResult?.finalTotal ?? cartTotal;
@@ -97,13 +118,15 @@ export const Checkout: React.FC = () => {
     }
   });
 
-  // Watch field values for card previews
+  // Watch card input fields for live card rendering
   const watchCardholder = watch("payment.cardholderName");
-  const watchCardNumber = watch("payment.cardNumber");
+  const watchCardNumber = watch("payment.cardNumber") || "";
   const watchExpiry = watch("payment.expiryDate");
   const watchCvv = watch("payment.cvv");
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  const cardBrand = getCardBrand(watchCardNumber);
+
+  // Caret-aware input formats
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").substring(0, 16);
     const matches = value.match(/.{1,4}/g);
@@ -165,11 +188,11 @@ export const Checkout: React.FC = () => {
     // Simulated Visual Progression
     for (let i = 0; i < steps.length; i++) {
       setProcessingStep(i);
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 850));
     }
 
     const orderItems = cartItems.map((item) => ({
-      productId: item.productId,
+      productId: String(item.productId),
       name: item.name,
       image: item.image,
       size: item.size,
@@ -201,26 +224,26 @@ export const Checkout: React.FC = () => {
   return (
     <main className="checkout-page-container">
       {cartCount === 0 && !isSuccess ? (
-        <div className="checkout-empty-guard max-w-md mx-auto text-center py-20 px-4">
-          <ShoppingBag className="mx-auto text-text-muted mb-4 animate-bounce" size={48} />
-          <h2 className="text-xl font-extrabold mb-2">No Items in Cart</h2>
-          <p className="text-sm text-text-muted mb-6">
-            Please add products to your cart before proceeding to checkout.
+        <div className="checkout-empty-guard max-w-md mx-auto text-center py-24 px-6 bg-bg-secondary border border-border rounded-2xl shadow-sm">
+          <ShoppingBag className="mx-auto text-text-muted mb-6 animate-bounce" size={48} />
+          <h2 className="text-xl font-extrabold mb-3">No Items in Cart</h2>
+          <p className="text-sm text-text-muted mb-8">
+            Your shopping cart is currently empty. Please add items from our catalog to proceed.
           </p>
           <button 
             onClick={() => navigate("/catalog")}
-            className="px-6 py-2.5 bg-accent-pink hover:bg-accent-pink/90 text-white font-bold text-sm rounded-full transition-all"
+            className="px-8 py-3 bg-accent-pink hover:bg-accent-pink/90 text-white font-bold text-sm rounded-full transition-all shadow-lg hover:shadow-accent-pink/20"
           >
             Continue Shopping
           </button>
         </div>
       ) : (
         <div className="checkout-layout">
-          {/* Left Column Forms */}
+          {/* Left Column Form Stack */}
           <div className="checkout-forms-col">
             <form onSubmit={handleSubmit(onSubmitCheckout)} className="checkout-form-stack">
               {transactionError && (
-                <div className="flex items-center gap-2.5 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-500 text-xs md:text-sm">
+                <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-red-500 text-xs md:text-sm animate-shake">
                   <AlertCircle className="flex-shrink-0" size={18} />
                   <span>{transactionError}</span>
                 </div>
@@ -242,13 +265,11 @@ export const Checkout: React.FC = () => {
                         type="text"
                         {...register("address.fullName")}
                         className={`form-field with-icon ${errors.address?.fullName ? "border-red-500" : ""}`}
-                        placeholder="Sophia Martinez"
+                        placeholder="John Doe"
                       />
                     </div>
                     {errors.address?.fullName && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.address.fullName.message}
-                      </span>
+                      <span className="error-hint">{errors.address.fullName.message}</span>
                     )}
                   </div>
 
@@ -258,12 +279,10 @@ export const Checkout: React.FC = () => {
                       type="text"
                       {...register("address.addressLine")}
                       className={`form-field ${errors.address?.addressLine ? "border-red-500" : ""}`}
-                      placeholder="Apt 4B, 12 Park Ave"
+                      placeholder="Flat No, Street Address, Area"
                     />
                     {errors.address?.addressLine && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.address.addressLine.message}
-                      </span>
+                      <span className="error-hint">{errors.address.addressLine.message}</span>
                     )}
                   </div>
 
@@ -273,12 +292,10 @@ export const Checkout: React.FC = () => {
                       type="text"
                       {...register("address.city")}
                       className={`form-field ${errors.address?.city ? "border-red-500" : ""}`}
-                      placeholder="New York"
+                      placeholder="Mumbai"
                     />
                     {errors.address?.city && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.address.city.message}
-                      </span>
+                      <span className="error-hint">{errors.address.city.message}</span>
                     )}
                   </div>
 
@@ -289,12 +306,10 @@ export const Checkout: React.FC = () => {
                         type="text"
                         {...register("address.state")}
                         className={`form-field ${errors.address?.state ? "border-red-500" : ""}`}
-                        placeholder="NY"
+                        placeholder="Maharashtra"
                       />
                       {errors.address?.state && (
-                        <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                          {errors.address.state.message}
-                        </span>
+                        <span className="error-hint">{errors.address.state.message}</span>
                       )}
                     </div>
                     <div className="field-wrap">
@@ -303,12 +318,10 @@ export const Checkout: React.FC = () => {
                         type="text"
                         {...register("address.postalCode")}
                         className={`form-field ${errors.address?.postalCode ? "border-red-500" : ""}`}
-                        placeholder="10016"
+                        placeholder="400001"
                       />
                       {errors.address?.postalCode && (
-                        <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                          {errors.address.postalCode.message}
-                        </span>
+                        <span className="error-hint">{errors.address.postalCode.message}</span>
                       )}
                     </div>
                   </div>
@@ -321,19 +334,100 @@ export const Checkout: React.FC = () => {
                         type="tel"
                         {...register("address.phone")}
                         className={`form-field with-icon ${errors.address?.phone ? "border-red-500" : ""}`}
-                        placeholder="+1 212-555-0199"
+                        placeholder="+91 98765 43210"
                       />
                     </div>
                     {errors.address?.phone && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.address.phone.message}
-                      </span>
+                      <span className="error-hint">{errors.address.phone.message}</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Secure simulated payments */}
+              {/* Billing Address Toggle */}
+              <div className="checkout-section-card">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-sm text-text-primary">Billing Address</span>
+                  <label className="switch-toggle">
+                    <input 
+                      type="checkbox" 
+                      checked={billingSameAsShipping} 
+                      onChange={(e) => setBillingSameAsShipping(e.target.checked)} 
+                    />
+                    <span className="switch-slider"></span>
+                  </label>
+                </div>
+                <p className="text-xs text-text-muted mt-1.5">Same as shipping address</p>
+
+                <AnimatePresence>
+                  {!billingSameAsShipping && (
+                    <motion.div 
+                      className="billing-form-wrapper mt-4 pt-4 border-t border-border"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div className="form-grid-2">
+                        <div className="field-wrap span-2">
+                          <label>Billing Full Name</label>
+                          <input
+                            type="text"
+                            value={billingAddress.fullName}
+                            onChange={(e) => setBillingAddress({ ...billingAddress, fullName: e.target.value })}
+                            className="form-field"
+                            placeholder="John Doe"
+                          />
+                        </div>
+                        <div className="field-wrap span-2">
+                          <label>Billing Address Line</label>
+                          <input
+                            type="text"
+                            value={billingAddress.addressLine}
+                            onChange={(e) => setBillingAddress({ ...billingAddress, addressLine: e.target.value })}
+                            className="form-field"
+                            placeholder="Flat No, Street Address"
+                          />
+                        </div>
+                        <div className="field-wrap">
+                          <label>City</label>
+                          <input
+                            type="text"
+                            value={billingAddress.city}
+                            onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
+                            className="form-field"
+                            placeholder="Mumbai"
+                          />
+                        </div>
+                        <div className="form-grid-2-inner">
+                          <div className="field-wrap">
+                            <label>State</label>
+                            <input
+                              type="text"
+                              value={billingAddress.state}
+                              onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })}
+                              className="form-field"
+                              placeholder="MH"
+                            />
+                          </div>
+                          <div className="field-wrap">
+                            <label>Postal Code</label>
+                            <input
+                              type="text"
+                              value={billingAddress.postalCode}
+                              onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })}
+                              className="form-field"
+                              placeholder="400001"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Secure Payments Section */}
               <div className="checkout-section-card">
                 <h3 className="section-card-title">
                   <CreditCard className="title-icon text-accent-pink" size={18} />
@@ -342,19 +436,19 @@ export const Checkout: React.FC = () => {
 
                 {/* Animated credit card */}
                 <div className="card-scene">
-                  <div className={`animated-credit-card ${focusedField === "cvv" ? "is-flipped" : ""}`}>
+                  <div className={`animated-credit-card ${focusedField === "cvv" ? "is-flipped" : ""} brand-${cardBrand}`}>
                     <div className="card-face card-front">
                       <div className="card-top-row">
                         <div className="card-chip" />
-                        <Landmark className="card-bank-icon" size={24} />
+                        <span className="card-brand-badge uppercase">{cardBrand === "unknown" ? "demo" : cardBrand}</span>
                       </div>
-                      <div className="card-number-display text-xs md:text-sm">
+                      <div className="card-number-display text-sm md:text-base">
                         {watchCardNumber || "•••• •••• •••• ••••"}
                       </div>
                       <div className="card-bottom-row">
                         <div className="card-holder-block">
                           <span className="card-meta-label">Card Holder</span>
-                          <span className="card-meta-value">
+                          <span className="card-meta-value truncate max-w-[150px]">
                             {watchCardholder?.toUpperCase() || "YOUR NAME"}
                           </span>
                         </div>
@@ -378,6 +472,7 @@ export const Checkout: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Payment Fields */}
                 <div className="payment-fields-stack">
                   <div className="field-wrap">
                     <label>Cardholder Name</label>
@@ -390,9 +485,7 @@ export const Checkout: React.FC = () => {
                       onBlur={() => setFocusedField(null)}
                     />
                     {errors.payment?.cardholderName && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.payment.cardholderName.message}
-                      </span>
+                      <span className="error-hint">{errors.payment.cardholderName.message}</span>
                     )}
                   </div>
 
@@ -400,7 +493,7 @@ export const Checkout: React.FC = () => {
                     <label>Card Number</label>
                     <input
                       type="text"
-                      value={watchCardNumber || ""}
+                      value={watchCardNumber}
                       onChange={handleCardNumberChange}
                       className={`form-field mono ${errors.payment?.cardNumber ? "border-red-500" : ""}`}
                       placeholder="4000 1234 5678 9010"
@@ -408,9 +501,7 @@ export const Checkout: React.FC = () => {
                       onBlur={() => setFocusedField(null)}
                     />
                     {errors.payment?.cardNumber && (
-                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                        {errors.payment.cardNumber.message}
-                      </span>
+                      <span className="error-hint">{errors.payment.cardNumber.message}</span>
                     )}
                   </div>
 
@@ -427,9 +518,7 @@ export const Checkout: React.FC = () => {
                         onBlur={() => setFocusedField(null)}
                       />
                       {errors.payment?.expiryDate && (
-                        <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                          {errors.payment.expiryDate.message}
-                        </span>
+                        <span className="error-hint">{errors.payment.expiryDate.message}</span>
                       )}
                     </div>
                     <div className="field-wrap">
@@ -444,45 +533,43 @@ export const Checkout: React.FC = () => {
                         onBlur={() => setFocusedField(null)}
                       />
                       {errors.payment?.cvv && (
-                        <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                          {errors.payment.cvv.message}
-                        </span>
+                        <span className="error-hint">{errors.payment.cvv.message}</span>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Submit button */}
+              {/* Secure Checkout Action */}
               <button 
                 type="submit" 
-                className="checkout-submit-btn cursor-pointer py-3.5 hover:opacity-95 text-xs md:text-sm font-extrabold uppercase tracking-wider"
+                className="checkout-submit-btn cursor-pointer py-4 hover:opacity-95 text-xs md:text-sm font-extrabold uppercase tracking-wider"
               >
                 {savings > 0 && (
                   <span className="savings-badge">Saving ₹{savings.toFixed(2)}</span>
                 )}
-                <ShieldCheck size={18} />
-                Pay &amp; Finalize Order (₹{finalPayable.toFixed(2)})
+                <Lock size={16} />
+                Pay &amp; Complete Order (₹{finalPayable.toFixed(2)})
               </button>
             </form>
           </div>
 
-          {/* Right Column Summary */}
+          {/* Right Column Sticky summary */}
           <div className="checkout-summary-col">
             <div className="summary-sticky-card">
-              <h3 className="section-card-title border-none m-0 pb-2.5">
+              <h3 className="section-card-title border-none m-0 pb-3">
                 <ShoppingBag className="title-icon text-accent-pink" size={18} />
                 Order Review ({cartCount})
               </h3>
 
-              {/* Items scroll */}
-              <div className="summary-items-scroll max-h-[220px] overflow-y-auto pr-1">
+              {/* Scrollable Summary items */}
+              <div className="summary-items-scroll max-h-[260px] overflow-y-auto pr-1">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="summary-item-row flex gap-2.5 items-center py-2 border-b border-border last:border-b-0">
-                    <img src={item.image} alt={item.name} className="summary-item-img w-10 h-12 object-cover rounded-md" />
+                  <div key={item.id} className="summary-item-row flex gap-3 items-center py-2.5 border-b border-border last:border-b-0">
+                    <img src={item.image} alt={item.name} className="summary-item-img w-10 h-12 object-cover rounded-lg border border-border" />
                     <div className="summary-item-info flex-1 min-w-0">
                       <h4 className="summary-item-name text-xs font-bold text-text-primary truncate">{item.name}</h4>
-                      <p className="summary-item-meta text-[10px] text-text-muted">
+                      <p className="summary-item-meta text-[10px] text-text-muted mt-0.5">
                         Size: {item.size} | Qty: {item.quantity} | Col: {item.color}
                       </p>
                     </div>
@@ -493,8 +580,8 @@ export const Checkout: React.FC = () => {
                 ))}
               </div>
 
-              {/* Coupons input */}
-              <div className="coupon-section border-t border-border pt-4">
+              {/* Coupon Form */}
+              <div className="coupon-section border-t border-border pt-4 mt-1">
                 {couponCode ? (
                   <div className="coupon-applied-tag flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-green-700">
@@ -534,24 +621,24 @@ export const Checkout: React.FC = () => {
                 )}
               </div>
 
-              {/* Totals Summary */}
+              {/* Price Details Breakdown */}
               <div className="summary-totals border-t border-border pt-4">
                 <div className="total-line flex justify-between text-xs text-text-secondary">
-                  <span>Cart Total:</span>
+                  <span>Subtotal:</span>
                   <span>₹{cartTotal.toFixed(2)}</span>
                 </div>
                 {savings > 0 && (
                   <div className="total-line discount-line flex justify-between text-xs text-green-600 font-bold">
-                    <span>Discount:</span>
+                    <span>Discount Savings:</span>
                     <span>-₹{savings.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="total-line flex justify-between text-xs text-text-secondary">
-                  <span>Simulated Delivery:</span>
+                  <span>Shipping Cost:</span>
                   <span className="free-label text-green-600 font-bold">FREE</span>
                 </div>
-                <div className="total-line grand-total flex justify-between text-sm font-extrabold text-text-primary pt-2.5 border-t border-dashed border-border mt-1">
-                  <span>Payable Amount:</span>
+                <div className="total-line grand-total flex justify-between text-sm font-extrabold text-text-primary pt-3 border-t border-dashed border-border mt-2">
+                  <span>Payable Total:</span>
                   <span className="text-accent-pink text-base">₹{finalPayable.toFixed(2)}</span>
                 </div>
               </div>
@@ -560,16 +647,16 @@ export const Checkout: React.FC = () => {
         </div>
       )}
 
-      {/* SECURE PROCESSING OVERLAY */}
+      {/* Secure Checkout Processing Overlay */}
       <AnimatePresence>
         {isProcessing && (
           <div className="checkout-overlay">
             {!isSuccess ? (
-              <div className="processing-card max-w-sm w-full mx-4">
-                <Loader2 className="animate-spin text-accent-pink" size={36} />
-                <h3>Secure transaction verification in progress</h3>
-                <p className="processing-step-text text-center">{steps[processingStep]}</p>
-                <div className="processing-progress-bar w-full mt-2">
+              <div className="processing-card max-w-sm w-full mx-4 text-center">
+                <Loader2 className="animate-spin text-accent-pink mx-auto mb-4" size={40} />
+                <h3>Verifying Transaction Security</h3>
+                <p className="processing-step-text text-center text-xs text-text-muted mt-2">{steps[processingStep]}</p>
+                <div className="processing-progress-bar w-full mt-4">
                   <div
                     className="processing-progress-fill"
                     style={{ 
@@ -578,48 +665,48 @@ export const Checkout: React.FC = () => {
                     }}
                   />
                 </div>
-                <div className="pci-badge flex items-center gap-1.5 text-xs text-text-muted mt-2">
+                <div className="pci-badge flex items-center justify-center gap-1.5 text-[10px] text-text-muted mt-4">
                   <ShieldCheck className="pci-icon text-green-500" size={14} />
-                  SSL Certified Demo Environment
+                  SSL Certified Secure Sandbox Environment
                 </div>
               </div>
             ) : (
-              <div className="success-card max-w-sm w-full mx-4">
-                <div className="success-icon-wrap text-green-500">
-                  <CheckCircle2 size={48} />
+              <div className="success-card max-w-sm w-full mx-4 text-center">
+                <div className="success-icon-wrap text-green-500 mx-auto mb-4">
+                  <CheckCircle2 size={56} />
                 </div>
-                <h2 className="text-lg md:text-xl font-black">Order Confirmed!</h2>
-                <p className="text-xs text-text-muted">Your simulated purchase has been logged successfully.</p>
+                <h2 className="text-xl font-black">Order Dispatched!</h2>
+                <p className="text-xs text-text-muted mt-1">Your simulated credit card charge completed successfully.</p>
 
-                <div className="success-details w-full">
-                  <div className="success-row flex justify-between text-xs py-1 border-b border-border/10 last:border-b-0">
-                    <span>Simulated Order ID:</span>
-                    <strong className="order-id-val text-cyan-400">{createdOrderId}</strong>
+                <div className="success-details w-full mt-4 p-3 bg-bg-secondary border border-border rounded-xl">
+                  <div className="success-row flex justify-between text-xs py-1.5 border-b border-border/10 last:border-b-0">
+                    <span>Demo Order ID:</span>
+                    <strong className="order-id-val text-cyan-400 font-mono">{createdOrderId}</strong>
                   </div>
-                  <div className="success-row flex justify-between text-xs py-1 border-b border-border/10 last:border-b-0">
-                    <span>Amount Charged:</span>
-                    <strong className="text-white">₹{finalPayable.toFixed(2)}</strong>
+                  <div className="success-row flex justify-between text-xs py-1.5 border-b border-border/10 last:border-b-0">
+                    <span>Charged Total:</span>
+                    <strong className="text-text-primary">₹{finalPayable.toFixed(2)}</strong>
                   </div>
                   {savings > 0 && (
-                    <div className="success-row savings-row flex justify-between text-xs py-1 border-b border-border/10 last:border-b-0">
+                    <div className="success-row savings-row flex justify-between text-xs py-1.5 border-b border-border/10 last:border-b-0">
                       <span>Simulated Savings:</span>
-                      <strong className="text-green-400">₹{savings.toFixed(2)}</strong>
+                      <strong className="text-green-500">₹{savings.toFixed(2)}</strong>
                     </div>
                   )}
                 </div>
 
-                <div className="success-actions flex flex-col gap-2 w-full mt-4">
+                <div className="success-actions flex flex-col gap-2.5 w-full mt-6">
                   <button 
-                    className="btn-view-orders w-full py-2.5 font-bold text-xs md:text-sm" 
+                    className="btn-view-orders w-full py-3 font-bold text-xs md:text-sm flex items-center justify-center gap-1.5 rounded-full bg-accent-pink hover:bg-accent-pink/90 text-white cursor-pointer" 
                     onClick={() => { 
                       setIsProcessing(false); 
                       navigate("/orders"); 
                     }}
                   >
-                    View My Orders
+                    View My Purchase History <ChevronRight size={14} />
                   </button>
                   <button 
-                    className="btn-continue-shop w-full py-2.5 text-xs font-semibold" 
+                    className="btn-continue-shop w-full py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary cursor-pointer" 
                     onClick={() => { 
                       setIsProcessing(false); 
                       navigate("/catalog"); 

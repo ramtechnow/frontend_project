@@ -96,7 +96,12 @@ export const adminService = {
         new_price: productData.newPrice !== undefined ? Number(productData.newPrice) : undefined,
         old_price: productData.oldPrice !== undefined ? Number(productData.oldPrice) : undefined,
         variants: productData.variants,
-        image: productData.image
+        image: productData.image,
+        images: productData.images,
+        category: productData.category,
+        colors: productData.colors,
+        sizes: productData.sizes,
+        description: productData.description
       })
     });
     if (!res.ok) throw new Error("Failed to update product");
