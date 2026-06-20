@@ -583,22 +583,27 @@ exports.resetPassword = async (req, res) => {
 // POST: Firebase Authentication user synchronization
 exports.firebaseSync = async (req, res) => {
   try {
-    const { phone, uid, name } = req.body;
-    if (!phone) {
-      return res.status(400).json({ success: false, errors: "Phone number is required for user sync" });
+    const { email, phone, uid, name } = req.body;
+    if (!email && !phone) {
+      return res.status(400).json({ success: false, errors: "Email or Phone number is required for user sync" });
     }
 
-    // Find user by phone number
-    let user = await User.findOne({ phone });
+    let user;
     let isNewUser = false;
+
+    if (email) {
+      user = await User.findOne({ email: { $regex: new RegExp("^" + email + "$", "i") } });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
 
     if (!user) {
       isNewUser = true;
-      // Auto-register user since their phone is verified by Firebase
+      // Auto-register user since their identity is verified by Firebase
       user = new User({
-        name: name || `Shopper_${phone.slice(-4)}`,
-        phone,
-        email: `${phone.replace('+', '')}@shopper.in`, // Generate unique placeholder email
+        name: name || (email ? email.split('@')[0] : `Shopper_${phone.slice(-4)}`),
+        email: email || `${phone.replace('+', '')}@shopper.in`, // Generate unique placeholder email if phone-only
+        phone: phone || undefined,
         cartData: {},
         wishlistData: []
       });
@@ -623,7 +628,7 @@ exports.firebaseSync = async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || "",
         isAdmin: user.isAdmin
       }
     });

@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
       // 1. Firebase Auth listener
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
-          // Parse user claims or map admin privileges (Admin@gmail.com matches admin)
           const isAdmin = user.email.toLowerCase() === "admin@gmail.com";
           setCurrentUser({
             uid: user.uid,
@@ -42,6 +41,31 @@ export const AuthProvider = ({ children }) => {
             isAdmin: isAdmin,
             isFirebase: true
           });
+
+          // Automatically sync with backend to get the JWT if missing
+          const token = localStorage.getItem("auth-token");
+          if (!token) {
+            try {
+              const response = await fetch(`${BACKEND_URL}/auth/firebase-sync`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                  email: user.email, 
+                  uid: user.uid, 
+                  name: user.displayName || user.email.split('@')[0] 
+                }),
+              });
+              const data = await response.json();
+              if (data.success) {
+                localStorage.setItem("auth-token", data.token);
+                localStorage.setItem("user-email", user.email);
+                localStorage.setItem("user-name", user.displayName || user.email.split('@')[0]);
+                window.dispatchEvent(new Event('auth-change'));
+              }
+            } catch (err) {
+              console.error("Failed to sync on reload:", err);
+            }
+          }
         } else {
           setCurrentUser(null);
         }
@@ -76,8 +100,38 @@ export const AuthProvider = ({ children }) => {
       if (!isFirebaseSimulated && auth) {
         // Firebase Authentication
         const result = await signInWithEmailAndPassword(auth, email, password);
-        setLoading(false);
-        return { success: true, user: result.user };
+        
+        // Sync with backend to retrieve JWT
+        const nameVal = result.user.displayName || email.split('@')[0];
+        const response = await fetch(`${BACKEND_URL}/auth/firebase-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, uid: result.user.uid, name: nameVal }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
+          const decoded = decodeToken(data.token);
+          
+          localStorage.setItem("user-email", email);
+          localStorage.setItem("user-name", nameVal);
+
+          const userObj = {
+            uid: decoded?.id || result.user.uid,
+            email: email,
+            displayName: nameVal,
+            isAdmin: decoded?.isAdmin || false,
+            isFirebase: true
+          };
+          setCurrentUser(userObj);
+          setLoading(false);
+          return { success: true, user: result.user };
+        } else {
+          setLoading(false);
+          return { success: false, errors: data.errors || "Failed to sync user session with server" };
+        }
       } else {
         // Custom Backend JWT Auth
         const response = await fetch(`${BACKEND_URL}/login`, {
@@ -131,8 +185,37 @@ export const AuthProvider = ({ children }) => {
         // Firebase Authentication
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: username });
-        setLoading(false);
-        return { success: true, user: result.user };
+        
+        // Sync with backend to auto-register in MongoDB and get JWT
+        const response = await fetch(`${BACKEND_URL}/auth/firebase-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, uid: result.user.uid, name: username }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem("auth-token", data.token);
+          window.dispatchEvent(new Event('auth-change'));
+          const decoded = decodeToken(data.token);
+          
+          localStorage.setItem("user-email", email);
+          localStorage.setItem("user-name", username);
+
+          const userObj = {
+            uid: decoded?.id || result.user.uid,
+            email: email,
+            displayName: username,
+            isAdmin: decoded?.isAdmin || false,
+            isFirebase: true
+          };
+          setCurrentUser(userObj);
+          setLoading(false);
+          return { success: true, user: result.user };
+        } else {
+          setLoading(false);
+          return { success: false, errors: data.errors || "Failed to initialize user session on server" };
+        }
       } else {
         // Custom Backend JWT Auth
         const response = await fetch(`${BACKEND_URL}/signup`, {
@@ -343,8 +426,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 3. Send Forgot Password OTP
-  // When Firebase is configured → uses Firebase sendPasswordResetEmail (free, no SMTP)
+  // 3. Send Forgot Password OTP / Reset Link
+  // When Firebase is configured → uses Firebase sendPasswordResetEmail (free, no SMTP, no Render)
   // When Firebase is not configured → falls back to backend OTP email via SMTP
   const sendForgotPasswordOtp = async (email) => {
     try {
@@ -354,10 +437,10 @@ export const AuthProvider = ({ children }) => {
         return {
           success: true,
           isFirebase: true,
-          message: "Password reset link sent to your email via Firebase. Check your inbox (and spam folder)."
+          message: "If this email is registered, a password reset link has been sent. Check your inbox and spam folder."
         };
       } else {
-        // Fallback: backend OTP email via SMTP
+        // Fallback: backend OTP email via SMTP (local dev without Firebase)
         const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -367,6 +450,15 @@ export const AuthProvider = ({ children }) => {
         return { ...data, isFirebase: false };
       }
     } catch (error) {
+      // Return generic success for ALL Firebase errors including auth/user-not-found
+      // This prevents attackers from probing which emails are registered
+      if (!isFirebaseSimulated) {
+        return {
+          success: true,
+          isFirebase: true,
+          message: "If this email is registered, a password reset link has been sent. Check your inbox and spam folder."
+        };
+      }
       return { success: false, errors: error.message || "Network connection error" };
     }
   };

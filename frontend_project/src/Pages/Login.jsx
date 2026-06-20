@@ -2,14 +2,12 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
 import { CartContext } from "../Context/CartContext";
-import PhoneOtpForm from "../Components/auth/PhoneOtpForm";
 import ForgotPasswordForm from "../Components/auth/ForgotPasswordForm";
-import { AlertCircle, Lock, Mail, User, ShieldAlert, Sparkles, Smartphone, LogIn } from "lucide-react";
+import { AlertCircle, Lock, Mail, User, ShieldAlert, Sparkles } from "lucide-react";
 import "../Styles/auth.css";
 
 const Login = () => {
   const [isLoginState, setIsLoginState] = useState(true);
-  const [authMethod, setAuthMethod] = useState("otp"); // "otp" or "password"
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,10 +21,10 @@ const Login = () => {
   const { clearCart } = useContext(CartContext);
   const navigate = useNavigate();
 
-  // Reset errors on state/method toggles
+  // Reset errors on state toggles
   useEffect(() => {
     setErrorMsg("");
-  }, [isLoginState, authMethod]);
+  }, [isLoginState]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,10 +70,7 @@ const Login = () => {
     }
   };
 
-  const handleOtpSuccess = (res) => {
-    clearCart();
-    navigate("/");
-  };
+
 
   return (
     <main 
@@ -114,53 +109,25 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Credentials Tip (Email mode only) */}
-        {authMethod === "password" && (
-          <div 
-            style={{ 
-              backgroundColor: "var(--accent-light)", 
-              color: "var(--accent-pink)", 
-              fontSize: "11px", 
-              padding: "10px", 
-              borderRadius: "6px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "2px"
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "700" }}>
-              <ShieldAlert size={12} />
-              <span>Quick Login Credentials:</span>
-            </div>
-            <span>Email: <strong>user@gmail.com</strong> | Pass: <strong>user123</strong></span>
-            <span>Admin: <strong>Admin@gmail.com</strong> | Pass: <strong>Admin@1234</strong></span>
+        {/* Credentials Tip */}
+        <div 
+          style={{ 
+            backgroundColor: "var(--accent-light)", 
+            color: "var(--accent-pink)", 
+            fontSize: "11px", 
+            padding: "10px", 
+            borderRadius: "6px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "700" }}>
+            <ShieldAlert size={12} />
+            <span>Quick Login Credentials:</span>
           </div>
-        )}
-
-        {/* Auth Method Selection Tabs */}
-        <div className="auth-tabs-container" role="tablist">
-          <button
-            role="tab"
-            aria-selected={authMethod === "otp"}
-            className={`auth-tab-btn ${authMethod === "otp" ? "active" : ""}`}
-            onClick={() => setAuthMethod("otp")}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-              <Smartphone size={14} />
-              <span>Mobile OTP</span>
-            </div>
-          </button>
-          <button
-            role="tab"
-            aria-selected={authMethod === "password"}
-            className={`auth-tab-btn ${authMethod === "password" ? "active" : ""}`}
-            onClick={() => setAuthMethod("password")}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-              <LogIn size={14} />
-              <span>Email & Password</span>
-            </div>
-          </button>
+          <span>Email: <strong>user@gmail.com</strong> | Pass: <strong>user123</strong></span>
+          <span>Admin: <strong>Admin@gmail.com</strong> | Pass: <strong>Admin@1234</strong></span>
         </div>
 
         {/* Error message banner */}
@@ -183,47 +150,20 @@ const Login = () => {
           </div>
         )}
 
-        {/* Render Selected Authentication Method Form */}
-        {authMethod === "otp" ? (
-          <PhoneOtpForm 
-            isSignup={!isLoginState} 
-            onSuccess={handleOtpSuccess} 
-            onError={setErrorMsg} 
-          />
-        ) : (
-          <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-            {/* Name Input (Signup Only) */}
-            {!isLoginState && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label htmlFor="name" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Full Name</label>
-                <div style={{ position: "relative" }}>
-                  <User size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
-                  <input 
-                    type="text" 
-                    id="name"
-                    name="name"
-                    placeholder="E.g., Shriram Kumar"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Email Input */}
+        {/* Email & Password Form */}
+        <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+          {/* Name Input (Signup Only) */}
+          {!isLoginState && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label htmlFor="email" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Email Address</label>
+              <label htmlFor="name" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Full Name</label>
               <div style={{ position: "relative" }}>
-                <Mail size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+                <User size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
                 <input 
-                  type="email" 
-                  id="email"
-                  name="email"
-                  placeholder="name@gmail.com"
-                  value={formData.email}
+                  type="text" 
+                  id="name"
+                  name="name"
+                  placeholder="E.g., Shriram Kumar"
+                  value={formData.name}
                   onChange={handleInputChange}
                   style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
                   disabled={loading}
@@ -231,66 +171,85 @@ const Login = () => {
                 />
               </div>
             </div>
+          )}
 
-            {/* Password Input */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <label htmlFor="password" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Password</label>
-                {isLoginState && (
-                  <button 
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    style={{ 
-                      fontSize: "11px", 
-                      color: "var(--accent-pink)", 
-                      fontWeight: "700",
-                      background: "none", 
-                      border: "none", 
-                      cursor: "pointer",
-                      minHeight: "auto",
-                      padding: 0
-                    }}
-                  >
-                    Forgot Password?
-                  </button>
-                )}
-              </div>
-              <div style={{ position: "relative" }}>
-                <Lock size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
-                <input 
-                  type="password" 
-                  id="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
-                  disabled={loading}
-                  required
-                />
-              </div>
+          {/* Email Input */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="email" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Email Address</label>
+            <div style={{ position: "relative" }}>
+              <Mail size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+              <input 
+                type="email" 
+                id="email"
+                name="email"
+                placeholder="name@gmail.com"
+                value={formData.email}
+                onChange={handleInputChange}
+                style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
+                disabled={loading}
+                required
+              />
             </div>
+          </div>
 
-            {/* Submit Button */}
-            <button 
-              type="submit" 
-              className="interactive-target"
-              disabled={loading}
-              style={{
-                width: "100%",
-                height: "44px",
-                backgroundColor: "var(--text-primary)",
-                color: "var(--bg-secondary)",
-                fontWeight: "700",
-                borderRadius: "var(--border-radius-sm)",
-                fontSize: "13px",
-                marginTop: "4px"
-              }}
-            >
-              {loading ? "Please wait..." : isLoginState ? "Sign In" : "Sign Up"}
-            </button>
-          </form>
-        )}
+          {/* Password Input */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label htmlFor="password" style={{ fontSize: "var(--text-xs)", fontWeight: "700" }}>Password</label>
+              {isLoginState && (
+                <button 
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  style={{ 
+                    fontSize: "11px", 
+                    color: "var(--accent-pink)", 
+                    fontWeight: "700",
+                    background: "none", 
+                    border: "none", 
+                    cursor: "pointer",
+                    minHeight: "auto",
+                    padding: 0
+                  }}
+                >
+                  Forgot Password?
+                </button>
+              )}
+            </div>
+            <div style={{ position: "relative" }}>
+              <Lock size={16} style={{ position: "absolute", left: "12px", top: "14px", color: "var(--text-muted)" }} />
+              <input 
+                type="password" 
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleInputChange}
+                style={{ width: "100%", height: "44px", paddingLeft: "36px", paddingRight: "12px", outline: "none" }}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button 
+            type="submit" 
+            className="interactive-target"
+            disabled={loading}
+            style={{
+              width: "100%",
+              height: "44px",
+              backgroundColor: "var(--text-primary)",
+              color: "var(--bg-secondary)",
+              fontWeight: "700",
+              borderRadius: "var(--border-radius-sm)",
+              fontSize: "13px",
+              marginTop: "4px"
+            }}
+          >
+            {loading ? "Please wait..." : isLoginState ? "Sign In" : "Sign Up"}
+          </button>
+        </form>
 
         {/* Toggle sign in / sign up state links */}
         <div style={{ textAlign: "center", borderTop: "1px solid var(--border-color)", paddingTop: "var(--space-4)" }}>
