@@ -31,7 +31,7 @@ import {
 import { useAppDispatch } from "../store/hooks";
 import { addToast } from "../store/slices/toastSlice";
 
-import "../styles/checkout.css";
+import "../Styles/checkout.css";
 
 export const Checkout: React.FC = () => {
   const { cartItems, cartTotal, cartCount, clearCart } = useCart();

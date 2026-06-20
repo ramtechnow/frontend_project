@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../styles/productGrid.css";
+import "../Styles/productGrid.css";
 
 const CategoryCard = ({ category }) => {
   return (

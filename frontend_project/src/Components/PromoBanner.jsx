@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldAlert } from "lucide-react";
-import "../styles/theme.css";
+import "../Styles/theme.css";
 
 const PromoBanner = () => {
   return (

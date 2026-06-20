@@ -21,7 +21,7 @@ import { Order } from "../features/checkout/types/orderTypes";
 import { addToast } from "../store/slices/toastSlice";
 import { useAppDispatch } from "../store/hooks";
 
-import "../styles/orders.css";
+import "../Styles/orders.css";
 
 const STATUS_STEPS = ["Pending", "Processing", "Shipped", "Delivered"];
 
