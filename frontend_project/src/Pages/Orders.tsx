@@ -39,15 +39,12 @@ export const Orders: React.FC = () => {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const loadOrders = useCallback(async (isRefresh = false) => {
-    if (!user) {
-      navigate("/login", { state: { from: { pathname: "/orders" } } });
-      return;
-    }
+    if (!user) return;
 
     if (isRefresh) {
       setRefreshing(true);
@@ -69,13 +66,17 @@ export const Orders: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user, navigate, dispatch]);
+  }, [user, dispatch]);
 
   useEffect(() => {
-    if (user) {
-      loadOrders(false);
+    if (!authLoading) {
+      if (!user) {
+        navigate("/login", { state: { from: { pathname: "/orders" } } });
+      } else {
+        loadOrders(false);
+      }
     }
-  }, [user, loadOrders]);
+  }, [user, authLoading, loadOrders, navigate]);
 
   const toggleExpand = (id: string) => {
     setExpandedOrderId(expandedOrderId === id ? null : id);
