@@ -330,8 +330,13 @@ async function sendSMS(phone, otp) {
 async function sendEmail(email, subject, html) {
   const host = process.env.SMTP_HOST || process.env.SMTP_SERVER || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT) || 465;
-  const user = process.env.SMTP_USER || 'bvhss20@gmail.com';
-  const pass = process.env.SMTP_PASS || 'yqup nkss xket bpkt';
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!user || !pass) {
+    console.error('❌ SMTP credentials are not configured. Set SMTP_USER and SMTP_PASS environment variables.');
+    return false;
+  }
 
   let resolvedHost = host;
   // Resolve host to IPv4 to bypass IPv6 ENETUNREACH errors on cloud platforms like Render
