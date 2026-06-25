@@ -4,6 +4,13 @@ const dns = require('dns');
 if (typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first');
 }
+
+// Assert JWT_SECRET is configured for security
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'secret_ecom') {
+  console.error("\n🚨 FATAL ERROR: JWT_SECRET environment variable is either not defined or using insecure default 'secret_ecom'.");
+  console.error("   The application cannot start securely. Please set a strong JWT_SECRET in your environment.\n");
+  process.exit(1);
+}
 const port = process.env.PORT || 4000;
 const express = require("express");
 const app = express();

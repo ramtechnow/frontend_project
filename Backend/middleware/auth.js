@@ -7,7 +7,7 @@ exports.fetchUser = async (req, res, next) => {
     res.status(401).send({ errors: "Please authenticate using a valid token" });
   } else {
     try {
-      const data = jwt.verify(token, process.env.JWT_SECRET || 'secret_ecom');
+      const data = jwt.verify(token, process.env.JWT_SECRET);
       req.user = data.user;
       next();
     } catch (error) {
@@ -23,7 +23,7 @@ exports.fetchAdmin = async (req, res, next) => {
     res.status(401).send({ errors: "Please authenticate using a valid token" });
   } else {
     try {
-      const data = jwt.verify(token, process.env.JWT_SECRET || 'secret_ecom');
+      const data = jwt.verify(token, process.env.JWT_SECRET);
       if (data.user && data.user.isAdmin) {
         req.user = data.user;
         next();

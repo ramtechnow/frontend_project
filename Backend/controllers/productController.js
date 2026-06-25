@@ -3,15 +3,8 @@ const Product = require('../models/Product');
 // Add a new product (Admin Only)
 exports.addProduct = async (req, res) => {
   try {
-    let products = await Product.find({});
-    let id;
-    if (products.length > 0) {
-      let last_product_array = products.slice(-1);
-      let last_product = last_product_array[0];
-      id = last_product.id + 1;
-    } else {
-      id = 1;
-    }
+    const lastProduct = await Product.findOne({}, { id: 1 }).sort({ id: -1 });
+    const id = lastProduct ? lastProduct.id + 1 : 1;
     
     const product = new Product({
       id: id,

@@ -36,7 +36,7 @@ exports.signup = async (req, res) => {
         isAdmin: user.isAdmin
       }
     };
-    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     res.json({ success: true, token });
   } catch (error) {
     console.error("Error in signup:", error);
@@ -74,14 +74,12 @@ exports.login = async (req, res) => {
             isAdmin: user.isAdmin
           }
         };
-        const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
-        res.json({ success: true, token });
-      } else {
-        res.json({ success: false, errors: "Wrong Password" });
+        const token = jwt.sign(data, process.env.JWT_SECRET);
+        return res.json({ success: true, token });
       }
-    } else {
-      res.json({ success: false, errors: "Wrong Email Address" });
+      return res.status(401).json({ success: false, errors: "Invalid email address or password." });
     }
+    return res.status(401).json({ success: false, errors: "Invalid email address or password." });
   } catch (error) {
     console.error("Error in login:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
@@ -474,7 +472,7 @@ exports.verifyLoginOtp = async (req, res) => {
         isAdmin: user.isAdmin
       }
     };
-    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     
     res.json({ 
       success: true, 
@@ -636,7 +634,7 @@ exports.firebaseSync = async (req, res) => {
       }
     };
     
-    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     
     res.json({
       success: true,
