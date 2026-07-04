@@ -257,7 +257,7 @@ export const adminService = {
     if (!res.ok) throw new Error("Failed to create coupon");
   },
 
-  async toggleCoupon(code: string): Promise<void> {
+  async toggleCoupon(couponId: string): Promise<void> {
     const token = localStorage.getItem("auth-token");
     const res = await fetch(`${BACKEND_URL}/admin/coupons/toggle`, {
       method: "POST",
@@ -265,12 +265,12 @@ export const adminService = {
         "auth-token": token || "",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ code: code.toUpperCase() })
+      body: JSON.stringify({ couponId })
     });
     if (!res.ok) throw new Error("Failed to toggle coupon");
   },
 
-  async deleteCoupon(code: string): Promise<void> {
+  async deleteCoupon(couponId: string): Promise<void> {
     const token = localStorage.getItem("auth-token");
     const res = await fetch(`${BACKEND_URL}/admin/coupons/delete`, {
       method: "POST",
@@ -278,7 +278,7 @@ export const adminService = {
         "auth-token": token || "",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ code: code.toUpperCase() })
+      body: JSON.stringify({ couponId })
     });
     if (!res.ok) throw new Error("Failed to delete coupon");
   }

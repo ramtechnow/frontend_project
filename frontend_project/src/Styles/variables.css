@@ -90,3 +90,103 @@
   --overlay-bg: rgba(0, 0, 0, 0.8);
   --success-color: #34d399;
 }
+
+/* ==========================================
+   THEME PALETTE & TYPOGRAPHY CLASS OVERRIDES
+   ========================================== */
+
+/* Color Theme Overrides */
+.theme-rose {
+  /* Default styles */
+}
+
+.theme-sapphire {
+  --accent-pink: #2563eb;
+  --accent-color: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #eff6ff;
+  --border-focus: #2563eb;
+}
+.dark-theme.theme-sapphire {
+  --accent-pink: #60a5fa;
+  --accent-color: #60a5fa;
+  --accent-hover: #93c5fd;
+  --accent-light: #172554;
+  --border-focus: #60a5fa;
+}
+
+.theme-emerald {
+  --accent-pink: #059669;
+  --accent-color: #059669;
+  --accent-hover: #047857;
+  --accent-light: #ecfdf5;
+  --border-focus: #059669;
+}
+.dark-theme.theme-emerald {
+  --accent-pink: #34d399;
+  --accent-color: #34d399;
+  --accent-hover: #6ee7b7;
+  --accent-light: #064e3b;
+  --border-focus: #34d399;
+}
+
+.theme-gold {
+  --accent-pink: #d97706;
+  --accent-color: #d97706;
+  --accent-hover: #b45309;
+  --accent-light: #fef3c7;
+  --border-focus: #d97706;
+}
+.dark-theme.theme-gold {
+  --accent-pink: #fbbf24;
+  --accent-color: #fbbf24;
+  --accent-hover: #fcd34d;
+  --accent-light: #78350f;
+  --border-focus: #fbbf24;
+}
+
+.theme-obsidian {
+  --accent-pink: #475569;
+  --accent-color: #475569;
+  --accent-hover: #334155;
+  --accent-light: #f8fafc;
+  --border-focus: #475569;
+}
+.dark-theme.theme-obsidian {
+  --accent-pink: #94a3b8;
+  --accent-color: #94a3b8;
+  --accent-hover: #cbd5e1;
+  --accent-light: #1e293b;
+  --border-focus: #94a3b8;
+}
+
+/* Font Family Overrides */
+.font-sans {
+  --font-primary: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+}
+.font-serif {
+  --font-primary: 'Playfair Display', Georgia, serif;
+}
+.font-geometric {
+  --font-primary: 'Outfit', 'Inter', sans-serif;
+}
+.font-clean {
+  --font-primary: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+/* Border Radius Overrides */
+.radius-rounded {
+  /* Default variables */
+}
+.radius-sharp {
+  --border-radius-sm: 0px;
+  --border-radius-md: 0px;
+  --border-radius-lg: 0px;
+  --border-radius-full: 0px;
+}
+.radius-playful {
+  --border-radius-sm: 10px;
+  --border-radius-md: 20px;
+  --border-radius-lg: 32px;
+  --border-radius-full: 9999px;
+}

@@ -4,6 +4,7 @@ import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { ToastContainer } from "./Components/ui/ToastContainer";
+import { ThemeCustomizer } from "./Components/ui/ThemeCustomizer";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./config/firebase";
 import { syncUserProfile } from "./features/auth/services/authService";
@@ -122,6 +123,7 @@ export const App: React.FC = () => {
 
       {/* Global Toast Notification System */}
       <ToastContainer />
+      <ThemeCustomizer />
     </BrowserRouter>
   );
 };
