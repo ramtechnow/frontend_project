@@ -1,16 +1,55 @@
+.admin-panel,
+.admin-panel button,
+.admin-panel input,
+.admin-panel select,
+.admin-panel textarea,
+.admin-panel table,
+.admin-panel span,
+.admin-panel p,
+.admin-panel h1,
+.admin-panel h2,
+.admin-panel h3,
+.admin-panel h4 {
+  font-family: 'Inter', sans-serif !important;
+}
+
 .admin-panel {
   display: flex;
   min-height: 90vh;
-  font-family: var(--font-primary);
+  transition: var(--transition-smooth);
+  
+  /* Crimson Command Theme Overrides for Admin Panel */
+  --bg-primary: #F9FAFB; /* background-main */
+  --bg-secondary: #ffffff; /* surface-container-lowest */
+  --bg-tertiary: #f0f3ff; /* surface-container-low */
+  --text-primary: #151c27; /* on-surface */
+  --text-secondary: #575e70; /* secondary */
+  --text-muted: #5c3f40; /* on-surface-variant */
+  
+  --accent-pink: #b80035; /* primary */
+  --accent-color: #b80035;
+  --accent-hover: #be0037;
+  --accent-light: #FDF2F2; /* surface-subtle */
+  
+  --border-color: rgba(21, 28, 39, 0.08); /* outline-variant */
+  --border-focus: #b80035;
+  
+  --shadow-sm: 0px 4px 12px rgba(0,0,0,0.05);
+  --shadow-md: 0px 8px 24px rgba(0,0,0,0.08);
+  
+  --border-radius-sm: 0.125rem;
+  --border-radius-md: 0.25rem;
+  --border-radius-lg: 0.5rem;
+  --border-radius-full: 9999px;
+
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: var(--transition-smooth);
 }
 
 /* SIDEBAR LAYOUT */
 .admin-sidebar {
   width: 280px;
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   padding: 35px 24px;
   display: flex;
@@ -69,9 +108,16 @@
 }
 
 .sidebar-menu button.active {
-  background: var(--accent-color);
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(255, 65, 65, 0.25);
+  background: rgba(184, 0, 53, 0.1);
+  color: var(--accent-color);
+  border-right: 4px solid var(--accent-color);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.sidebar-menu button.active:hover {
+  transform: none;
+  background: rgba(184, 0, 53, 0.15);
 }
 
 .menu-icon {
@@ -1472,4 +1518,41 @@
   background: var(--bg-secondary);
   border: 1px dashed var(--border-color);
   border-radius: var(--border-radius-sm);
+}
+
+/* STATUS BADGES & MONO OVERRIDES */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: var(--border-radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.status-pill.success,
+.status-pill.paid,
+.status-pill.shipped,
+.status-pill.delivered {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+.status-pill.warning,
+.status-pill.pending,
+.status-pill.processing {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+.status-pill.danger,
+.status-pill.cancelled,
+.status-pill.failed {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.data-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 13px !important;
 }

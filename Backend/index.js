@@ -166,13 +166,17 @@ async function connectDatabase() {
 
 const startServer = async () => {
   await connectDatabase();
-  app.listen(port, (error) => {
+  const server = app.listen(port, (error) => {
     if (!error) {
       console.log("Server Running on port " + port);
     } else {
       console.log("Error: " + error);
     }
   });
+
+  // Fix Render / Load Balancer connection reset issue (intermittent ECONNRESET)
+  server.keepAliveTimeout = 120000; // 120 seconds
+  server.headersTimeout = 120000;   // 120 seconds
 };
 
 const productRoutes = require('./routes/productRoutes');

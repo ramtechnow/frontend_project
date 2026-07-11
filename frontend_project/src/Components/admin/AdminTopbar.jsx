@@ -50,18 +50,19 @@ export const AdminTopbar = ({ adminUser }) => {
             alignItems: 'center',
             gap: '6px',
             padding: '8px 16px',
-            backgroundColor: 'var(--bg-primary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--border-radius-full)',
+            backgroundColor: 'var(--accent-color)',
+            border: 'none',
+            borderRadius: 'var(--border-radius-sm)',
             fontSize: '0.8rem',
             fontWeight: '700',
-            color: 'var(--text-primary)',
+            color: '#ffffff',
             cursor: 'pointer',
             transition: 'background-color 0.2s',
-            minHeight: 'auto'
+            minHeight: 'auto',
+            boxShadow: 'var(--shadow-sm)'
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-primary)'}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-color)'}
         >
           <Eye size={14} />
           View Storefront
