@@ -46,6 +46,29 @@
   color: var(--text-primary);
 }
 
+/* Crimson Command Dark Mode Overrides */
+.dark-theme .admin-panel,
+.dark .admin-panel {
+  color-scheme: dark;
+  --bg-primary: #0a0b0d; /* deep dark background */
+  --bg-secondary: #12141c; /* card surface */
+  --bg-tertiary: #1e2029; /* alternate surfaces */
+  --text-primary: #ebf1ff; /* high contrast text */
+  --text-secondary: #a3b0cc; /* slate blue-gray subtext */
+  --text-muted: #8090a6; /* muted text */
+  
+  --accent-pink: #ff3366; /* brighter crimson/rose for dark mode legibility */
+  --accent-color: #ff3366;
+  --accent-hover: #ff4b72;
+  --accent-light: rgba(255, 51, 102, 0.15);
+  
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #ff3366;
+  
+  --shadow-sm: 0px 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0px 8px 24px rgba(0, 0, 0, 0.4);
+}
+
 /* SIDEBAR LAYOUT */
 .admin-sidebar {
   width: 280px;
