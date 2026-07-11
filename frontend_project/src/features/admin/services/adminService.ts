@@ -3,6 +3,7 @@ import { Product } from "../../catalog/types/productTypes";
 import { Order } from "../../checkout/types/orderTypes";
 
 export interface AdminCoupon {
+  _id: string;
   code: string;
   discountType: "percentage" | "flat";
   discountValue: number;
@@ -227,6 +228,7 @@ export const adminService = {
     const data = await res.json();
     const list = data.coupons || data;
     return list.map((c: any) => ({
+      _id: c._id,
       code: c.code,
       discountType: c.discountType || "flat",
       discountValue: Number(c.discountValue) || 0,

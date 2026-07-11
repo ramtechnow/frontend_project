@@ -1,0 +1,113 @@
+/* ======================================================
+   Mobile Bottom Navigation Bar — Meesho/Flipkart Style
+   ====================================================== */
+
+.mobile-bottom-nav {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  /* ── Show bottom nav ─────────────────────────────── */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    padding-bottom: env(safe-area-inset-bottom, 0px); /* iOS notch */
+    height: 62px;
+    align-items: stretch;
+  }
+
+  /* ── Each tab ─────────────────────────────────────── */
+  .mbn-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    min-height: 0; /* Override base button rule */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .mbn-tab--active {
+    color: var(--accent-pink);
+  }
+
+  /* ── Icon with badge wrapper ───────────────────────── */
+  .mbn-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mbn-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background-color: var(--accent-pink);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  /* ── Label ─────────────────────────────────────────── */
+  .mbn-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-align: center;
+  }
+
+  /* ── Body padding so content isn't hidden behind nav ─ */
+  body {
+    padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── Footer — hide on mobile (bottom nav replaces it) */
+  footer,
+  .footer {
+    display: none !important;
+  }
+
+  /* ── Hamburger also hidden (bottom nav covers it) ──── */
+  .nav-hamburger {
+    display: none !important;
+  }
+
+  /* ── Wishlist & Cart from top navbar — hide on mobile */
+  /* (they live in the bottom nav instead)              */
+  .nav-wishlist-wrapper,
+  .nav-cart-wrapper {
+    display: none;
+  }
+}
+
+/* Tablet — keep footer but give bottom nav */
+@media (max-width: 768px) and (min-width: 481px) {
+  footer,
+  .footer {
+    display: none !important;
+  }
+}

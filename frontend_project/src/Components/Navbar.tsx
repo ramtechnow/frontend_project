@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Styles/navbar.css";
-import { ShoppingCart, Menu, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
+import { ShoppingCart, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ThemeContext } from "../Context/ThemeContext";
@@ -158,7 +158,7 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Wishlist Link */}
+          {/* Wishlist Link — hidden on mobile (bottom nav) */}
           <button
             className="nav-wishlist-wrapper"
             onClick={() => navigate("/wishlist")}
@@ -168,7 +168,7 @@ export const Navbar: React.FC = () => {
             {wishlist.length > 0 && <div className="nav-cart-count">{wishlist.length}</div>}
           </button>
 
-          {/* Cart Link */}
+          {/* Cart Link — hidden on mobile (bottom nav) */}
           <button
             className="nav-cart-wrapper"
             onClick={() => navigate("/cart")}
@@ -176,15 +176,6 @@ export const Navbar: React.FC = () => {
           >
             <ShoppingCart size={22} />
             {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
-          </button>
-
-          {/* Hamburger (Mobile) */}
-          <button
-            className="nav-hamburger"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open navigation menu"
-          >
-            <Menu size={24} />
           </button>
         </div>
       </nav>

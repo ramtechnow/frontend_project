@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
+import MobileBottomNav from "./Components/MobileBottomNav";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { ToastContainer } from "./Components/ui/ToastContainer";
 import { ThemeCustomizer } from "./Components/ui/ThemeCustomizer";
@@ -128,6 +129,9 @@ export const App: React.FC = () => {
         <Suspense fallback={null}>
           <Footer />
         </Suspense>
+
+        {/* Mobile Bottom Navigation (Meesho/Flipkart style) */}
+        <MobileBottomNav />
       </div>
 
       {/* Global Toast Notification System */}

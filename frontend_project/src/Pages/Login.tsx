@@ -157,6 +157,7 @@ export const Login: React.FC = () => {
               placeholder="Min 6 characters"
               icon={<Lock size={16} />}
               error={signupErrors.password?.message}
+              showStrength
               {...registerSignup("password")}
             />
             <Button type="submit" isLoading={signupSubmitting} className="mt-2 h-11 w-full text-sm">
