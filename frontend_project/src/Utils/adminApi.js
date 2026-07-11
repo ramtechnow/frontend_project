@@ -80,6 +80,26 @@ export const adminApi = {
   async deleteCoupon(couponId) {
     await adminService.deleteCoupon(couponId);
     return { success: true };
+  },
+
+  // Banners
+  async fetchBanners() {
+    return adminService.fetchBanners();
+  },
+
+  async createBanner(bannerData) {
+    await adminService.createBanner(bannerData);
+    return { success: true };
+  },
+
+  async toggleBanner(bannerId, isActive) {
+    await adminService.toggleBanner(bannerId, isActive);
+    return { success: true };
+  },
+
+  async deleteBanner(bannerId) {
+    await adminService.deleteBanner(bannerId);
+    return { success: true };
   }
 };
 

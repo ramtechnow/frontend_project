@@ -9,6 +9,7 @@ import { AdminAddProductTab } from "../Components/admin/AdminAddProductTab";
 import { AdminUsersTab } from "../Components/admin/AdminUsersTab";
 import { AdminOrdersTab } from "../Components/admin/AdminOrdersTab";
 import { AdminCouponsTab } from "../Components/admin/AdminCouponsTab";
+import { AdminBannersTab } from "../Components/admin/AdminBannersTab";
 
 // UI Components
 import { AdminSidebar } from "../Components/admin/AdminSidebar";
@@ -38,6 +39,7 @@ export const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
 
   // Fetch Loaders and Error triggers
   const [fetchingData, setFetchingData] = useState(false);
@@ -111,11 +113,12 @@ export const AdminPanel: React.FC = () => {
     setFetchingData(true);
     setFetchError(null);
     try {
-      const [prodData, usersData, ordersData, couponsData] = await Promise.allSettled([
+      const [prodData, usersData, ordersData, couponsData, bannersData] = await Promise.allSettled([
         adminApi.fetchProducts(),
         adminApi.fetchUsers(),
         adminApi.fetchOrders(),
-        adminApi.fetchCoupons()
+        adminApi.fetchCoupons(),
+        adminApi.fetchBanners()
       ]);
 
       if (prodData.status === "fulfilled") {
@@ -140,6 +143,12 @@ export const AdminPanel: React.FC = () => {
         setCoupons(couponsData.value.coupons || couponsData.value);
       } else {
         console.warn("Could not load active coupons list:", couponsData.reason);
+      }
+
+      if (bannersData.status === "fulfilled") {
+        setBanners(bannersData.value);
+      } else {
+        console.warn("Could not load hero banners list:", bannersData.reason);
       }
 
     } catch (err: any) {
@@ -178,6 +187,7 @@ export const AdminPanel: React.FC = () => {
         usersCount={users.length}
         ordersCount={orders.length}
         couponsCount={coupons.length}
+        bannersCount={banners.length}
       />
 
       {/* Primary Content Viewport */}
@@ -305,6 +315,16 @@ export const AdminPanel: React.FC = () => {
             <AdminCouponsTab 
               coupons={coupons as any}
               onRefreshCoupons={fetchAllAdminData as any}
+              addToast={triggerToast as any}
+              triggerConfirm={triggerConfirm as any}
+              logAction={logAction as any}
+            />
+          )}
+
+          {activeTab === "banners" && (
+            <AdminBannersTab 
+              banners={banners as any}
+              onRefreshBanners={fetchAllAdminData as any}
               addToast={triggerToast as any}
               triggerConfirm={triggerConfirm as any}
               logAction={logAction as any}

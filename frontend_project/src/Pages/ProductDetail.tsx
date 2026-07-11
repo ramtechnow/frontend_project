@@ -17,6 +17,7 @@ export const ProductDetail: React.FC = () => {
 
   // State
   const [product, setProduct] = useState<Product | null>(null);
+  const [activeImage, setActiveImage] = useState("");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +36,7 @@ export const ProductDetail: React.FC = () => {
         const prod = await fetchProductById(productId);
         if (prod) {
           setProduct(prod);
+          setActiveImage(prod.image || "");
           // Set defaults if colors/sizes are present
           if (prod.sizes && prod.sizes.length > 0) setSelectedSize(prod.sizes[0]);
           if (prod.colors && prod.colors.length > 0) setSelectedColor(prod.colors[0]);
@@ -99,6 +101,10 @@ export const ProductDetail: React.FC = () => {
     setTimeout(() => setAddedNotice(false), 3000);
   };
 
+  const handleBuyNow = () => {
+    navigate(`/checkout?buyNow=true&productId=${product.id}&size=${selectedSize}&color=${selectedColor}&qty=${quantity}`);
+  };
+
   // Safe fallbacks
   const ratingVal = (product as any).rating || 4.5;
   const reviewsCount = (product as any).reviewsCount || 108;
@@ -132,7 +138,7 @@ export const ProductDetail: React.FC = () => {
             }}
           >
             <img 
-              src={productImages[0]} 
+              src={activeImage || productImages[0]} 
               alt={product.name} 
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -145,15 +151,14 @@ export const ProductDetail: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => {
-                    // Update main image display
-                    setProduct({ ...product, image: img });
+                    setActiveImage(img);
                   }}
                   style={{
                     width: '60px',
                     height: '75px',
                     borderRadius: '8px',
                     overflow: 'hidden',
-                    border: product.image === img ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)',
+                    border: (activeImage || productImages[0]) === img ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)',
                     background: 'none',
                     padding: 0,
                     cursor: 'pointer',
@@ -317,6 +322,29 @@ export const ProductDetail: React.FC = () => {
               }}
             >
               <ShoppingBag size={16} /> Add to Cart
+            </button>
+
+            <button 
+              className="interactive-target"
+              onClick={handleBuyNow}
+              style={{
+                backgroundColor: "var(--text-primary)",
+                color: "var(--bg-primary)",
+                height: "44px",
+                padding: "0 28px",
+                borderRadius: "var(--border-radius-full)",
+                fontWeight: "700",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                flexGrow: 1,
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              Buy Now
             </button>
 
             <button 

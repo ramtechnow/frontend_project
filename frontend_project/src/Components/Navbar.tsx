@@ -1,14 +1,18 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Styles/navbar.css";
-import { ShoppingCart, Menu, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon } from "lucide-react";
+import { ShoppingCart, Menu, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ThemeContext } from "../Context/ThemeContext";
 import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import MobileMenu from "./MobileMenu";
+import { useAppDispatch } from "../store/hooks";
+import { addToast } from "../store/slices/toastSlice";
+import { fetchUnseenOrders, markOrderAsSeen } from "../features/checkout/services/orderService";
 
 export const Navbar: React.FC = () => {
+  const dispatch = useAppDispatch();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -33,6 +37,29 @@ export const Navbar: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Poll/Check for unseen order status updates on mount/login
+  useEffect(() => {
+    if (user) {
+      const checkUnseenOrders = async () => {
+        try {
+          const unseen = await fetchUnseenOrders();
+          for (const order of unseen) {
+            if (order && order.id) {
+              dispatch(addToast({ 
+                message: `Your order #RC-${order.id.substring(0, 8).toUpperCase()} status has updated to: ${order.status}!`, 
+                type: "info" 
+              }));
+              await markOrderAsSeen(order.id);
+            }
+          }
+        } catch (e) {
+          console.warn("Unseen order status check failed:", e);
+        }
+      };
+      checkUnseenOrders();
+    }
+  }, [user, dispatch]);
 
   const handleLogout = async () => {
     setUserDropdownOpen(false);
@@ -107,6 +134,9 @@ export const Navbar: React.FC = () => {
                     </div>
                   </div>
                   <div className="dropdown-divider" />
+                  <button className="dropdown-item" onClick={() => { setUserDropdownOpen(false); navigate("/profile"); }} role="menuitem">
+                    <User size={16} /> My Profile
+                  </button>
                   <button className="dropdown-item" onClick={() => { setUserDropdownOpen(false); navigate("/orders"); }} role="menuitem">
                     <Package size={16} /> My Orders
                   </button>

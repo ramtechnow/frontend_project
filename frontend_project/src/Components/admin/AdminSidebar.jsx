@@ -9,7 +9,8 @@ import {
   ShoppingCart, 
   Tag,
   User,
-  LogOut
+  LogOut,
+  Image
 } from 'lucide-react';
 
 export const AdminSidebar = ({ 
@@ -18,7 +19,8 @@ export const AdminSidebar = ({
   productsCount = 0, 
   usersCount = 0, 
   ordersCount = 0, 
-  couponsCount = 0 
+  couponsCount = 0,
+  bannersCount = 0
 }) => {
   const { user, logoutUser } = useAuth();
   const navigate = useNavigate();
@@ -85,6 +87,14 @@ export const AdminSidebar = ({
           onClick={() => setActiveTab("coupons")}
         >
           <span className="menu-icon"><Tag size={18} /></span> Coupons & Offers ({couponsCount})
+        </button>
+        
+        <button 
+          type="button"
+          className={activeTab === "banners" ? "active" : ""} 
+          onClick={() => setActiveTab("banners")}
+        >
+          <span className="menu-icon"><Image size={18} /></span> Hero Banners ({bannersCount})
         </button>
       </nav>
 

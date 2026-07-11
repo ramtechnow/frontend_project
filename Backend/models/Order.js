@@ -40,6 +40,10 @@ const OrderSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  notificationSeen: {
+    type: Boolean,
+    default: true,
+  },
   date: {
     type: Date,
     default: Date.now,

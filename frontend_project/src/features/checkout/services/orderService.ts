@@ -109,3 +109,62 @@ export const fetchUserOrders = async (_userId: string): Promise<Order[]> => {
   }
 };
 
+// Fetch unseen order notifications for user
+export const fetchUnseenOrders = async (): Promise<Order[]> => {
+  try {
+    const token = localStorage.getItem("auth-token");
+    if (!token) return [];
+
+    const res = await fetch(`${BACKEND_URL}/userorders/unseen`, {
+      method: "GET",
+      headers: {
+        "auth-token": token,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch unseen order notifications.");
+    }
+
+    const data = await res.json();
+    return data.map((order: any) => ({
+      id: order._id || order.id,
+      userId: order.userId,
+      items: order.items || [],
+      amount: Number(order.amount),
+      address: order.address,
+      couponCode: order.couponCode,
+      status: order.status || "Pending",
+      payment: order.payment !== false,
+      createdAt: order.date ? new Date(order.date).toISOString() : new Date().toISOString()
+    })) as Order[];
+  } catch (err: any) {
+    console.error("Failed to fetch unseen orders:", err);
+    return [];
+  }
+};
+
+// Mark order notification as seen
+export const markOrderAsSeen = async (orderId: string): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem("auth-token");
+    if (!token) return false;
+
+    const res = await fetch(`${BACKEND_URL}/userorders/mark-seen`, {
+      method: "POST",
+      headers: {
+        "auth-token": token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ orderId })
+    });
+
+    const data = await res.json();
+    return res.ok && data.success;
+  } catch (err: any) {
+    console.error("Failed to mark order as seen:", err);
+    return false;
+  }
+};
+

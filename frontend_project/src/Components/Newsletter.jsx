@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Mail, CheckCircle } from "lucide-react";
+import { BACKEND_URL } from "../config";
 
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     setError("");
     const trimmed = email.trim();
@@ -18,8 +20,30 @@ const Newsletter = () => {
       setError("Email address format is invalid.");
       return;
     }
-    setSubscribed(true);
-    setEmail("");
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/newsletter/subscribe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: trimmed })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSubscribed(true);
+        setEmail("");
+      } else {
+        setError(data.error || "Failed to subscribe. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -94,6 +118,7 @@ const Newsletter = () => {
           />
           <button 
             type="submit"
+            disabled={loading}
             className="interactive-target"
             style={{ 
               backgroundColor: "var(--accent-pink)", 
@@ -102,10 +127,12 @@ const Newsletter = () => {
               borderRadius: "var(--border-radius-full)",
               padding: "0 var(--space-6)",
               height: "44px",
-              minWidth: "120px"
+              minWidth: "120px",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1
             }}
           >
-            Subscribe
+            {loading ? "..." : "Subscribe"}
           </button>
         </form>
       )}

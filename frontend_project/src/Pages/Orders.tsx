@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -38,6 +38,7 @@ export const Orders: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [activeSection, setActiveSection] = useState<"active" | "completed">("active");
   
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -83,6 +84,13 @@ export const Orders: React.FC = () => {
   };
 
   const getStepIndex = (status: string) => STATUS_STEPS.indexOf(status);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const isDelivered = order.status === "Delivered";
+      return activeSection === "active" ? !isDelivered : isDelivered;
+    });
+  }, [orders, activeSection]);
 
   const formatOrderDate = (createdAt: any) => {
     if (!createdAt) return "N/A";
@@ -145,14 +153,45 @@ export const Orders: React.FC = () => {
           </Link>
         </div>
       ) : (
-        <div className="orders-list flex flex-col gap-4">
-          {orders.map((order) => {
-            const orderId = order.id || "";
-            const isExpanded = expandedOrderId === orderId;
-            const currentStep = getStepIndex(order.status);
-            const totalItemsCount = (order.items || []).reduce((acc, it) => acc + (it.quantity || 0), 0);
+        <>
+          {/* Tabs Selector */}
+          <div className="orders-tabs flex gap-3 border-b border-border pb-3 mb-5">
+            <button
+              onClick={() => setActiveSection("active")}
+              className={`px-4 py-2 text-xs font-extrabold tracking-wider uppercase border-b-2 transition-all cursor-pointer ${
+                activeSection === "active"
+                  ? "border-accent-pink text-accent-pink"
+                  : "border-transparent text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Active Orders ({orders.filter(o => o.status !== "Delivered").length})
+            </button>
+            <button
+              onClick={() => setActiveSection("completed")}
+              className={`px-4 py-2 text-xs font-extrabold tracking-wider uppercase border-b-2 transition-all cursor-pointer ${
+                activeSection === "completed"
+                  ? "border-accent-pink text-accent-pink"
+                  : "border-transparent text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Completed Orders ({orders.filter(o => o.status === "Delivered").length})
+            </button>
+          </div>
 
-            return (
+          {filteredOrders.length === 0 ? (
+            <div className="text-center py-16 bg-bg-secondary border border-border border-dashed rounded-2xl text-text-muted">
+              <Package size={36} className="mx-auto mb-3 text-text-muted/40 animate-pulse" />
+              <p className="text-xs font-extrabold uppercase tracking-wider">No {activeSection === "active" ? "active" : "completed"} orders logged.</p>
+            </div>
+          ) : (
+            <div className="orders-list flex flex-col gap-4">
+              {filteredOrders.map((order) => {
+                const orderId = order.id || "";
+                const isExpanded = expandedOrderId === orderId;
+                const currentStep = getStepIndex(order.status);
+                const totalItemsCount = (order.items || []).reduce((acc, it) => acc + (it.quantity || 0), 0);
+
+                return (
               <div 
                 key={orderId} 
                 className={`order-card border border-border rounded-2xl overflow-hidden shadow-sm transition-all duration-200 ${
@@ -304,7 +343,9 @@ export const Orders: React.FC = () => {
           })}
         </div>
       )}
-    </main>
+      </>
+    )}
+  </main>
   );
 };
 

@@ -390,6 +390,7 @@ async function sendEmail(email, subject, html) {
     return false;
   }
 }
+exports.sendEmail = sendEmail;
 
 // POST: Send OTP to Indian phone number for login/registration
 exports.sendLoginOtp = async (req, res) => {
@@ -650,6 +651,146 @@ exports.firebaseSync = async (req, res) => {
   } catch (error) {
     console.error("Error in firebaseSync:", error);
     res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
+// GET: Fetch User Profile details
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id, { password: 0 });
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error("Error in getProfile:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// POST: Update User Profile fields
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const userId = req.user.id;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, errors: "Name and email are required fields" });
+    }
+
+    const emailCheck = await User.findOne({ email: { $regex: new RegExp("^" + email + "$", "i") }, _id: { $ne: userId } });
+    if (emailCheck) {
+      return res.status(400).json({ success: false, errors: "Email address is already in use by another account" });
+    }
+
+    if (phone) {
+      const phoneCheck = await User.findOne({ phone, _id: { $ne: userId } });
+      if (phoneCheck) {
+        return res.status(400).json({ success: false, errors: "Phone number is already in use by another account" });
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { name, email, phone } },
+      { new: true, select: "-password" }
+    );
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Error in updateProfile:", error);
+    res.status(500).json({ success: false, errors: "Internal Server Error" });
+  }
+};
+
+// POST: Add new address to profile
+exports.addAddress = async (req, res) => {
+  try {
+    const { fullName, addressLine, city, state, postalCode, phone, isDefault } = req.body;
+    if (!fullName || !addressLine || !city || !state || !postalCode || !phone) {
+      return res.status(400).json({ success: false, error: "Missing required shipping address fields" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    if (!user.addresses) {
+      user.addresses = [];
+    }
+
+    // If marked default, toggle other defaults off
+    if (isDefault) {
+      user.addresses.forEach(addr => addr.isDefault = false);
+    }
+
+    const newAddress = {
+      fullName,
+      addressLine,
+      city,
+      state,
+      postalCode,
+      phone,
+      isDefault: Boolean(isDefault || user.addresses.length === 0) // Make default if it's the first one
+    };
+
+    user.addresses.push(newAddress);
+    user.markModified('addresses');
+    await user.save();
+
+    res.json({ success: true, addresses: user.addresses });
+  } catch (error) {
+    console.error("Error in addAddress:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// POST: Delete address from profile
+exports.deleteAddress = async (req, res) => {
+  try {
+    const { addressId } = req.body;
+    if (!addressId) {
+      return res.status(400).json({ success: false, error: "Missing addressId field" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    user.addresses = user.addresses.filter(addr => addr._id.toString() !== addressId);
+    user.markModified('addresses');
+    await user.save();
+
+    res.json({ success: true, addresses: user.addresses });
+  } catch (error) {
+    console.error("Error in deleteAddress:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+// POST: Subscribe to promotional newsletter (Public)
+exports.subscribeNewsletter = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({ success: false, error: "A valid email address is required" });
+    }
+
+    const Subscriber = require('../models/Subscriber');
+    const existing = await Subscriber.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      return res.status(400).json({ success: false, error: "This email address is already subscribed to our newsletter." });
+    }
+
+    const subscriber = new Subscriber({ email: email.toLowerCase() });
+    await subscriber.save();
+    console.log(`✉️ New newsletter subscriber registered: ${email}`);
+    res.json({ success: true, message: "Thank you for subscribing to the RamCart newsletter!" });
+  } catch (error) {
+    console.error("Error subscribing to newsletter:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
 

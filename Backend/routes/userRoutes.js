@@ -29,4 +29,13 @@ router.get('/admin/users', fetchAdmin, userController.getAllUsers);
 router.post('/admin/updateuserrole', fetchAdmin, userController.updateUserRole);
 router.post('/admin/deleteuser', fetchAdmin, userController.deleteUser);
 
+// Profile & Address Book routes
+router.get('/user/profile', fetchUser, userController.getProfile);
+router.post('/user/profile/update', fetchUser, userController.updateProfile);
+router.post('/user/addresses/add', fetchUser, userController.addAddress);
+router.post('/user/addresses/delete', fetchUser, userController.deleteAddress);
+
+// Public Newsletter Subscription
+router.post('/newsletter/subscribe', userController.subscribeNewsletter);
+
 module.exports = router;

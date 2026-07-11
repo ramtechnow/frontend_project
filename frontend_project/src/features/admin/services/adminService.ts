@@ -76,7 +76,8 @@ export const adminService = {
         sizes: productData.sizes || [],
         colors: productData.colors || [],
         variants: productData.variants || [],
-        image: productData.image || ""
+        image: productData.image || "",
+        images: productData.images || []
       })
     });
     if (!res.ok) throw new Error("Failed to add product");
@@ -281,5 +282,54 @@ export const adminService = {
       body: JSON.stringify({ couponId })
     });
     if (!res.ok) throw new Error("Failed to delete coupon");
+  },
+
+  // ── Banners Management ───────────────────────────────────────────────────
+  async fetchBanners(): Promise<any[]> {
+    const token = localStorage.getItem("auth-token");
+    const res = await fetch(`${BACKEND_URL}/admin/banners/all`, {
+      headers: { "auth-token": token || "" }
+    });
+    if (!res.ok) throw new Error("Failed to fetch banners");
+    return res.json();
+  },
+
+  async createBanner(bannerData: any): Promise<void> {
+    const token = localStorage.getItem("auth-token");
+    const res = await fetch(`${BACKEND_URL}/admin/banners/create`, {
+      method: "POST",
+      headers: {
+        "auth-token": token || "",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(bannerData)
+    });
+    if (!res.ok) throw new Error("Failed to create banner");
+  },
+
+  async toggleBanner(bannerId: string, isActive: boolean): Promise<void> {
+    const token = localStorage.getItem("auth-token");
+    const res = await fetch(`${BACKEND_URL}/admin/banners/toggle`, {
+      method: "POST",
+      headers: {
+        "auth-token": token || "",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ bannerId, isActive })
+    });
+    if (!res.ok) throw new Error("Failed to toggle banner");
+  },
+
+  async deleteBanner(bannerId: string): Promise<void> {
+    const token = localStorage.getItem("auth-token");
+    const res = await fetch(`${BACKEND_URL}/admin/banners/delete`, {
+      method: "POST",
+      headers: {
+        "auth-token": token || "",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ bannerId })
+    });
+    if (!res.ok) throw new Error("Failed to delete banner");
   }
 };

@@ -100,7 +100,7 @@ export const AdminOrdersTab = ({
                         <select
                           className="order-status-select"
                           value={o.status}
-                          disabled={updatingOrderId === o._id}
+                          disabled={o.status === "Delivered" || updatingOrderId === o._id}
                           onChange={(e) => handleUpdateStatus(o._id, e.target.value)}
                           style={{
                             height: '32px',
@@ -109,7 +109,8 @@ export const AdminOrdersTab = ({
                             borderRadius: '8px',
                             fontSize: '0.85rem',
                             outline: 'none',
-                            cursor: 'pointer'
+                            cursor: o.status === "Delivered" ? 'not-allowed' : 'pointer',
+                            opacity: o.status === "Delivered" ? 0.7 : 1
                           }}
                         >
                           <option value="Pending">Pending</option>

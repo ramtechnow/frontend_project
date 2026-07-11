@@ -22,6 +22,7 @@ const Orders = lazy(() => import("./Pages/Orders"));
 const Login = lazy(() => import("./Pages/Login"));
 const AdminPanel = lazy(() => import("./Pages/AdminPanel"));
 const NotFound = lazy(() => import("./Pages/NotFound"));
+const Profile = lazy(() => import("./Pages/Profile"));
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -93,6 +94,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <Orders />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 } 
               />

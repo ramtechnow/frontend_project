@@ -30,6 +30,15 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  addresses: [{
+    fullName: { type: String, required: true },
+    addressLine: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    phone: { type: String, required: true },
+    isDefault: { type: Boolean, default: false }
+  }],
   date: {
     type: Date,
     default: Date.now,

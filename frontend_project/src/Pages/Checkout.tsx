@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { 
   CreditCard, 
@@ -31,6 +31,8 @@ import {
 } from "../features/checkout/services/orderService";
 import { useAppDispatch } from "../store/hooks";
 import { addToast } from "../store/slices/toastSlice";
+import { fetchProductById } from "../features/catalog/services/productService";
+import { BACKEND_URL } from "../config";
 
 import "../Styles/checkout.css";
 
@@ -45,12 +47,59 @@ const getCardBrand = (cardNumber: string): "visa" | "mastercard" | "amex" | "dis
 };
 
 export const Checkout: React.FC = () => {
-  const { cartItems, cartTotal, cartCount, clearCart } = useCart();
+  const { cartItems, cartTotal, cartCount, clearCart, cartLoading } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // ── States ───────────────────────────────────────────────────────────────────
+  // ── Form Configuration (Moved up) ───────────────────────────────────────────
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<CheckoutValues>({
+    resolver: zodResolver(checkoutSchema),
+    mode: "onTouched",
+    defaultValues: {
+      address: {
+        fullName: "",
+        addressLine: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        phone: ""
+      },
+      payment: {
+        cardholderName: "",
+        cardNumber: "",
+        expiryDate: "",
+        cvv: ""
+      }
+    }
+  });
+
+  // ── Buy Now Search Params ───────────────────────────────────────────────────
+  const [searchParams] = useSearchParams();
+  const buyNow = searchParams.get("buyNow") === "true";
+  const buyNowProductId = searchParams.get("productId") || "";
+  const buyNowSize = searchParams.get("size") || "M";
+  const buyNowColor = searchParams.get("color") || "White";
+  const buyNowQty = Number(searchParams.get("qty") || "1");
+
+  const [buyNowItem, setBuyNowItem] = useState<any | null>(null);
+  const [buyNowLoading, setBuyNowLoading] = useState(buyNow);
+
+  // Saved Addresses state
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+
+  const checkoutItems = buyNow && buyNowItem ? [buyNowItem] : cartItems;
+  const checkoutTotal = buyNow && buyNowItem ? buyNowItem.price * buyNowItem.quantity : cartTotal;
+  const checkoutCount = buyNow && buyNowItem ? buyNowItem.quantity : cartCount;
+
+  // ── Other States ─────────────────────────────────────────────────────────────
   const [couponInput, setCouponInput] = useState("");
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [couponResult, setCouponResult] = useState<{
@@ -80,43 +129,15 @@ export const Checkout: React.FC = () => {
     phone: ""
   });
 
+  const finalPayable = couponResult?.finalTotal ?? checkoutTotal;
+  const savings = couponResult?.discountAmount ?? 0;
+
   const steps = [
     "Establishing SSL connection...",
     "Securing credit card details...",
     "Authorizing with bank partner...",
     "Finalizing purchase in DB..."
   ];
-
-  const finalPayable = couponResult?.finalTotal ?? cartTotal;
-  const savings = couponResult?.discountAmount ?? 0;
-
-  // ── Form Configuration ───────────────────────────────────────────────────────
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors }
-  } = useForm<CheckoutValues>({
-    resolver: zodResolver(checkoutSchema),
-    mode: "onTouched",
-    defaultValues: {
-      address: {
-        fullName: "",
-        addressLine: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        phone: ""
-      },
-      payment: {
-        cardholderName: "",
-        cardNumber: "",
-        expiryDate: "",
-        cvv: ""
-      }
-    }
-  });
 
   // Watch card input fields for live card rendering
   const watchCardholder = watch("payment.cardholderName");
@@ -125,6 +146,91 @@ export const Checkout: React.FC = () => {
   const watchCvv = watch("payment.cvv");
 
   const cardBrand = getCardBrand(watchCardNumber);
+
+  // ── Effects & Helpers ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (buyNow && buyNowProductId) {
+      const loadBuyNowProduct = async () => {
+        try {
+          const product = await fetchProductById(buyNowProductId);
+          if (product) {
+            setBuyNowItem({
+              id: `buynow-${product.id}`,
+              userId: user?.uid || "",
+              productId: product.id,
+              name: product.name,
+              image: product.image,
+              size: buyNowSize,
+              color: buyNowColor,
+              quantity: buyNowQty,
+              price: product.newPrice
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load Buy Now product details:", err);
+        } finally {
+          setBuyNowLoading(false);
+        }
+      };
+      loadBuyNowProduct();
+    }
+  }, [buyNow, buyNowProductId, buyNowSize, buyNowColor, buyNowQty, user]);
+
+  useEffect(() => {
+    const fetchSavedAddresses = async () => {
+      try {
+        const token = localStorage.getItem("auth-token");
+        if (!token) return;
+
+        const res = await fetch(`${BACKEND_URL}/user/profile`, {
+          headers: { "auth-token": token }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user.addresses) {
+            setSavedAddresses(data.user.addresses);
+            const def = data.user.addresses.find((a: any) => a.isDefault);
+            if (def) {
+              setSelectedAddressId(def._id);
+              setValue("address.fullName", def.fullName);
+              setValue("address.addressLine", def.addressLine);
+              setValue("address.city", def.city);
+              setValue("address.state", def.state);
+              setValue("address.postalCode", def.postalCode);
+              setValue("address.phone", def.phone);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch address book:", err);
+      }
+    };
+    if (user) {
+      fetchSavedAddresses();
+    }
+  }, [user]);
+
+  const handleSelectAddress = (addrId: string) => {
+    setSelectedAddressId(addrId);
+    if (addrId === "new") {
+      setValue("address.fullName", "");
+      setValue("address.addressLine", "");
+      setValue("address.city", "");
+      setValue("address.state", "");
+      setValue("address.postalCode", "");
+      setValue("address.phone", "");
+    } else {
+      const selected = savedAddresses.find(a => a._id === addrId);
+      if (selected) {
+        setValue("address.fullName", selected.fullName);
+        setValue("address.addressLine", selected.addressLine);
+        setValue("address.city", selected.city);
+        setValue("address.state", selected.state);
+        setValue("address.postalCode", selected.postalCode);
+        setValue("address.phone", selected.phone);
+      }
+    }
+  };
 
   // Caret-aware input formats
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,7 +260,7 @@ export const Checkout: React.FC = () => {
     setCouponLoading(true);
     setCouponResult(null);
 
-    const result = await validateCoupon(code, cartTotal);
+    const result = await validateCoupon(code, checkoutTotal);
     setCouponLoading(false);
     setCouponResult(result);
 
@@ -165,7 +271,7 @@ export const Checkout: React.FC = () => {
       setCouponCode(null);
       dispatch(addToast({ message: result.error || "Failed to apply coupon", type: "error" }));
     }
-  }, [couponInput, cartTotal, dispatch]);
+  }, [couponInput, checkoutTotal, dispatch]);
 
   const removeCoupon = () => {
     setCouponCode(null);
@@ -191,7 +297,7 @@ export const Checkout: React.FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 850));
     }
 
-    const orderItems = cartItems.map((item) => ({
+    const orderItems = checkoutItems.map((item) => ({
       productId: String(item.productId),
       name: item.name,
       image: item.image,
@@ -212,7 +318,9 @@ export const Checkout: React.FC = () => {
     if (result.success && result.orderId) {
       setCreatedOrderId(result.orderId);
       setIsSuccess(true);
-      await clearCart();
+      if (!buyNow) {
+        await clearCart();
+      }
       dispatch(addToast({ message: "Order placed successfully!", type: "success" }));
     } else {
       setTransactionError(result.error || "Failed to complete transaction.");
@@ -221,14 +329,23 @@ export const Checkout: React.FC = () => {
     }
   };
 
+  if (cartLoading || buyNowLoading) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "16px" }}>
+        <Loader2 className="animate-spin text-accent-pink" size={40} />
+        <p style={{ color: "var(--text-secondary)", fontWeight: "600" }}>Securing purchase session...</p>
+      </div>
+    );
+  }
+
   return (
     <main className="checkout-page-container">
-      {cartCount === 0 && !isSuccess ? (
+      {checkoutCount === 0 && !isSuccess ? (
         <div className="checkout-empty-guard max-w-md mx-auto text-center py-24 px-6 bg-bg-secondary border border-border rounded-2xl shadow-sm">
           <ShoppingBag className="mx-auto text-text-muted mb-6 animate-bounce" size={48} />
-          <h2 className="text-xl font-extrabold mb-3">No Items in Cart</h2>
+          <h2 className="text-xl font-extrabold mb-3">No Items in Checkout</h2>
           <p className="text-sm text-text-muted mb-8">
-            Your shopping cart is currently empty. Please add items from our catalog to proceed.
+            Your purchase cart is currently empty. Please add items from our catalog to proceed.
           </p>
           <button 
             onClick={() => navigate("/catalog")}
@@ -255,6 +372,56 @@ export const Checkout: React.FC = () => {
                   <MapPin className="title-icon text-accent-pink" size={18} />
                   Shipping Address Details
                 </h3>
+
+                {/* Saved Address Book Selector */}
+                {savedAddresses.length > 0 && (
+                  <div className="saved-address-selector-wrap" style={{ marginBottom: "20px", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px" }}>
+                    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "8px", color: "var(--text-secondary)" }}>
+                      Choose Saved Destination
+                    </label>
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      {savedAddresses.map((addr) => (
+                        <button
+                          key={addr._id}
+                          type="button"
+                          onClick={() => handleSelectAddress(addr._id)}
+                          style={{
+                            padding: "10px 16px",
+                            borderRadius: "10px",
+                            border: selectedAddressId === addr._id ? "2px solid var(--accent-pink)" : "1px solid var(--border-color)",
+                            backgroundColor: selectedAddressId === addr._id ? "var(--accent-light)" : "var(--bg-secondary)",
+                            color: "var(--text-primary)",
+                            fontSize: "0.75rem",
+                            fontWeight: "700",
+                            cursor: "pointer",
+                            textAlign: "left"
+                          }}
+                        >
+                          <span style={{ display: "block", fontWeight: "800" }}>{addr.fullName}</span>
+                          <span style={{ display: "block", fontSize: "0.65rem", color: "var(--text-secondary)", fontWeight: "500", marginTop: "2px" }}>
+                            {addr.city}, {addr.postalCode}
+                          </span>
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => handleSelectAddress("new")}
+                        style={{
+                          padding: "10px 16px",
+                          borderRadius: "10px",
+                          border: selectedAddressId === "new" || !selectedAddressId ? "2px solid var(--accent-pink)" : "1px solid var(--border-color)",
+                          backgroundColor: selectedAddressId === "new" || !selectedAddressId ? "var(--accent-light)" : "var(--bg-secondary)",
+                          color: "var(--text-primary)",
+                          fontSize: "0.75rem",
+                          fontWeight: "700",
+                          cursor: "pointer"
+                        }}
+                      >
+                        + Enter New Address
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="form-grid-2">
                   <div className="field-wrap span-2">
@@ -543,7 +710,8 @@ export const Checkout: React.FC = () => {
               {/* Secure Checkout Action */}
               <button 
                 type="submit" 
-                className="checkout-submit-btn cursor-pointer py-4 hover:opacity-95 text-xs md:text-sm font-extrabold uppercase tracking-wider"
+                disabled={checkoutTotal === 0 || isProcessing}
+                className="checkout-submit-btn cursor-pointer py-4 hover:opacity-95 text-xs md:text-sm font-extrabold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {savings > 0 && (
                   <span className="savings-badge">Saving ₹{savings.toFixed(2)}</span>
@@ -559,12 +727,12 @@ export const Checkout: React.FC = () => {
             <div className="summary-sticky-card">
               <h3 className="section-card-title border-none m-0 pb-3">
                 <ShoppingBag className="title-icon text-accent-pink" size={18} />
-                Order Review ({cartCount})
+                Order Review ({checkoutCount})
               </h3>
 
               {/* Scrollable Summary items */}
               <div className="summary-items-scroll max-h-[260px] overflow-y-auto pr-1">
-                {cartItems.map((item) => (
+                {checkoutItems.map((item) => (
                   <div key={item.id} className="summary-item-row flex gap-3 items-center py-2.5 border-b border-border last:border-b-0">
                     <img src={item.image} alt={item.name} className="summary-item-img w-10 h-12 object-cover rounded-lg border border-border" />
                     <div className="summary-item-info flex-1 min-w-0">
@@ -625,7 +793,7 @@ export const Checkout: React.FC = () => {
               <div className="summary-totals border-t border-border pt-4">
                 <div className="total-line flex justify-between text-xs text-text-secondary">
                   <span>Subtotal:</span>
-                  <span>₹{cartTotal.toFixed(2)}</span>
+                  <span>₹{checkoutTotal.toFixed(2)}</span>
                 </div>
                 {savings > 0 && (
                   <div className="total-line discount-line flex justify-between text-xs text-green-600 font-bold">

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../Components/ProductCard";
+import PromoBanner from "../Components/PromoBanner";
 import { fetchProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
 import { ArrowUpDown, Search, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
@@ -213,6 +214,11 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
 
   return (
     <main className="container" style={{ padding: "var(--space-8) var(--space-4) var(--space-12) var(--space-4)", color: 'var(--text-primary)' }}>
+      {/* Category Promotion Header Banner */}
+      {selectedCategory !== "all" && (
+        <PromoBanner page={selectedCategory === "kid" ? "kids" : selectedCategory} />
+      )}
+
       {/* Page Title & Heading */}
       <div style={{ marginBottom: "var(--space-8)" }}>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: "900", letterSpacing: "-0.5px" }}>

@@ -55,7 +55,7 @@ exports.removeProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    let products = await Product.find({});
+    let products = await Product.find({}).sort({ date: -1 });
     
     // Dynamically replace the image host with the current request's host and protocol
     const host = req.get('host');
@@ -68,6 +68,16 @@ exports.getAllProducts = async (req, res) => {
       if (prodObj.image && prodObj.image.includes('/images/')) {
         const imageName = prodObj.image.split('/images/')[1];
         prodObj.image = `${protocol}://${host}/images/${imageName}`;
+      }
+
+      if (prodObj.images && Array.isArray(prodObj.images)) {
+        prodObj.images = prodObj.images.map(img => {
+          if (img && img.includes('/images/')) {
+            const imgName = img.split('/images/')[1];
+            return `${protocol}://${host}/images/${imgName}`;
+          }
+          return img;
+        });
       }
       
       // Synthesize variants for legacy documents

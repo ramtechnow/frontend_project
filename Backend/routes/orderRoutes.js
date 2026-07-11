@@ -6,6 +6,8 @@ const { fetchUser, fetchAdmin } = require('../middleware/auth');
 // Customer Order endpoints
 router.post('/placeorder', fetchUser, orderController.placeOrder);
 router.get('/userorders', fetchUser, orderController.getUserOrders);
+router.get('/userorders/unseen', fetchUser, orderController.getUnseenOrders);
+router.post('/userorders/mark-seen', fetchUser, orderController.markOrderAsSeen);
 
 // Admin Order tracking endpoints
 router.get('/admin/orders', fetchAdmin, orderController.getAllOrders);
