@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
+import { Carousel } from "react-bootstrap";
 import { BACKEND_URL } from "../config";
 import "../Styles/theme.css";
 import "../Styles/promobanner.css";
@@ -86,22 +87,26 @@ const PromoBanner = ({ page = "home" }) => {
     );
   }
 
-  /* ── DB BANNER CAROUSEL ──────────────────────────────────────── */
+  /* ── DB BANNER CAROUSEL (React Bootstrap Carousel) ──────────── */
   return (
     <div className="promo-wrapper">
-      <div className="hero-carousel">
-        <div 
-          className="carousel-track" 
-          style={{ 
-            transform: `translateX(-${current * 100}%)`
-          }}
-        >
-          {banners.map((ban, idx) => (
+      <Carousel 
+        fade 
+        indicators={banners.length > 1} 
+        controls={banners.length > 1}
+        interval={5000}
+        style={{ borderRadius: "16px", overflow: "hidden" }}
+      >
+        {banners.map((ban, idx) => (
+          <Carousel.Item key={ban._id ?? idx}>
             <div
-              key={ban._id ?? idx}
               className="hero-slide carousel-slide"
               style={{
-                backgroundImage: `linear-gradient(to right, rgba(15,17,21,0.88) 28%, rgba(15,17,21,0.22) 72%), url('${ban.image}')`
+                backgroundImage: `linear-gradient(to right, rgba(15,17,21,0.88) 28%, rgba(15,17,21,0.22) 72%), url('${ban.image}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                display: "flex",
+                alignItems: "center"
               }}
             >
               <div className="hero-content">
@@ -115,40 +120,16 @@ const PromoBanner = ({ page = "home" }) => {
                 <h1 className="hero-title">{ban.description}</h1>
                 <div className="hero-cta-row">
                   <Link to={ban.targetLink || "/"}>
-                    <button className="hero-btn hero-btn-primary">Claim Offer Now <ArrowRight size={15} /></button>
+                    <button className="hero-btn hero-btn-primary">
+                      Claim Offer Now <ArrowRight size={15} />
+                    </button>
                   </Link>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Arrows */}
-        {banners.length > 1 && (
-          <>
-            <button className="carousel-arrow carousel-arrow-left" onClick={prev} aria-label="Previous banner">
-              <ChevronLeft size={20} />
-            </button>
-            <button className="carousel-arrow carousel-arrow-right" onClick={next} aria-label="Next banner">
-              <ChevronRight size={20} />
-            </button>
-          </>
-        )}
-
-        {/* Dot indicators */}
-        {banners.length > 1 && (
-          <div className="carousel-dots">
-            {banners.map((_, i) => (
-              <button
-                key={i}
-                className={`carousel-dot ${i === current ? "active" : ""}`}
-                onClick={() => goTo(i)}
-                aria-label={`Go to banner ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          </Carousel.Item>
+        ))}
+      </Carousel>
     </div>
   );
 };

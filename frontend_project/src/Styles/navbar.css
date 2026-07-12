@@ -594,3 +594,32 @@
   .nav-logo-text { font-size: 19px; }
   .theme-toggle-btn { width: 30px; height: 30px; }
 }
+
+/* Accordion Customizer styling overrides */
+.custom-accordion-header .accordion-button {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+  padding: 12px 14px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  outline: none !important;
+}
+
+.custom-accordion-header .accordion-button:not(.collapsed) {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.custom-accordion-header .accordion-button::after {
+  width: 14px !important;
+  height: 14px !important;
+  background-size: 14px !important;
+}
+
+.dark-theme .custom-accordion-header .accordion-button::after {
+  filter: invert(1) grayscale(1) brightness(2) !important;
+}
