@@ -118,16 +118,6 @@ export const Navbar: React.FC = () => {
       {/* ─── MAIN NAVBAR ─────────────────────────────────── */}
       <nav className="navbar" aria-label="Main Navigation">
 
-        {/* Hamburger / X toggle (mobile only) */}
-        <button
-          className="nav-hamburger-mobile"
-          onClick={() => setMobileMenuOpen(v => !v)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-
         {/* Logo */}
         <Link to="/" className="nav-logo" aria-label="RamCart Home">
           <img src="/RamCart_brand_logo_v2.png" alt="RamCart" className="nav-logo-img" />
@@ -221,6 +211,17 @@ export const Navbar: React.FC = () => {
             <ShoppingCart size={21} />
             {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
           </button>
+
+          {/* Hamburger / X toggle (mobile only, now on right end) */}
+          <button
+            className="nav-hamburger-mobile"
+            onClick={() => setMobileMenuOpen(v => !v)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            style={{ padding: "6px 0 6px 10px" }}
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </nav>
 
@@ -268,6 +269,7 @@ export const Navbar: React.FC = () => {
                   key={to}
                   to={to}
                   className={`mob-drawer-link ${isActive(to) ? "mob-drawer-link--active" : ""}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className="mob-drawer-link-icon">{icon}</span>
                   {label}
@@ -277,22 +279,22 @@ export const Navbar: React.FC = () => {
               {user && (
                 <>
                   <p className="mob-drawer-section-label" style={{ marginTop: "16px" }}>Account</p>
-                  <Link to="/wishlist" className={`mob-drawer-link ${isActive("/wishlist") ? "mob-drawer-link--active" : ""}`}>
+                  <Link to="/wishlist" className={`mob-drawer-link ${isActive("/wishlist") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
                     <span className="mob-drawer-link-icon"><Heart size={17} /></span>
                     Wishlist
                     {wishlist.length > 0 && <span className="mob-drawer-badge">{wishlist.length}</span>}
                   </Link>
-                  <Link to="/cart" className={`mob-drawer-link ${isActive("/cart") ? "mob-drawer-link--active" : ""}`}>
+                  <Link to="/cart" className={`mob-drawer-link ${isActive("/cart") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
                     <span className="mob-drawer-link-icon"><ShoppingCart size={17} /></span>
                     My Cart
                     {cartCount > 0 && <span className="mob-drawer-badge">{cartCount}</span>}
                   </Link>
-                  <Link to="/orders" className={`mob-drawer-link ${isActive("/orders") ? "mob-drawer-link--active" : ""}`}>
+                  <Link to="/orders" className={`mob-drawer-link ${isActive("/orders") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
                     <span className="mob-drawer-link-icon"><Package size={17} /></span>
                     Orders
                   </Link>
                   {user.role === "admin" && (
-                    <Link to="/admin" className="mob-drawer-link mob-drawer-link--admin">
+                    <Link to="/admin" className="mob-drawer-link mob-drawer-link--admin" onClick={() => setMobileMenuOpen(false)}>
                       <span className="mob-drawer-link-icon"><ShieldCheck size={17} /></span>
                       Admin Panel
                     </Link>

@@ -1,5 +1,6 @@
 @import './Styles/variables.css';
 @import './Styles/base.css';
+@import './Styles/global.css';
 @import './Styles/navbar.css';
 @import './Styles/productGrid.css';
 @import './Styles/mobile.css';

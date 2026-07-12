@@ -11,6 +11,7 @@ import { auth } from "./config/firebase";
 import { syncUserProfile } from "./features/auth/services/authService";
 import { setUser, setAuthLoading, setAuthError, clearAuth } from "./store/slices/authSlice";
 import { useAppDispatch } from "./store/hooks";
+import Pattern from "./Components/Pattern";
 
 // Lazy load pages for code splitting and optimized bundles
 const Home = lazy(() => import("./Pages/Home"));
@@ -54,16 +55,23 @@ export const App: React.FC = () => {
           flexDirection: "column", 
           minHeight: "100vh",
           backgroundColor: "var(--bg-primary)",
-          color: "var(--text-primary)"
+          color: "var(--text-primary)",
+          position: "relative",
+          overflow: "hidden"
         }}
       >
+        {/* Global Animated Background Patterns (Grid / Stars) */}
+        <Pattern />
+
         {/* Global Navigation Header */}
         <Suspense fallback={null}>
-          <Navbar />
+          <div style={{ position: "relative", zIndex: 10 }}>
+            <Navbar />
+          </div>
         </Suspense>
         
         {/* Main Content Viewport with Suspense fallback */}
-        <div style={{ flexGrow: 1 }}>
+        <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
           <Suspense 
             fallback={
               <div className="min-h-[60vh] flex items-center justify-center bg-bg-primary text-text-primary">
@@ -127,11 +135,15 @@ export const App: React.FC = () => {
         
         {/* Global Footer */}
         <Suspense fallback={null}>
-          <Footer />
+          <div style={{ position: "relative", zIndex: 10 }}>
+            <Footer />
+          </div>
         </Suspense>
 
         {/* Mobile Bottom Navigation (Meesho/Flipkart style) */}
-        <MobileBottomNav />
+        <div style={{ position: "relative", zIndex: 100 }}>
+          <MobileBottomNav />
+        </div>
       </div>
 
       {/* Global Toast Notification System */}
