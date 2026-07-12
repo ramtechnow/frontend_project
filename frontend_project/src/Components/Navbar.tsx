@@ -1,12 +1,15 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../Styles/navbar.css";
-import { ShoppingCart, Menu, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
+import {
+  ShoppingCart, Menu, Heart, LogOut, ChevronDown,
+  Sun, Moon, X, Home, LayoutGrid, User, LogIn,
+  Package, ShieldCheck
+} from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ThemeContext } from "../Context/ThemeContext";
 import { useWishlist } from "../features/catalog/hooks/useWishlist";
-import MobileMenu from "./MobileMenu";
 import { useAppDispatch } from "../store/hooks";
 import { addToast } from "../store/slices/toastSlice";
 import { fetchUnseenOrders, markOrderAsSeen } from "../features/checkout/services/orderService";
@@ -15,7 +18,7 @@ export const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   const { cartCount, clearCart } = useCart();
   const { user, logoutUser } = useAuth();
   const themeContext = useContext(ThemeContext);
@@ -29,9 +32,7 @@ export const Navbar: React.FC = () => {
   const toggleTheme = themeContext?.toggleTheme || (() => {});
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === "/";
-    }
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -53,7 +54,22 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener("toggle-mobile-menu", handleToggle);
   }, []);
 
-  // Poll/Check for unseen order status updates on mount/login
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Unseen orders check
   useEffect(() => {
     if (user) {
       const checkUnseenOrders = async () => {
@@ -61,9 +77,9 @@ export const Navbar: React.FC = () => {
           const unseen = await fetchUnseenOrders();
           for (const order of unseen) {
             if (order && order.id) {
-              dispatch(addToast({ 
-                message: `Your order #RC-${order.id.substring(0, 8).toUpperCase()} status has updated to: ${order.status}!`, 
-                type: "info" 
+              dispatch(addToast({
+                message: `Your order #RC-${order.id.substring(0, 8).toUpperCase()} status has updated to: ${order.status}!`,
+                type: "info"
               }));
               await markOrderAsSeen(order.id);
             }
@@ -78,6 +94,7 @@ export const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
     await logoutUser();
     await clearCart();
     navigate("/");
@@ -89,52 +106,52 @@ export const Navbar: React.FC = () => {
     return "U";
   };
 
+  const navLinks = [
+    { to: "/catalog", label: "Shop All", icon: <LayoutGrid size={17} /> },
+    { to: "/mens",    label: "Men",      icon: <User size={17} /> },
+    { to: "/womens",  label: "Women",    icon: <User size={17} /> },
+    { to: "/kids",    label: "Kids",     icon: <Home size={17} /> },
+  ];
+
   return (
     <>
+      {/* ─── MAIN NAVBAR ─────────────────────────────────── */}
       <nav className="navbar" aria-label="Main Navigation">
-        {/* Hamburger Menu Icon (Mobile Only) */}
+
+        {/* Hamburger / X toggle (mobile only) */}
         <button
           className="nav-hamburger-mobile"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open mobile menu"
+          onClick={() => setMobileMenuOpen(v => !v)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
         >
-          <Menu size={22} />
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        {/* LOGO - RamCart Rebranded */}
-        <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center", background: "none", padding: 0 }}>
-          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Logo" style={{ height: "54px", objectFit: "contain", background: "transparent" }} />
+        {/* Logo */}
+        <Link to="/" className="nav-logo" aria-label="RamCart Home">
+          <img src="/RamCart_brand_logo_v2.png" alt="RamCart" className="nav-logo-img" />
         </Link>
 
-        {/* DESKTOP NAV LINKS */}
+        {/* Desktop nav links */}
         <ul className="nav-menu">
-          <li>
-            <Link to="/catalog" className={isActive("/catalog") ? "active" : ""}>Shop All</Link>
-          </li>
-          <li>
-            <Link to="/mens" className={isActive("/mens") ? "active" : ""}>Men</Link>
-          </li>
-          <li>
-            <Link to="/womens" className={isActive("/womens") ? "active" : ""}>Women</Link>
-          </li>
-          <li>
-            <Link to="/kids" className={isActive("/kids") ? "active" : ""}>Kids</Link>
-          </li>
+          {navLinks.map(({ to, label }) => (
+            <li key={to}>
+              <Link to={to} className={isActive(to) ? "active" : ""}>{label}</Link>
+            </li>
+          ))}
         </ul>
 
-        {/* RIGHT ACTIONS */}
+        {/* Right action group */}
         <div className="nav-login-cart">
-          {/* Theme Toggle */}
-          <button
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
+          {/* Theme toggle */}
+          <button className="theme-toggle-btn" onClick={toggleTheme}
             aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {isDarkMode ? <Sun size={20} className="theme-svg" /> : <Moon size={20} className="theme-svg" />}
+            title={isDarkMode ? "Light Mode" : "Dark Mode"}>
+            {isDarkMode ? <Sun size={19} className="theme-svg" /> : <Moon size={19} className="theme-svg" />}
           </button>
 
-          {/* User Section */}
+          {/* User section */}
           {user ? (
             <div className="nav-user-dropdown-wrapper" ref={dropdownRef}>
               <button
@@ -153,25 +170,34 @@ export const Navbar: React.FC = () => {
                   <div className="dropdown-user-info">
                     <div className="dropdown-avatar-large">{getUserInitial()}</div>
                     <div>
-                      <p className="dropdown-user-name">{user.name || "Customer"}</p>
-                      <p className="dropdown-user-email">{user.email || ""}</p>
+                      <p className="dropdown-user-name">{user.name || "User"}</p>
+                      <p className="dropdown-user-email">{user.email}</p>
                     </div>
                   </div>
                   <div className="dropdown-divider" />
-                  <button className="dropdown-item" onClick={() => { setUserDropdownOpen(false); navigate("/profile"); }} role="menuitem">
-                    <User size={16} /> My Profile
-                  </button>
-                  <button className="dropdown-item" onClick={() => { setUserDropdownOpen(false); navigate("/orders"); }} role="menuitem">
-                    <Package size={16} /> My Orders
-                  </button>
-                  {user?.role === "admin" && (
-                    <button className="dropdown-item admin" onClick={() => { setUserDropdownOpen(false); navigate("/admin"); }} role="menuitem">
-                      <ShieldCheck size={16} /> Admin Panel
+                  <Link to="/profile" onClick={() => setUserDropdownOpen(false)}>
+                    <button className="dropdown-item" role="menuitem">
+                      <User size={15} /> My Profile
                     </button>
+                  </Link>
+                  <Link to="/orders" onClick={() => setUserDropdownOpen(false)}>
+                    <button className="dropdown-item" role="menuitem">
+                      <Package size={15} /> My Orders
+                    </button>
+                  </Link>
+                  {user.role === "admin" && (
+                    <>
+                      <div className="dropdown-divider" />
+                      <Link to="/admin" onClick={() => setUserDropdownOpen(false)}>
+                        <button className="dropdown-item admin" role="menuitem">
+                          <ShieldCheck size={15} /> Admin Panel
+                        </button>
+                      </Link>
+                    </>
                   )}
                   <div className="dropdown-divider" />
                   <button className="dropdown-item logout" onClick={handleLogout} role="menuitem">
-                    <LogOut size={16} /> Logout
+                    <LogOut size={15} /> Logout
                   </button>
                 </div>
               )}
@@ -182,31 +208,121 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Wishlist Link — hidden on mobile (bottom nav) */}
-          <button
-            className="nav-wishlist-wrapper"
-            onClick={() => navigate("/wishlist")}
-            aria-label={`View Wishlist with ${wishlist.length} items`}
-          >
-            <Heart size={22} />
+          {/* Wishlist (desktop) */}
+          <button className="nav-wishlist-wrapper" onClick={() => navigate("/wishlist")}
+            aria-label={`Wishlist (${wishlist.length} items)`}>
+            <Heart size={21} />
             {wishlist.length > 0 && <div className="nav-cart-count">{wishlist.length}</div>}
           </button>
 
-          {/* Cart Link — hidden on mobile (bottom nav) */}
-          <button
-            className="nav-cart-wrapper"
-            onClick={() => navigate("/cart")}
-            aria-label={`View Cart with ${cartCount} items`}
-          >
-            <ShoppingCart size={22} />
+          {/* Cart (desktop) */}
+          <button className="nav-cart-wrapper" onClick={() => navigate("/cart")}
+            aria-label={`Cart (${cartCount} items)`}>
+            <ShoppingCart size={21} />
             {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
           </button>
         </div>
       </nav>
-      <MobileMenu
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
+
+      {/* ─── MOBILE SLIDE-IN DRAWER ──────────────────────── */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="mob-drawer-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Drawer panel */}
+          <aside className="mob-drawer" aria-label="Mobile Navigation" role="dialog" aria-modal="true">
+            {/* Header */}
+            <div className="mob-drawer-header">
+              <span className="mob-drawer-brand">RamCart</span>
+              <div className="mob-drawer-header-right">
+                <button className="mob-drawer-theme-btn" onClick={toggleTheme} aria-label="Toggle theme">
+                  {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+                </button>
+                <button className="mob-drawer-close-btn" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* User greeting */}
+            {user && (
+              <div className="mob-drawer-user-info">
+                <div className="mob-drawer-user-avatar">{getUserInitial()}</div>
+                <div>
+                  <div className="mob-drawer-user-name">{user.name?.split(" ")[0] || "User"}</div>
+                  <div className="mob-drawer-user-email">{user.email}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Nav links */}
+            <nav className="mob-drawer-nav">
+              <p className="mob-drawer-section-label">Browse</p>
+              {navLinks.map(({ to, label, icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`mob-drawer-link ${isActive(to) ? "mob-drawer-link--active" : ""}`}
+                >
+                  <span className="mob-drawer-link-icon">{icon}</span>
+                  {label}
+                </Link>
+              ))}
+
+              {user && (
+                <>
+                  <p className="mob-drawer-section-label" style={{ marginTop: "16px" }}>Account</p>
+                  <Link to="/wishlist" className={`mob-drawer-link ${isActive("/wishlist") ? "mob-drawer-link--active" : ""}`}>
+                    <span className="mob-drawer-link-icon"><Heart size={17} /></span>
+                    Wishlist
+                    {wishlist.length > 0 && <span className="mob-drawer-badge">{wishlist.length}</span>}
+                  </Link>
+                  <Link to="/cart" className={`mob-drawer-link ${isActive("/cart") ? "mob-drawer-link--active" : ""}`}>
+                    <span className="mob-drawer-link-icon"><ShoppingCart size={17} /></span>
+                    My Cart
+                    {cartCount > 0 && <span className="mob-drawer-badge">{cartCount}</span>}
+                  </Link>
+                  <Link to="/orders" className={`mob-drawer-link ${isActive("/orders") ? "mob-drawer-link--active" : ""}`}>
+                    <span className="mob-drawer-link-icon"><Package size={17} /></span>
+                    Orders
+                  </Link>
+                  {user.role === "admin" && (
+                    <Link to="/admin" className="mob-drawer-link mob-drawer-link--admin">
+                      <span className="mob-drawer-link-icon"><ShieldCheck size={17} /></span>
+                      Admin Panel
+                    </Link>
+                  )}
+                </>
+              )}
+            </nav>
+
+            {/* Footer actions */}
+            <div className="mob-drawer-footer">
+              {user ? (
+                <button className="mob-drawer-logout-btn" onClick={handleLogout}>
+                  <LogOut size={16} /> Logout
+                </button>
+              ) : (
+                <Link to="/login" className="mob-drawer-login-btn" onClick={() => setMobileMenuOpen(false)}>
+                  <LogIn size={16} /> Login / Sign Up
+                </Link>
+              )}
+
+              <div className="mob-drawer-support">
+                <a href="mailto:ramtechnow@gmail.com">📧 ramtechnow@gmail.com</a>
+                <a href="https://wa.me/919080339752" target="_blank" rel="noopener noreferrer">
+                  💬 WhatsApp Support
+                </a>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
     </>
   );
 };
