@@ -20,20 +20,30 @@
 }
 
 /* Logo */
-.nav-logo {
+.nav-logo-text {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   margin-right: 12px;
   text-decoration: none;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  font-family: 'Outfit', 'Montserrat', sans-serif;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
-.nav-logo-img {
-  height: 46px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-  background: transparent;
+.logo-ram {
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.logo-cart {
+  background: linear-gradient(135deg, var(--accent-pink) 20%, #a892ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Desktop nav menu */
@@ -558,20 +568,7 @@
     gap: 0;
   }
 
-  .nav-logo-img { height: 36px; }
-
-  .nav-hamburger-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 6px 0 6px 10px;
-    flex-shrink: 0;
-    min-height: auto;
-  }
+  .nav-logo-text { font-size: 22px; }
 
   .nav-avatar-name { display: none; }
   .nav-wishlist-wrapper,
@@ -594,7 +591,6 @@
 
 @media (max-width: 480px) {
   .navbar { padding: 0 10px; height: 48px; }
-  .nav-logo-img { height: 32px; }
-  .nav-hamburger-mobile { padding-right: 8px; }
+  .nav-logo-text { font-size: 19px; }
   .theme-toggle-btn { width: 30px; height: 30px; }
 }

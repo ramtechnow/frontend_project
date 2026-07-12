@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../Styles/navbar.css";
 import {
-  ShoppingCart, Menu, Heart, LogOut, ChevronDown,
+  ShoppingCart, Heart, LogOut, ChevronDown,
   Sun, Moon, X, Home, LayoutGrid, User, LogIn,
   Package, ShieldCheck
 } from "lucide-react";
@@ -13,6 +13,7 @@ import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import { useAppDispatch } from "../store/hooks";
 import { addToast } from "../store/slices/toastSlice";
 import { fetchUnseenOrders, markOrderAsSeen } from "../features/checkout/services/orderService";
+import ThemeCustomizer from "./ui/ThemeCustomizer";
 
 export const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -118,9 +119,10 @@ export const Navbar: React.FC = () => {
       {/* ─── MAIN NAVBAR ─────────────────────────────────── */}
       <nav className="navbar" aria-label="Main Navigation">
 
-        {/* Logo */}
-        <Link to="/" className="nav-logo" aria-label="RamCart Home">
-          <img src="/RamCart_brand_logo_v2.png" alt="RamCart" className="nav-logo-img" />
+        {/* Stylistic brand text logo */}
+        <Link to="/" className="nav-logo-text" aria-label="RamCart Home" style={{ textDecoration: "none" }}>
+          <span className="logo-ram">RAM</span>
+          <span className="logo-cart">CART</span>
         </Link>
 
         {/* Desktop nav links */}
@@ -211,17 +213,6 @@ export const Navbar: React.FC = () => {
             <ShoppingCart size={21} />
             {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
           </button>
-
-          {/* Hamburger / X toggle (mobile only, now on right end) */}
-          <button
-            className="nav-hamburger-mobile"
-            onClick={() => setMobileMenuOpen(v => !v)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            style={{ padding: "6px 0 6px 10px" }}
-          >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
         </div>
       </nav>
 
@@ -302,6 +293,11 @@ export const Navbar: React.FC = () => {
                 </>
               )}
             </nav>
+
+            {/* Theme Customizer Panel */}
+            <div style={{ padding: "0 10px 10px 10px" }}>
+              <ThemeCustomizer />
+            </div>
 
             {/* Footer actions */}
             <div className="mob-drawer-footer">

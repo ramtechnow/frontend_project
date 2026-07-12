@@ -59,7 +59,6 @@ const PromoBanner = ({ page = "home" }) => {
     if (page !== "home") return null;
     return (
       <div className="promo-wrapper">
-        <DemoBar />
         <div
           className="hero-slide"
           style={{
@@ -90,8 +89,6 @@ const PromoBanner = ({ page = "home" }) => {
   /* ── DB BANNER CAROUSEL ──────────────────────────────────────── */
   return (
     <div className="promo-wrapper">
-      <DemoBar />
-
       <div className="hero-carousel">
         <div 
           className="carousel-track" 
@@ -155,12 +152,5 @@ const PromoBanner = ({ page = "home" }) => {
     </div>
   );
 };
-
-const DemoBar = () => (
-  <div className="demo-bar">
-    <ShieldAlert size={14} />
-    <span>RamCart Portfolio Project: This is a demo site. No real transactions are processed or shipped.</span>
-  </div>
-);
 
 export default PromoBanner;
