@@ -27,13 +27,18 @@ function getStrength(pwd: string): { score: number; label: string; color: string
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type = "text", label, error, icon, showStrength = false, ...props }, ref) => {
+  ({ className, type = "text", label, error, icon, showStrength = false, onChange, ...props }, ref) => {
     const isPassword = type === "password";
     const [showPwd, setShowPwd]   = useState(false);
     const [pwdValue, setPwdValue] = useState("");
 
     const resolvedType = isPassword && showPwd ? "text" : type;
     const strength     = isPassword && showStrength ? getStrength(pwdValue) : null;
+
+    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isPassword && showStrength) setPwdValue(e.target.value);
+      if (onChange) onChange(e);
+    };
 
     return (
       <div className="flex flex-col gap-1 w-full">
@@ -54,10 +59,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={resolvedType}
-            onChange={(e) => {
-              if (isPassword && showStrength) setPwdValue(e.target.value);
-              if (props.onChange) props.onChange(e);
-            }}
+            onChange={handleOnChange}
+            title={isPassword ? "Password must be at least 6 characters" : props.title}
             className={twMerge(
               clsx(
                 "w-full h-11 bg-bg-primary text-text-primary border border-border rounded-md px-3 outline-none transition-all duration-200 focus:border-text-primary text-sm placeholder:text-text-muted/60",

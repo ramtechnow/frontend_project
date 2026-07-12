@@ -93,31 +93,38 @@ const PromoBanner = ({ page = "home" }) => {
       <DemoBar />
 
       <div className="hero-carousel">
-        {banners.map((ban, idx) => (
-          <div
-            key={ban._id ?? idx}
-            className={`hero-slide carousel-slide ${idx === current ? "active" : ""} ${transitioning && idx === current ? "transitioning" : ""}`}
-            style={{
-              backgroundImage: `linear-gradient(to right, rgba(15,17,21,0.88) 28%, rgba(15,17,21,0.22) 72%), url('${ban.image}')`
-            }}
-          >
-            <div className="hero-content">
-              {ban.discountType && (
-                <span className="hero-promo-tag">
-                  {ban.discountType === "percentage"
-                    ? `${ban.discountValue}% OFF PROMOTIONAL OFFER`
-                    : `₹${ban.discountValue} OFF PROMOTIONAL OFFER`}
-                </span>
-              )}
-              <h1 className="hero-title">{ban.description}</h1>
-              <div className="hero-cta-row">
-                <Link to={ban.targetLink || "/"}>
-                  <button className="hero-btn hero-btn-primary">Claim Offer Now <ArrowRight size={15} /></button>
-                </Link>
+        <div 
+          className="carousel-track" 
+          style={{ 
+            transform: `translateX(-${current * 100}%)`
+          }}
+        >
+          {banners.map((ban, idx) => (
+            <div
+              key={ban._id ?? idx}
+              className="hero-slide carousel-slide"
+              style={{
+                backgroundImage: `linear-gradient(to right, rgba(15,17,21,0.88) 28%, rgba(15,17,21,0.22) 72%), url('${ban.image}')`
+              }}
+            >
+              <div className="hero-content">
+                {ban.discountType && (
+                  <span className="hero-promo-tag">
+                    {ban.discountType === "percentage"
+                      ? `${ban.discountValue}% OFF PROMOTIONAL OFFER`
+                      : `₹${ban.discountValue} OFF PROMOTIONAL OFFER`}
+                  </span>
+                )}
+                <h1 className="hero-title">{ban.description}</h1>
+                <div className="hero-cta-row">
+                  <Link to={ban.targetLink || "/"}>
+                    <button className="hero-btn hero-btn-primary">Claim Offer Now <ArrowRight size={15} /></button>
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         {/* Arrows */}
         {banners.length > 1 && (
