@@ -35,7 +35,7 @@ describe("BACKEND_URL configuration", () => {
     });
 
     const { BACKEND_URL } = await import("./config");
-    expect(BACKEND_URL).toBe("https://ecommerce-backend.onrender.com");
+    expect(BACKEND_URL).toBe("https://frontend-project-jucn.onrender.com");
   });
 
   it("uses VITE_BACKEND_URL when configured by the host", async () => {

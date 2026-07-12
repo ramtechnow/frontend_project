@@ -5,5 +5,5 @@ const isLocalHost = typeof window !== "undefined" &&
   ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
 export const BACKEND_URL = (configuredBackendUrl ||
-  (isLocalHost ? "http://localhost:4000" : "https://ecommerce-backend.onrender.com")
+  (isLocalHost ? "http://localhost:4000" : "https://frontend-project-jucn.onrender.com")
 ).replace(/\/$/, "");
