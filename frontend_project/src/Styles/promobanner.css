@@ -1,6 +1,6 @@
-/* ── PromoBanner: Full-Bleed Carousel ───────────────────────────── */
+/* ── PromoBanner: Full-Bleed Carousel — Myntra-Inspired ──────────── */
 
-/* Break out of any container padding to fill full viewport width */
+/* Break out of container padding to fill full viewport width */
 .promo-wrapper {
   width: 100vw;
   position: relative;
@@ -8,38 +8,38 @@
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 /* Demo notice bar */
 .demo-bar {
-  background-color: var(--accent-light);
-  color: var(--accent-pink);
-  font-size: 12px;
+  background-color: var(--text-primary);
+  color: #fff;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
-  padding: 9px 16px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-bottom: 1px solid var(--border-color);
   width: 100%;
   box-sizing: border-box;
+  letter-spacing: 0.3px;
 }
 
 /* Carousel shell */
 .hero-carousel {
   position: relative;
   width: 100%;
-  height: clamp(300px, 52vw, 520px);
+  height: clamp(280px, 48vw, 500px);
   overflow: hidden;
 }
 
-/* Single hero slide (also used for static fallback) */
+/* Single hero slide */
 .hero-slide {
   width: 100%;
-  height: clamp(300px, 52vw, 520px);
+  height: clamp(280px, 48vw, 500px);
   background-size: cover;
   background-position: center 30%;
   display: flex;
@@ -49,13 +49,13 @@
   color: #fff;
 }
 
-/* Carousel slides stacked, crossfade */
+/* Carousel slides — crossfade */
 .carousel-slide {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transform: scale(1.04);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: scale(1.03);
+  transition: opacity 0.55s ease, transform 0.55s ease;
   pointer-events: none;
 }
 
@@ -67,69 +67,72 @@
 }
 
 .carousel-slide.transitioning {
-  opacity: 0.3;
+  opacity: 0.25;
 }
 
 /* Hero text block */
 .hero-content {
-  max-width: 560px;
+  max-width: 540px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   position: relative;
   z-index: 2;
 }
 
-/* Generic tag / label */
+/* Tag / label */
 .hero-tag {
   color: var(--accent-pink);
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 13px;
+  letter-spacing: 2.5px;
+  font-size: 11px;
 }
 
 /* Promo offer tag (from DB banners) */
 .hero-promo-tag {
-  color: var(--accent-pink);
+  color: #fff;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 13px;
-  background-color: rgba(184, 0, 53, 0.18);
-  padding: 4px 10px;
-  border-radius: 4px;
+  letter-spacing: 1.5px;
+  font-size: 11px;
+  background-color: var(--accent-pink);
+  padding: 3px 10px;
+  border-radius: 3px;
   align-self: flex-start;
 }
 
+/* Main headline */
 .hero-title {
-  font-size: clamp(24px, 4.5vw, 50px);
+  font-size: clamp(22px, 4vw, 48px);
   font-weight: 900;
   color: #fff;
   line-height: 1.1;
   margin: 0;
+  letter-spacing: -0.5px;
 }
 
+/* Subline */
 .hero-subtitle {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 15px;
-  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.80);
+  font-size: 14px;
+  margin: 0;
   line-height: 1.55;
 }
 
-/* CTA buttons row */
+/* CTA row */
 .hero-cta-row {
   display: flex;
-  gap: 12px;
-  margin-top: 6px;
+  gap: 10px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
 .hero-btn {
-  height: 46px;
-  padding: 0 26px;
+  height: 44px;
+  padding: 0 24px;
   border-radius: var(--border-radius-full);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -138,11 +141,12 @@
   white-space: nowrap;
   border: none;
   transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.2px;
 }
 
 .hero-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 .hero-btn-primary {
@@ -151,34 +155,34 @@
 }
 
 .hero-btn-ghost {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.18);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(4px);
 }
 
-/* Arrow navigation buttons */
+/* Arrow navigation */
 .carousel-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
-  background-color: rgba(0, 0, 0, 0.38);
+  background-color: rgba(255, 255, 255, 0.20);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
   transition: background-color 0.2s;
 }
 
 .carousel-arrow:hover {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(255, 255, 255, 0.38);
 }
 
 .carousel-arrow-left  { left: 16px; }
@@ -187,102 +191,54 @@
 /* Dot indicators */
 .carousel-dots {
   position: absolute;
-  bottom: 18px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 6px;
   z-index: 10;
 }
 
 .carousel-dot {
-  height: 8px;
-  width: 8px;
-  border-radius: 4px;
+  height: 6px;
+  width: 6px;
+  border-radius: 3px;
   border: none;
   cursor: pointer;
   background-color: rgba(255, 255, 255, 0.4);
   padding: 0;
-  transition: width 0.35s ease, background-color 0.35s ease;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .carousel-dot.active {
-  width: 24px;
-  background-color: var(--accent-pink);
+  width: 20px;
+  background-color: #fff;
 }
 
-/* ── Mobile Overrides ────────────────────────────────────────────── */
+/* ── Mobile ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .hero-carousel,
   .hero-slide {
-    height: clamp(240px, 60vw, 320px);
+    height: clamp(220px, 55vw, 300px);
   }
 
-  .hero-content {
-    max-width: 85%;
-    gap: 8px;
-  }
-
-  .hero-title {
-    font-size: clamp(20px, 6vw, 28px);
-  }
-
-  .hero-subtitle {
-    display: none; /* Hide subtitle on small screens for cleaner look */
-  }
-
-  .hero-btn {
-    height: 40px;
-    padding: 0 18px;
-    font-size: 13px;
-  }
-
-  .carousel-arrow {
-    width: 34px;
-    height: 34px;
-  }
-
-  .carousel-arrow-left  { left: 10px; }
-  .carousel-arrow-right { right: 10px; }
+  .hero-content { max-width: 88%; gap: 7px; }
+  .hero-title { font-size: clamp(18px, 5.5vw, 26px); }
+  .hero-subtitle { display: none; }
+  .hero-btn { height: 38px; padding: 0 16px; font-size: 12px; }
+  .carousel-arrow { width: 32px; height: 32px; }
+  .carousel-arrow-left  { left: 8px; }
+  .carousel-arrow-right { right: 8px; }
 }
 
 @media (max-width: 480px) {
   .hero-carousel,
-  .hero-slide {
-    height: 250px;
-  }
-
-  .demo-bar {
-    font-size: 10px;
-    padding: 7px 12px;
-  }
-
-  .demo-bar svg {
-    display: none;
-  }
-
-  .hero-content {
-    max-width: 90%;
-    gap: 6px;
-  }
-
-  .hero-title {
-    font-size: clamp(18px, 5.5vw, 24px);
-    line-height: 1.2;
-  }
-
-  .hero-promo-tag,
-  .hero-tag {
-    font-size: 10px;
-  }
-
-  .hero-btn {
-    height: 36px;
-    padding: 0 14px;
-    font-size: 12px;
-  }
-
-  .carousel-arrow {
-    display: none; /* Hide arrows, use dots only on very small screens */
-  }
+  .hero-slide { height: 240px; }
+  .demo-bar { font-size: 10px; padding: 6px 10px; }
+  .demo-bar svg { display: none; }
+  .hero-content { max-width: 92%; gap: 5px; }
+  .hero-title { font-size: clamp(16px, 5vw, 22px); line-height: 1.2; }
+  .hero-promo-tag, .hero-tag { font-size: 9px; }
+  .hero-btn { height: 34px; padding: 0 12px; font-size: 11px; }
+  .carousel-arrow { display: none; }
 }

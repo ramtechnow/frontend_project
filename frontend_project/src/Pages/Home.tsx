@@ -36,8 +36,8 @@ export const Home: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Loader2 size={36} className="animate-spin text-accent-pink mb-4" />
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Preparing collection catalogs...</span>
+        <Loader2 size={30} className="animate-spin text-accent-pink mb-4" />
+        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Preparing collections...</span>
       </div>
     );
   }
@@ -48,12 +48,12 @@ export const Home: React.FC = () => {
       <PromoBanner />
 
       {/* 2. Top Categories Grid */}
-      <section aria-labelledby="cat-heading" style={{ margin: "var(--space-10) 0" }}>
-        <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
-          <span style={{ color: "var(--accent-pink)", fontSize: "var(--text-xs)", fontWeight: "700", letterSpacing: "1px" }}>
-            COLLECTIONS
+      <section aria-labelledby="cat-heading" style={{ margin: "48px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+            Collections
           </span>
-          <h2 id="cat-heading" style={{ fontSize: "var(--text-2xl)", fontWeight: "800", marginTop: "4px" }}>
+          <h2 id="cat-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "6px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
             Shop By Category
           </h2>
         </div>
@@ -65,12 +65,12 @@ export const Home: React.FC = () => {
       </section>
 
       {/* 3. New Collections Grid */}
-      <section aria-labelledby="new-heading" style={{ margin: "var(--space-10) 0" }}>
-        <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
-          <span style={{ color: "var(--accent-pink)", fontSize: "var(--text-xs)", fontWeight: "700", letterSpacing: "1px" }}>
-            NEW ARRIVALS
+      <section aria-labelledby="new-heading" style={{ margin: "48px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+            New Arrivals
           </span>
-          <h2 id="new-heading" style={{ fontSize: "var(--text-2xl)", fontWeight: "800", marginTop: "4px" }}>
+          <h2 id="new-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "6px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
             Latest Collections
           </h2>
         </div>
@@ -85,12 +85,12 @@ export const Home: React.FC = () => {
       <ProcessSteps />
 
       {/* 5. Popular In Women Grid */}
-      <section aria-labelledby="popular-heading" style={{ margin: "var(--space-10) 0" }}>
-        <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
-          <span style={{ color: "var(--accent-pink)", fontSize: "var(--text-xs)", fontWeight: "700", letterSpacing: "1px" }}>
-            TRENDING
+      <section aria-labelledby="popular-heading" style={{ margin: "48px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+            Trending
           </span>
-          <h2 id="popular-heading" style={{ fontSize: "var(--text-2xl)", fontWeight: "800", marginTop: "4px" }}>
+          <h2 id="popular-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "6px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
             Popular In Women
           </h2>
         </div>

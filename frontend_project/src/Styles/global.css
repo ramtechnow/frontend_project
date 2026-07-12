@@ -1,11 +1,19 @@
-/* Global styles with premium typography and CSS variables integration */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+/* ============================================================
+   Global Reset + Typography — Myntra-Inspired
+   No backend/data logic. Style only.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: var(--font-primary);
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -16,278 +24,153 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* Premium scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--border-radius-full);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
-}
+/* Thin, minimal scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Glassmorphism Navigation */
-.navbar {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 12px 50px;
-  background: var(--nav-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  transition: var(--transition-smooth);
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
 }
+a:hover { color: var(--accent-pink); }
 
-/* Global button reset and styling */
+/* Buttons */
 button {
   cursor: pointer;
   outline: none;
   font-family: var(--font-primary);
-  transition: var(--transition-smooth);
+  transition: var(--transition-fast);
+  border: none;
+  background: none;
 }
 
-/* Smooth theme transitions */
-.navbar, .navbar *, .shop-category, .productdisplay, .cartitems, .descriptionbox, .loginsignup, input, button, select, p, h1, h2, h3, h4, h5, h6, span {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+/* Focus states */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent-pink);
+  outline-offset: 2px;
 }
 
-/* Premium Offer/Banner styles override for dark mode */
+/* Inputs */
+input, select, textarea {
+  font-family: var(--font-primary);
+  font-size: 14px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-fast);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 63, 108, 0.12);
+}
+
+/* Images */
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Page container ──────────────────────────────────────── */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 10px;
+  }
+}
+
+/* ── Cart badge (global) ─────────────────────────────────── */
+.nav-cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--accent-pink);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+/* ── Interactive target (min touch 44px) ─────────────────── */
+.interactive-target {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Smooth theme transitions ────────────────────────────── */
+.navbar, header, main, footer,
+input, button, select, textarea,
+p, h1, h2, h3, h4, h5, h6, span, a {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── Dark-mode overrides ─────────────────────────────────── */
+.dark-theme body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .navbar {
+  background: var(--nav-bg);
+  border-bottom-color: var(--border-color);
+}
+
+.dark-theme footer,
+.dark-theme .footer-container {
+  background-color: var(--bg-secondary);
+  border-top-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Legacy section classes used by older components */
 .offers, .new-collections, .popular, .newsletter {
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   transition: var(--transition-smooth);
   border-radius: var(--border-radius-md);
-  margin: 30px auto;
-  max-width: 1200px;
+  margin: 24px auto;
+  max-width: 1280px;
   padding: 40px;
   box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 768px) {
   .offers, .new-collections, .popular, .newsletter {
-    padding: 20px 12px !important;
-    margin: 16px 8px !important;
-    border-radius: 8px !important;
+    padding: 20px 12px;
+    margin: 12px 8px;
   }
 }
-
-@media (max-width: 480px) {
-  .offers, .new-collections, .popular, .newsletter {
-    padding: 16px 8px !important;
-    margin: 12px 6px !important;
-    border-radius: 6px !important;
-  }
-}
-
-.item {
-  background: var(--card-bg) !important;
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  transition: var(--transition-smooth) !important;
-  overflow: hidden;
-}
-
-.item:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent-color);
-}
-
-.item p {
-  color: var(--text-primary) !important;
-}
-
-.item-price-new {
-  color: var(--accent-color) !important;
-  font-weight: 700 !important;
-}
-
-.item-price-old {
-  color: var(--text-tertiary) !important;
-  text-decoration: line-through;
-}
-
-/* Custom badge styling */
-.nav-cart-count {
-  background: var(--accent-color) !important;
-  color: #ffffff !important;
-  font-family: var(--font-primary);
-  font-weight: 600;
-  box-shadow: 0 0 10px rgba(255, 65, 65, 0.4);
-}
-
-/* ==========================================
-   GLOBAL DARK MODE COMPONENT OVERRIDES
-   ========================================== */
-
-/* Root backgrounds */
-.dark body,
-.dark-theme body {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Glassmorphism navbar dark mode */
-.dark .navbar,
-.dark-theme .navbar {
-  background: var(--nav-bg) !important;
-  border-bottom-color: var(--border-color) !important;
-}
-
-/* Hero section overrides */
-.dark .hero,
-.dark-theme .hero {
-  background: linear-gradient(to right, rgba(15, 17, 21, 0.94) 35%, rgba(15, 17, 21, 0.4) 100%), url('../Components/Assets/happy.jpg') no-repeat center center/cover !important;
-}
-
-@media (max-width: 800px) {
-  .dark .hero,
-  .dark-theme .hero {
-    background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%) !important;
-  }
-}
-
-.dark .hero-left h2,
-.dark-theme .hero-left h2 {
-  color: var(--text-secondary) !important;
-}
-
-.dark .hero-left h1,
-.dark-theme .hero-left h1,
-.dark .hero-left p,
-.dark-theme .hero-left p {
-  color: var(--text-primary) !important;
-}
-
-/* Offers & Banners dark mode */
-.dark .offers,
-.dark-theme .offers,
-.dark .newsletter,
-.dark-theme .newsletter,
-.dark .popular,
-.dark-theme .popular,
-.dark .new-collections,
-.dark-theme .new-collections {
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-color) !important;
-  box-shadow: var(--shadow-md) !important;
-}
-
-.dark .offers-left h1,
-.dark-theme .offers-left h1,
-.dark .newsletter h1,
-.dark-theme .newsletter h1 {
-  color: var(--text-primary) !important;
-}
-
-.dark .offers-left p,
-.dark-theme .offers-left p,
-.dark .newsletter p,
-.dark-theme .newsletter p {
-  color: var(--text-secondary) !important;
-}
-
-/* Newsletter Input Box dark mode */
-.dark .newsletter-emailBox,
-.dark-theme .newsletter-emailBox,
-.dark .newsLetter-emailBox,
-.dark-theme .newsLetter-emailBox {
-  background-color: var(--bg-tertiary) !important;
-  border: 1px solid var(--border-color) !important;
-}
-
-.dark .newsletter-emailBox input,
-.dark-theme .newsletter-emailBox input,
-.dark .newsLetter-emailBox input,
-.dark-theme .newsLetter-emailBox input {
-  color: var(--text-primary) !important;
-  background-color: transparent !important;
-}
-
-/* Footer overrides */
-.dark .footer,
-.dark-theme .footer {
-  background-color: var(--bg-secondary) !important;
-  border-top: 1px solid var(--border-color) !important;
-  color: var(--text-primary) !important;
-  padding: 40px 20px !important;
-}
-
-.dark .footer-logo p,
-.dark-theme .footer-logo p {
-  color: var(--text-primary) !important;
-}
-
-.dark .footer-links li,
-.dark-theme .footer-links li {
-  color: var(--text-secondary) !important;
-}
-
-.dark .footer-links li:hover,
-.dark-theme .footer-links li:hover {
-  color: var(--accent-color) !important;
-}
-
-.dark .footer-icons-container,
-.dark-theme .footer-icons-container {
-  background-color: var(--bg-tertiary) !important;
-  border-color: var(--border-color) !important;
-}
-
-.dark .footer-social-icon img,
-.dark-theme .footer-social-icon img {
-  filter: invert(1) !important;
-}
-
-.dark .footer-copyright,
-.dark-theme .footer-copyright,
-.dark .footer-copyright p,
-.dark-theme .footer-copyright p {
-  color: var(--text-secondary) !important;
-}
-
-.dark .new-collections h1,
-.dark-theme .new-collections h1,
-.dark .popular h1,
-.dark-theme .popular h1 {
-  color: var(--text-primary) !important;
-}
-
-.dark .new-collections hr,
-.dark-theme .new-collections hr,
-.dark .popular hr,
-.dark-theme .popular hr {
-  background-color: var(--accent-color) !important;
-}
-
-/* Item details dark mode overrides */
-.dark .item,
-.dark-theme .item {
-  background-color: var(--card-bg) !important;
-  border-color: var(--border-color) !important;
-}
-
-.dark .item p,
-.dark-theme .item p {
-  color: var(--text-primary) !important;
-}
-
-.dark .item-prices,
-.dark-theme .item-prices {
-  border-top-color: var(--border-color) !important;
-}
-

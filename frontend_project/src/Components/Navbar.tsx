@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../Styles/navbar.css";
 import { ShoppingCart, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
@@ -23,9 +23,17 @@ export const Navbar: React.FC = () => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isDarkMode = themeContext?.isDarkMode || false;
   const toggleTheme = themeContext?.toggleTheme || (() => {});
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,16 +93,16 @@ export const Navbar: React.FC = () => {
         {/* DESKTOP NAV LINKS */}
         <ul className="nav-menu">
           <li>
-            <Link to="/">Shop</Link>
+            <Link to="/catalog" className={isActive("/catalog") ? "active" : ""}>Shop All</Link>
           </li>
           <li>
-            <Link to="/mens">Men</Link>
+            <Link to="/mens" className={isActive("/mens") ? "active" : ""}>Men</Link>
           </li>
           <li>
-            <Link to="/womens">Women</Link>
+            <Link to="/womens" className={isActive("/womens") ? "active" : ""}>Women</Link>
           </li>
           <li>
-            <Link to="/kids">Kids</Link>
+            <Link to="/kids" className={isActive("/kids") ? "active" : ""}>Kids</Link>
           </li>
         </ul>
 
@@ -179,9 +187,10 @@ export const Navbar: React.FC = () => {
           </button>
         </div>
       </nav>
-
-      {/* Mobile Drawer Navigation Menu */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
     </>
   );
 };

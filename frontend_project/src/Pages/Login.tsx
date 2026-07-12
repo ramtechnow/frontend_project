@@ -14,6 +14,7 @@ import { Button } from "../Components/ui/Button";
 import { Input } from "../Components/ui/Input";
 import { Modal } from "../Components/ui/Modal";
 import { Mail, Lock, User } from "lucide-react";
+import "../Styles/auth.css";
 
 export const Login: React.FC = () => {
   const [isLoginState, setIsLoginState] = useState(true);
@@ -79,44 +80,44 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <main className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-bg-primary">
+    <main className="login-container">
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[420px] bg-bg-secondary border border-border rounded-lg shadow-xl p-8 flex flex-col gap-6"
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="login-card"
       >
         {/* Header */}
-        <div className="text-center flex flex-col items-center gap-2">
-          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Brand Logo" style={{ height: "64px", objectFit: "contain", marginBottom: "4px" }} />
-          <h1 className="text-xl font-extrabold text-text-primary flex items-center justify-center gap-2">
-            {isLoginState ? "Welcome Back" : "Join RamCart"}
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Brand Logo" style={{ height: "54px", objectFit: "contain", marginBottom: "4px" }} />
+          <h1 style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)", margin: 0 }}>
+            {isLoginState ? "Login to RamCart" : "Create Account"}
           </h1>
-          <p className="text-xs text-text-muted">
+          <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>
             {isLoginState 
-              ? "Sign in to access your orders, cart, and exclusive rewards." 
-              : "Create an account to track your orders and enjoy fast checkout."}
+              ? "Access your saved wishlists, shopping bag, and live order details." 
+              : "Create an account to track your packages and unlock rewards."}
           </p>
         </div>
 
         {/* Auth Forms */}
         {isLoginState ? (
-          <form onSubmit={handleLoginSubmit(onLogin)} className="flex flex-col gap-4">
+          <form onSubmit={handleLoginSubmit(onLogin)} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <Input
               label="Email Address"
               type="email"
               placeholder="name@example.com"
-              icon={<Mail size={16} />}
+              icon={<Mail size={15} />}
               error={loginErrors.email?.message}
               {...registerLogin("email")}
             />
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-bold text-text-primary tracking-wide">Password</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Password</label>
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(true)}
-                  className="text-[11px] text-accent-pink font-bold hover:underline"
+                  style={{ fontSize: "11px", color: "var(--accent-pink)", fontWeight: "700", border: "none", background: "none", cursor: "pointer" }}
                 >
                   Forgot Password?
                 </button>
@@ -124,22 +125,22 @@ export const Login: React.FC = () => {
               <Input
                 type="password"
                 placeholder="••••••••"
-                icon={<Lock size={16} />}
+                icon={<Lock size={15} />}
                 error={loginErrors.password?.message}
                 {...registerLogin("password")}
               />
             </div>
-            <Button type="submit" isLoading={loginSubmitting} className="mt-2 h-11 w-full text-sm">
-              Sign In
+            <Button type="submit" isLoading={loginSubmitting} className="h-10 w-full text-xs font-bold" style={{ backgroundColor: "var(--accent-pink)", color: "#fff", borderRadius: "4px" }}>
+              Login
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleSignupSubmit(onSignup)} className="flex flex-col gap-4">
+          <form onSubmit={handleSignupSubmit(onSignup)} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <Input
               label="Full Name"
               type="text"
               placeholder="E.g., Shriram Kumar"
-              icon={<User size={16} />}
+              icon={<User size={15} />}
               error={signupErrors.name?.message}
               {...registerSignup("name")}
             />
@@ -147,7 +148,7 @@ export const Login: React.FC = () => {
               label="Email Address"
               type="email"
               placeholder="name@example.com"
-              icon={<Mail size={16} />}
+              icon={<Mail size={15} />}
               error={signupErrors.email?.message}
               {...registerSignup("email")}
             />
@@ -155,22 +156,22 @@ export const Login: React.FC = () => {
               label="Password"
               type="password"
               placeholder="Min 6 characters"
-              icon={<Lock size={16} />}
+              icon={<Lock size={15} />}
               error={signupErrors.password?.message}
               showStrength
               {...registerSignup("password")}
             />
-            <Button type="submit" isLoading={signupSubmitting} className="mt-2 h-11 w-full text-sm">
-              Sign Up
+            <Button type="submit" isLoading={signupSubmitting} className="h-10 w-full text-xs font-bold" style={{ backgroundColor: "var(--accent-pink)", color: "#fff", borderRadius: "4px" }}>
+              Register
             </Button>
           </form>
         )}
 
         {/* Social Divider */}
-        <div className="flex items-center gap-3">
-          <div className="h-[1px] flex-grow bg-border" />
-          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">or continue with</span>
-          <div className="h-[1px] flex-grow bg-border" />
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ height: "1px", flexGrow: 1, backgroundColor: "var(--border-color)" }} />
+          <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>OR</span>
+          <div style={{ height: "1px", flexGrow: 1, backgroundColor: "var(--border-color)" }} />
         </div>
 
         {/* Google OAuth Button */}
@@ -178,9 +179,10 @@ export const Login: React.FC = () => {
           type="button"
           variant="outline"
           onClick={onGoogleLogin}
-          className="h-11 flex items-center justify-center gap-2 border border-border hover:bg-bg-tertiary text-text-primary text-sm font-semibold transition-all duration-200"
+          className="h-10 flex items-center justify-center gap-2 border border-border hover:bg-bg-tertiary text-text-primary text-xs font-bold transition-all duration-200"
+          style={{ borderRadius: "4px" }}
         >
-          <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor">
+          <svg style={{ height: "14px", width: "14px", marginRight: "4px" }} viewBox="0 0 24 24" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
@@ -190,20 +192,20 @@ export const Login: React.FC = () => {
         </Button>
 
         {/* State Toggle Link */}
-        <div className="text-center pt-4 border-t border-border">
+        <div style={{ textAlign: "center", paddingTop: "16px", borderTop: "1px solid var(--border-color)" }}>
           <button
             onClick={() => setIsLoginState(!isLoginState)}
-            className="text-xs text-accent-pink font-semibold hover:underline"
+            style={{ fontSize: "12px", color: "var(--accent-pink)", fontWeight: "700", border: "none", background: "none", cursor: "pointer" }}
           >
-            {isLoginState ? "New to RamCart? Sign Up" : "Already have an account? Sign In"}
+            {isLoginState ? "New to RamCart? Create Account" : "Already have an account? Sign In"}
           </button>
         </div>
       </motion.div>
 
       {/* Forgot Password Modal */}
-      <Modal isOpen={showForgotModal} onClose={() => setShowForgotModal(false)} title="Forgot Password">
-        <form onSubmit={handleForgotPassword} className="flex flex-col gap-4">
-          <p className="text-xs text-text-muted leading-relaxed">
+      <Modal isOpen={showForgotModal} onClose={() => setShowForgotModal(false)} title="Reset Password">
+        <form onSubmit={handleForgotPassword} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0 }}>
             Enter your email address and we will dispatch a secure link to reset your account password.
           </p>
           <Input
@@ -212,11 +214,11 @@ export const Login: React.FC = () => {
             placeholder="name@example.com"
             value={forgotEmail}
             onChange={(e) => setForgotEmail(e.target.value)}
-            icon={<Mail size={16} />}
+            icon={<Mail size={15} />}
             required
           />
-          <Button type="submit" isLoading={forgotLoading} className="h-10 text-xs font-semibold">
-            Send Reset Link
+          <Button type="submit" isLoading={forgotLoading} className="h-10 text-xs font-bold" style={{ backgroundColor: "var(--accent-pink)", color: "#fff", borderRadius: "4px" }}>
+            Send Link
           </Button>
         </form>
       </Modal>

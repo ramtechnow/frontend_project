@@ -59,24 +59,23 @@ export const ProductDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Loader2 size={36} className="animate-spin text-accent-pink mb-4" />
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Fetching product specifications...</span>
+        <Loader2 size={30} className="animate-spin text-accent-pink mb-4" />
+        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Fetching specifications...</span>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="container" style={{ padding: "var(--space-12) var(--space-4)", textAlign: "center", color: 'var(--text-primary)' }}>
-        <h2>Product Not Found</h2>
+      <div className="container" style={{ padding: "48px var(--space-4)", textAlign: "center", color: 'var(--text-primary)' }}>
+        <h2 style={{ fontSize: "20px", fontWeight: "800" }}>Product Not Found</h2>
         <button 
-          className="interactive-target"
           style={{ 
             backgroundColor: "var(--accent-pink)", 
             color: "white", 
             padding: "10px 24px", 
-            borderRadius: "var(--border-radius-full)", 
-            marginTop: "var(--space-4)",
+            borderRadius: "4px", 
+            marginTop: "16px",
             border: "none",
             fontWeight: "700",
             cursor: "pointer"
@@ -114,16 +113,21 @@ export const ProductDetail: React.FC = () => {
     ? product.images 
     : [product.image || "https://placehold.co/400x500?text=Apparel"];
 
+  // Brand Name
+  const brandName = product.category 
+    ? product.category.charAt(0).toUpperCase() + product.category.slice(1).toLowerCase() 
+    : "RamCart";
+
   return (
-    <main className="container" style={{ padding: "var(--space-8) var(--space-4) var(--space-12) var(--space-4)", color: 'var(--text-primary)' }}>
+    <main className="container" style={{ padding: "32px var(--space-4) 80px", color: 'var(--text-primary)' }}>
       {/* Detail grid */}
       <div 
         style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", 
-          gap: "var(--space-8)",
+          gap: "40px",
           alignItems: "start",
-          marginBottom: "var(--space-10)"
+          marginBottom: "48px"
         }}
       >
         {/* Left column: Image wrapper */}
@@ -132,7 +136,7 @@ export const ProductDetail: React.FC = () => {
             style={{ 
               backgroundColor: "var(--bg-secondary)", 
               border: "1px solid var(--border-color)", 
-              borderRadius: "16px",
+              borderRadius: "4px",
               overflow: "hidden",
               aspectRatio: "4/5"
             }}
@@ -140,7 +144,7 @@ export const ProductDetail: React.FC = () => {
             <img 
               src={activeImage || productImages[0]} 
               alt={product.name} 
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
             />
           </div>
 
@@ -156,7 +160,7 @@ export const ProductDetail: React.FC = () => {
                   style={{
                     width: '60px',
                     height: '75px',
-                    borderRadius: '8px',
+                    borderRadius: '4px',
                     overflow: 'hidden',
                     border: (activeImage || productImages[0]) === img ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)',
                     background: 'none',
@@ -173,66 +177,78 @@ export const ProductDetail: React.FC = () => {
         </div>
 
         {/* Right column: Specs panel */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", color: "var(--accent-pink)", fontWeight: "700" }}>
-            {product.category} Collection
-          </span>
-          <h1 style={{ fontSize: "clamp(24px, 4vw, 32px)", fontWeight: "800", lineHeight: "1.2", margin: 0 }}>{product.name}</h1>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div>
+            <h1 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 4px" }}>
+              {brandName}
+            </h1>
+            <p style={{ fontSize: "16px", color: "var(--text-secondary)", margin: 0, fontWeight: "400" }}>
+              {product.name}
+            </p>
+          </div>
 
-          {/* Rating */}
+          {/* Rating Badge - Myntra Green */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ display: "flex", gap: "1px" }}>
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <Star 
-                  key={idx} 
-                  size={16} 
-                  fill={idx < Math.round(ratingVal) ? "var(--accent-pink)" : "none"} 
-                  stroke={idx < Math.round(ratingVal) ? "var(--accent-pink)" : "var(--border-color)"}
-                />
-              ))}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "var(--rating-green)",
+              color: "white",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              fontWeight: "700"
+            }}>
+              {ratingVal.toFixed(1)} <Star size={12} fill="#fff" stroke="none" />
             </div>
-            <span style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-              {ratingVal} / 5.0 ({reviewsCount} Reviews)
+            <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: "500" }}>
+              {reviewsCount} Customer Ratings
             </span>
           </div>
 
           {/* Price Box */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: "10px", margin: "var(--space-1) 0" }}>
-            <span style={{ fontSize: "var(--text-2xl)", fontWeight: "800", color: "var(--text-primary)" }}>
-              ₹{product.newPrice.toFixed(2)}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "12px", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px" }}>
+            <span style={{ fontSize: "24px", fontWeight: "800", color: "var(--text-primary)" }}>
+              ₹{product.newPrice.toFixed(0)}
             </span>
             {product.oldPrice && (
-              <span style={{ fontSize: "var(--text-md)", textDecoration: "line-through", color: "var(--text-muted)" }}>
-                ₹{product.oldPrice.toFixed(2)}
-              </span>
+              <>
+                <span style={{ fontSize: "16px", textDecoration: "line-through", color: "var(--text-muted)" }}>
+                  ₹{product.oldPrice.toFixed(0)}
+                </span>
+                <span style={{ fontSize: "16px", fontWeight: "800", color: "var(--accent-pink)" }}>
+                  ({Math.round(((product.oldPrice - product.newPrice) / product.oldPrice) * 100)}% OFF)
+                </span>
+              </>
             )}
           </div>
 
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", lineHeight: "1.6", margin: 0 }}>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.6", margin: 0 }}>
             {product.description || "Premium apparel tailored for maximum comfort and style using sustainable organic fabric blend."}
           </p>
 
           {/* Color Selection */}
           {product.colors && product.colors.length > 0 && (
             <div>
-              <h4 style={{ fontSize: "var(--text-xs)", fontWeight: "700", textTransform: "uppercase", marginBottom: "8px", margin: 0 }}>
+              <h4 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-primary)", margin: "0 0 8px" }}>
                 Select Color: <span style={{ color: "var(--text-secondary)" }}>{selectedColor}</span>
               </h4>
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 {product.colors.map((col) => (
                   <button
                     key={col}
                     onClick={() => setSelectedColor(col)}
                     style={{
                       height: "36px",
-                      padding: "0 14px",
-                      borderRadius: "var(--border-radius-full)",
+                      padding: "0 16px",
+                      borderRadius: "20px",
                       border: "1px solid",
                       borderColor: selectedColor === col ? "var(--accent-pink)" : "var(--border-color)",
                       backgroundColor: selectedColor === col ? "var(--accent-light)" : "var(--bg-secondary)",
                       color: selectedColor === col ? "var(--accent-pink)" : "var(--text-primary)",
-                      fontSize: "var(--text-xs)",
-                      fontWeight: "600",
+                      fontSize: "12px",
+                      fontWeight: "700",
                       cursor: "pointer"
                     }}
                   >
@@ -246,23 +262,23 @@ export const ProductDetail: React.FC = () => {
           {/* Size Selection */}
           {product.sizes && product.sizes.length > 0 && (
             <div>
-              <h4 style={{ fontSize: "var(--text-xs)", fontWeight: "700", textTransform: "uppercase", marginBottom: "8px", margin: 0 }}>
+              <h4 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-primary)", margin: "0 0 8px" }}>
                 Select Size: <span style={{ color: "var(--text-secondary)" }}>{selectedSize}</span>
               </h4>
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 {product.sizes.map((sz) => (
                   <button
                     key={sz}
                     onClick={() => setSelectedSize(sz)}
                     style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "var(--border-radius-full)",
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "50%",
                       border: "1px solid",
                       borderColor: selectedSize === sz ? "var(--accent-pink)" : "var(--border-color)",
                       backgroundColor: selectedSize === sz ? "var(--accent-pink)" : "var(--bg-secondary)",
                       color: selectedSize === sz ? "white" : "var(--text-primary)",
-                      fontSize: "var(--text-xs)",
+                      fontSize: "12px",
                       fontWeight: "700",
                       cursor: "pointer"
                     }}
@@ -274,14 +290,15 @@ export const ProductDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Quantity Selector and Action buttons */}
+          {/* Action buttons */}
           <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "12px", flexWrap: "wrap" }}>
+            {/* Qty controller */}
             <div 
               style={{ 
                 display: "flex", 
                 alignItems: "center", 
                 border: "1px solid var(--border-color)", 
-                borderRadius: "var(--border-radius-full)",
+                borderRadius: "4px",
                 height: "44px",
                 overflow: "hidden",
                 backgroundColor: "var(--bg-secondary)"
@@ -289,50 +306,49 @@ export const ProductDetail: React.FC = () => {
             >
               <button 
                 onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                style={{ width: "40px", height: "100%", fontWeight: "700", border: "none", background: "none", cursor: "pointer", color: "var(--text-primary)" }}
+                style={{ width: "36px", height: "100%", fontWeight: "700", border: "none", background: "none", cursor: "pointer", color: "var(--text-primary)" }}
               >
                 -
               </button>
-              <span style={{ width: "40px", textAlign: "center", fontSize: "14px", fontWeight: "700" }}>{quantity}</span>
+              <span style={{ width: "36px", textAlign: "center", fontSize: "13px", fontWeight: "700" }}>{quantity}</span>
               <button 
                 onClick={() => setQuantity(prev => prev + 1)}
-                style={{ width: "40px", height: "100%", fontWeight: "700", border: "none", background: "none", cursor: "pointer", color: "var(--text-primary)" }}
+                style={{ width: "36px", height: "100%", fontWeight: "700", border: "none", background: "none", cursor: "pointer", color: "var(--text-primary)" }}
               >
                 +
               </button>
             </div>
 
             <button 
-              className="interactive-target"
               onClick={handleAddToCart}
               style={{
                 backgroundColor: "var(--accent-pink)",
                 color: "white",
                 height: "44px",
                 padding: "0 28px",
-                borderRadius: "var(--border-radius-full)",
+                borderRadius: "4px",
                 fontWeight: "700",
                 fontSize: "13px",
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: "8px",
                 flexGrow: 1,
                 border: "none",
                 cursor: "pointer"
               }}
             >
-              <ShoppingBag size={16} /> Add to Cart
+              <ShoppingBag size={15} /> Add to Bag
             </button>
 
             <button 
-              className="interactive-target"
               onClick={handleBuyNow}
               style={{
                 backgroundColor: "var(--text-primary)",
-                color: "var(--bg-primary)",
+                color: "var(--bg-secondary)",
                 height: "44px",
                 padding: "0 28px",
-                borderRadius: "var(--border-radius-full)",
+                borderRadius: "4px",
                 fontWeight: "700",
                 fontSize: "13px",
                 display: "flex",
@@ -348,13 +364,12 @@ export const ProductDetail: React.FC = () => {
             </button>
 
             <button 
-              className="interactive-target"
               onClick={handleWishlistToggle}
               aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
               style={{
                 width: "44px",
                 height: "44px",
-                borderRadius: "50%",
+                borderRadius: "4px",
                 border: "1px solid var(--border-color)",
                 display: "flex",
                 alignItems: "center",
@@ -368,24 +383,24 @@ export const ProductDetail: React.FC = () => {
             </button>
           </div>
 
-          {/* Added success alert */}
+          {/* Success notice */}
           {addedNotice && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--success-color)", fontSize: "13px", fontWeight: "600", marginTop: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--rating-green)", fontSize: "13px", fontWeight: "700", marginTop: "8px" }}>
               <Check size={16} />
-              <span>Added to Cart! (Selected Size: {selectedSize}, Color: {selectedColor})</span>
+              <span>Added to Bag successfully!</span>
             </div>
           )}
 
-          {/* Trust assurances info */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "1px solid var(--border-color)", paddingTop: "var(--space-4)", color: "var(--text-muted)", fontSize: "var(--text-xs)", marginTop: "12px" }}>
-            <ShieldCheck size={14} style={{ color: "var(--success-color)" }} />
+          {/* Trust badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "1px solid var(--border-color)", paddingTop: "16px", color: "var(--text-muted)", fontSize: "11px", marginTop: "12px" }}>
+            <ShieldCheck size={14} style={{ color: "var(--rating-green)" }} />
             <span>Secure simulated transaction experience (demo only)</span>
           </div>
         </div>
       </div>
 
-      {/* Product Spec Tabs */}
-      <section aria-label="Product specifications" style={{ margin: "var(--space-10) 0" }}>
+      {/* Tabs */}
+      <section aria-label="Product specifications" style={{ margin: "48px 0" }}>
         <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)" }}>
           <button 
             onClick={() => setActiveTab("description")}
@@ -396,7 +411,7 @@ export const ProductDetail: React.FC = () => {
               color: activeTab === "description" ? "var(--accent-pink)" : "var(--text-secondary)",
               backgroundColor: "transparent",
               fontWeight: "700",
-              fontSize: "14px",
+              fontSize: "13px",
               cursor: "pointer"
             }}
           >
@@ -411,7 +426,7 @@ export const ProductDetail: React.FC = () => {
               color: activeTab === "specs" ? "var(--accent-pink)" : "var(--text-secondary)",
               backgroundColor: "transparent",
               fontWeight: "700",
-              fontSize: "14px",
+              fontSize: "13px",
               cursor: "pointer"
             }}
           >
@@ -419,7 +434,7 @@ export const ProductDetail: React.FC = () => {
           </button>
         </div>
 
-        <div style={{ padding: "var(--space-5) 0", fontSize: "14px", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+        <div style={{ padding: "16px 0", fontSize: "13px", lineHeight: "1.6", color: "var(--text-secondary)" }}>
           {activeTab === "description" ? (
             <p style={{ margin: 0 }}>
               Crafted from premium fabrics, this {product.name.toLowerCase()} offers high comfort and style. Every detail has been engineered with double stitch hems and soft wash textures to ensure that the item remains a key asset in your closet for seasons to come.
@@ -428,7 +443,6 @@ export const ProductDetail: React.FC = () => {
             <ul style={{ listStyle: "inside disc", display: "flex", flexDirection: "column", gap: "6px", margin: 0, padding: 0 }}>
               <li><strong>Material:</strong> 100% Organic combed cotton / Premium Linen fibers</li>
               <li><strong>Care Instructions:</strong> Machine wash cold, tumble dry low</li>
-              <li><strong>Sustainability:</strong> GOTS certified dye and ethical sourcing</li>
               <li><strong>Fit:</strong> Standard regular / comfort fit</li>
             </ul>
           )}
@@ -437,8 +451,8 @@ export const ProductDetail: React.FC = () => {
 
       {/* Related Products list */}
       {relatedProducts.length > 0 && (
-        <section aria-labelledby="related-heading" style={{ margin: "var(--space-10) 0" }}>
-          <h2 id="related-heading" style={{ fontSize: "var(--text-xl)", fontWeight: "800", marginBottom: "var(--space-6)", margin: "0 0 16px 0" }}>
+        <section aria-labelledby="related-heading" style={{ margin: "48px 0" }}>
+          <h2 id="related-heading" style={{ fontSize: "16px", fontWeight: "800", margin: "0 0 16px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Related Products
           </h2>
           <div className="product-grid">
@@ -448,6 +462,56 @@ export const ProductDetail: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Sticky Mobile Add to Bag Bar */}
+      <div className="mobile-sticky-bag-bar">
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Total Price</span>
+          <span style={{ fontSize: "16px", fontWeight: "800" }}>₹{product.newPrice.toFixed(0)}</span>
+        </div>
+        <button 
+          onClick={handleAddToCart}
+          style={{
+            backgroundColor: "var(--accent-pink)",
+            color: "white",
+            height: "40px",
+            padding: "0 20px",
+            borderRadius: "4px",
+            fontWeight: "700",
+            fontSize: "12px",
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          Add to Bag
+        </button>
+      </div>
+
+      <style>{`
+        .mobile-sticky-bag-bar {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .mobile-sticky-bag-bar {
+            display: flex;
+            position: fixed;
+            bottom: 60px; /* Right above the bottom nav bar */
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            z-index: 850;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+          }
+          body {
+            padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+          }
+        }
+      `}</style>
     </main>
   );
 };
