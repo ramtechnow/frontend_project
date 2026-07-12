@@ -13,6 +13,7 @@ import {
 import { Button } from "../Components/ui/Button";
 import { Input } from "../Components/ui/Input";
 import { Modal } from "../Components/ui/Modal";
+import { Pattern } from "../Components/Pattern";
 import { Mail, Lock, User } from "lucide-react";
 import "../Styles/auth.css";
 
@@ -81,6 +82,7 @@ export const Login: React.FC = () => {
 
   return (
     <main className="login-container">
+      <Pattern />
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
