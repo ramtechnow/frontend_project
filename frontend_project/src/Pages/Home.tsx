@@ -43,12 +43,12 @@ export const Home: React.FC = () => {
   }
 
   return (
-    <main className="container" id="main-content" style={{ paddingBottom: "var(--space-12)", color: 'var(--text-primary)' }}>
+    <main className="container home-main-container" id="main-content">
       {/* 1. Hero Promo Banner */}
       <PromoBanner />
 
       {/* 2. Top Categories Grid */}
-      <section aria-labelledby="cat-heading" style={{ margin: "48px 0" }}>
+      <section aria-labelledby="cat-heading" className="home-section">
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
             Collections
@@ -65,7 +65,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* 3. New Collections Grid */}
-      <section aria-labelledby="new-heading" style={{ margin: "48px 0" }}>
+      <section aria-labelledby="new-heading" className="home-section">
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
             New Arrivals
@@ -85,7 +85,7 @@ export const Home: React.FC = () => {
       <ProcessSteps />
 
       {/* 5. Popular In Women Grid */}
-      <section aria-labelledby="popular-heading" style={{ margin: "48px 0" }}>
+      <section aria-labelledby="popular-heading" className="home-section">
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
             Trending

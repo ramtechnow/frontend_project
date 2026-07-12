@@ -223,3 +223,104 @@
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
+
+/* ── Home Page Spacing & 4-column Mobile Card Tuning ── */
+.home-section {
+  margin: 36px 0;
+}
+
+.home-main-container {
+  padding-bottom: 48px;
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .home-section {
+    margin: 18px 0;
+  }
+  .home-main-container {
+    padding-bottom: 24px;
+  }
+
+  /* 4-column card adjustments for tablet */
+  .product-card-info {
+    padding: 6px;
+  }
+  .product-card-category {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+  .product-card-title {
+    font-size: 10px;
+    min-height: auto;
+    margin-bottom: 4px;
+  }
+  .product-card-new-price {
+    font-size: 11px;
+  }
+  .product-card-old-price,
+  .product-card-discount-pct {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-section {
+    margin: 12px 0;
+  }
+  .home-main-container {
+    padding-bottom: 16px;
+  }
+
+  /* 4-column card micro-adjustments for mobile */
+  .product-card-info {
+    padding: 4px !important;
+  }
+  .product-card-category {
+    font-size: 8px !important;
+    font-weight: 800;
+    margin-bottom: 0px !important;
+  }
+  .product-card-title {
+    font-size: 8.5px !important;
+    min-height: auto !important;
+    margin-bottom: 2px !important;
+    line-height: 1.1;
+  }
+  .product-card-rating {
+    display: none !important; /* Hide rating chip to save screen space */
+  }
+  .product-card-price-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1px !important;
+  }
+  .product-card-new-price {
+    font-size: 9.5px !important;
+    font-weight: 800;
+  }
+  .product-card-old-price {
+    font-size: 8px !important;
+    margin-left: 0 !important;
+  }
+  .product-card-discount-pct {
+    font-size: 7.5px !important;
+    margin-left: 0 !important;
+  }
+  .product-card-badge {
+    font-size: 6.5px !important;
+    padding: 1px 3px !important;
+    top: 4px !important;
+    left: 4px !important;
+  }
+  .product-card-wishlist-btn {
+    width: 18px !important;
+    height: 18px !important;
+    top: 4px !important;
+    right: 4px !important;
+  }
+  .product-card-wishlist-btn svg {
+    width: 9px !important;
+    height: 9px !important;
+  }
+}

@@ -102,8 +102,8 @@ export const Navbar: React.FC = () => {
         </button>
 
         {/* LOGO - RamCart Rebranded */}
-        <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/RamCart_logo_v2.png" alt="RamCart Logo" style={{ height: "42px", objectFit: "contain" }} />
+        <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center", background: "none", padding: 0 }}>
+          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Logo" style={{ height: "54px", objectFit: "contain", background: "transparent" }} />
         </Link>
 
         {/* DESKTOP NAV LINKS */}

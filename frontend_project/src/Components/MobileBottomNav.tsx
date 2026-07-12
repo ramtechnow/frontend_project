@@ -53,7 +53,7 @@ export const MobileBottomNav: React.FC = () => {
             onClick={(e) => handleTabClick(e, label)}
           >
             <span className="mbn-icon-wrap">
-              <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={25} strokeWidth={active ? 2.5 : 1.8} />
               {count != null && (
                 <span className="mbn-badge">{count > 99 ? "99+" : count}</span>
               )}
