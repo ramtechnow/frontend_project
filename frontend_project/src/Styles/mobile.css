@@ -47,36 +47,63 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-6);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
   }
 
-  .mobile-menu-logo {
+  .mobile-menu-brand {
+    font-size: 21px;
+    font-weight: 900;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--accent-pink) 30%, #a892ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  .mobile-menu-header-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-  }
-  .mobile-menu-logo img { height: 32px; width: auto; object-fit: contain; }
-  .mobile-menu-logo span {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--text-primary);
+    gap: 8px;
   }
 
-  .mobile-menu-close-btn {
-    width: 34px; height: 34px;
+  .mobile-menu-theme-btn,
+  .mobile-menu-close-square-btn {
+    width: 40px;
+    height: 40px;
     min-height: auto;
-    border-radius: 50%;
-    background: var(--bg-tertiary);
-    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-theme-btn:hover {
+    background-color: var(--bg-secondary);
+    color: var(--accent-pink);
+  }
+
+  .mobile-menu-close-square-btn {
+    border: 2px solid #F59E0B; /* Highlighted outline matching reference image */
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+  }
+
+  .mobile-menu-close-square-btn:hover {
+    background-color: var(--bg-secondary);
+    border-color: #D97706;
   }
 
   .mobile-menu-links {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     padding: 0; margin: 0;
   }
 
@@ -84,14 +111,46 @@
     font-size: 15px;
     font-weight: 600;
     color: var(--text-primary);
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  /* Active pill shape with left border strip */
+  .mobile-menu-links li.active {
+    background-color: rgba(255, 63, 108, 0.08);
+  }
+
+  .dark-theme .mobile-menu-links li.active {
+    background-color: rgba(255, 63, 108, 0.12);
+  }
+
+  .mobile-menu-links li.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3.5px;
+    background-color: var(--accent-pink);
+    border-radius: 4px;
   }
 
   .mobile-menu-links li a {
     display: flex;
     align-items: center;
-    padding: 12px var(--space-2);
-    border-radius: 6px;
-    transition: background-color 0.15s, color 0.15s;
+    padding: 12px 14px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    border-radius: 8px;
+  }
+
+  .mobile-menu-links li.active a {
+    color: var(--accent-pink);
+    font-weight: 700;
+    padding-left: 18px;
   }
 
   .mobile-menu-links li a:hover {
