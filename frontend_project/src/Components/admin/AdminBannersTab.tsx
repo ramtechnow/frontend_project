@@ -57,32 +57,63 @@ export const AdminBannersTab: React.FC<AdminBannersTabProps> = ({
     setTargetLink(val ? `/product/${val}` : '');
   };
 
-  // Handle file selection — show preview and upload immediately
+  // Compress banner image to Base64 (max 1400px for high-res banner displays)
+  const compressBannerImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max_size = 1400; // Optimal width for widescreen banners
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // 0.75 JPEG compression for optimal sharpness & storage size
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  // Handle file selection — show preview and process immediately
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Local preview
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-
-    // Upload to backend
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('product', file);
-      const res = await fetch(`${BACKEND_URL}/upload`, { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.success && data.image_url) {
-        setImageUrl(data.image_url);
-        addToast('✅ Image uploaded successfully', 'success');
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch {
-      addToast('❌ Image upload failed. Please try again.', 'error');
+      const base64Data = await compressBannerImage(file);
+      setImagePreview(base64Data);
+      setImageUrl(base64Data);
+      addToast('✅ Image processed successfully (Base64)', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('❌ Image processing failed. Please try another file.', 'error');
       setImagePreview('');
+      setImageUrl('');
     } finally {
       setUploading(false);
     }
@@ -202,7 +233,7 @@ export const AdminBannersTab: React.FC<AdminBannersTabProps> = ({
     <div className="coupon-manager-section animate-fade-in">
       <h2>Promotional Banners Manager</h2>
       <p className="admin-helper-note">
-        💡 <strong>Banner Control:</strong> Upload an image, pick a product destination and publish — the banner goes live on the store instantly.
+        💡 <strong>Banner Control:</strong> Upload an image, pick a product destination and publish. Banners are compressed and stored directly in the database (Base64) so they remain saved permanently, even if the Render server restarts or sleeps.
       </p>
 
       {/* Form Card */}
