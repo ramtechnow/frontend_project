@@ -51,6 +51,8 @@ export const MobileBottomNav: React.FC = () => {
             key={to} 
             className={`mbn-tab ${active ? "mbn-tab--active" : ""}`}
             onClick={(e) => handleTabClick(e, label)}
+            aria-label={label}
+            title={label}
           >
             <span className="mbn-icon-wrap">
               <Icon size={25} strokeWidth={active ? 2.5 : 1.8} />
@@ -58,7 +60,6 @@ export const MobileBottomNav: React.FC = () => {
                 <span className="mbn-badge">{count > 99 ? "99+" : count}</span>
               )}
             </span>
-            <span className="mbn-label">{label}</span>
           </Link>
         );
       })}

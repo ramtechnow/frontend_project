@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Mail, ShieldAlert, CreditCard, Award } from "lucide-react";
+import { Mail, ShieldAlert, CreditCard } from "lucide-react";
 import "../Styles/footer.css";
 
 export const Footer: React.FC = () => {
@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="footer-social-btn" aria-label="LinkedIn Profile">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
               </a>
-              <a href="mailto:support@ramtechnow.com" className="footer-social-btn" aria-label="Email Customer Support">
+              <a href="mailto:ramtechnow@gmail.com" className="footer-social-btn" aria-label="Email Customer Support">
                 <Mail size={16} />
               </a>
             </div>
@@ -51,19 +51,30 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Trust Area */}
+          {/* Trust & Support Area */}
           <div className="footer-contact-column">
-            <h4 className="footer-column-title">Demo Notice</h4>
-            <div className="footer-contact-item">
-              <ShieldAlert size={16} />
+            <h4 className="footer-column-title">Support & Info</h4>
+            <div className="footer-contact-item" style={{ marginBottom: "10px" }}>
+              <Mail size={16} style={{ color: "var(--accent-pink)", flexShrink: 0 }} />
               <span>
-                <strong>Demonstration Mode:</strong> No real currency is accepted, nor are items dispatched.
+                Email Support:<br />
+                <a href="mailto:ramtechnow@gmail.com" style={{ fontWeight: "700", color: "var(--text-primary)" }}>ramtechnow@gmail.com</a>
+              </span>
+            </div>
+            <div className="footer-contact-item" style={{ marginBottom: "14px" }}>
+              {/* WhatsApp Icon */}
+              <svg style={{ height: "16px", width: "16px", fill: "#25D366", flexShrink: 0 }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.835-4.86c1.62.962 3.41 1.47 5.267 1.472 5.518 0 10.006-4.487 10.01-10.007.002-2.673-1.036-5.186-2.924-7.078-1.889-1.891-4.407-2.934-7.086-2.936-5.524 0-10.012 4.488-10.017 10.008-.002 1.897.501 3.75 1.458 5.389L1.936 21.052l5.127-1.348-.17-.164zm10.155-7.798c-.29-.145-1.72-.848-1.986-.944-.265-.096-.459-.144-.652.146-.193.29-.748.944-.917 1.137-.168.193-.338.217-.628.072-.29-.145-1.226-.452-2.335-1.442-.863-.77-1.446-1.72-1.615-2.01-.17-.29-.018-.448.127-.592.13-.13.29-.338.434-.507.145-.168.193-.29.29-.483.096-.193.048-.361-.024-.507-.072-.145-.652-1.57-.893-2.149-.235-.567-.476-.49-.652-.499-.17-.008-.361-.01-.554-.01-.193 0-.507.072-.772.361-.265.29-1.013.99-1.013 2.415 0 1.423 1.037 2.799 1.18 2.992.145.193 2.04 3.114 4.939 4.363.69.298 1.229.476 1.648.609.692.22 1.323.19 1.82.115.553-.083 1.72-.703 1.961-1.382.242-.678.242-1.26.17-1.382-.072-.12-.265-.193-.555-.338z"/>
+              </svg>
+              <span>
+                WhatsApp Support:<br />
+                <a href="https://wa.me/919080339752" target="_blank" rel="noopener noreferrer" style={{ color: "#25D366", fontWeight: "800", textDecoration: "underline" }}>Start Chat Support</a>
               </span>
             </div>
             <div className="footer-contact-item">
-              <Award size={16} />
-              <span>
-                Built with React, Redux Toolkit, TanStack Query, and CSS Custom Properties.
+              <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                <strong>Demo Mode:</strong> No real currency or shipping.
               </span>
             </div>
           </div>
