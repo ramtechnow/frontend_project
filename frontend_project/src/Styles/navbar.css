@@ -328,11 +328,27 @@
   background-color: #2a1515;
 }
 
+.nav-hamburger-mobile {
+  display: none;
+}
+
 /* ── Mobile: hide desktop nav, show hamburger ─────────────── */
 @media (max-width: 768px) {
   .navbar {
     padding: 0 var(--space-4);
     height: 56px;
+    justify-content: flex-start; /* Align logo and hamburger to the left */
+  }
+
+  .nav-hamburger-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 var(--space-3) 0 0;
   }
 
   .nav-menu { display: none; }
@@ -341,9 +357,13 @@
   .nav-cart-wrapper { display: none; }
   .nav-login-btn { display: none; }
 
-  .nav-login-cart { gap: var(--space-1); }
+  .nav-login-cart {
+    margin-left: auto; /* Push search/toggle/account dropdown to the right */
+    gap: var(--space-2);
+  }
 }
 
 @media (max-width: 480px) {
   .navbar { padding: 0 var(--space-3); height: 52px; }
+  .nav-hamburger-mobile { padding-right: var(--space-2); }
 }

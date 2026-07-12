@@ -31,6 +31,13 @@ export const MobileBottomNav: React.FC = () => {
     return pathname.startsWith(to);
   };
 
+  const handleTabClick = (e: React.MouseEvent, label: string) => {
+    if (label === "Categories") {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent("toggle-mobile-menu"));
+    }
+  };
+
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
       {tabs.map(({ to, Icon, label, badge, auth }) => {
@@ -39,7 +46,12 @@ export const MobileBottomNav: React.FC = () => {
         const dest   = auth && !user ? "/login" : to;
 
         return (
-          <Link to={dest} key={to} className={`mbn-tab ${active ? "mbn-tab--active" : ""}`}>
+          <Link 
+            to={dest} 
+            key={to} 
+            className={`mbn-tab ${active ? "mbn-tab--active" : ""}`}
+            onClick={(e) => handleTabClick(e, label)}
+          >
             <span className="mbn-icon-wrap">
               <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
               {count != null && (

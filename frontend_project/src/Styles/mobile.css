@@ -40,6 +40,7 @@
     flex-direction: column;
     padding: var(--space-6) var(--space-5);
     overflow-y: auto;
+    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .mobile-menu-header {
@@ -157,4 +158,9 @@
   .product-card-new-price { font-size: 13px; }
   .product-card-old-price,
   .product-card-discount-pct { font-size: 11px; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }

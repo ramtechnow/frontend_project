@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../Styles/navbar.css";
-import { ShoppingCart, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
+import { ShoppingCart, Menu, Heart, Package, LogOut, ShieldCheck, ChevronDown, Sun, Moon, User } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ThemeContext } from "../Context/ThemeContext";
@@ -46,6 +46,13 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Listen to mobile menu toggle event (from MobileBottomNav)
+  useEffect(() => {
+    const handleToggle = () => setMobileMenuOpen(prev => !prev);
+    window.addEventListener("toggle-mobile-menu", handleToggle);
+    return () => window.removeEventListener("toggle-mobile-menu", handleToggle);
+  }, []);
+
   // Poll/Check for unseen order status updates on mount/login
   useEffect(() => {
     if (user) {
@@ -85,6 +92,15 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <nav className="navbar" aria-label="Main Navigation">
+        {/* Hamburger Menu Icon (Mobile Only) */}
+        <button
+          className="nav-hamburger-mobile"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open mobile menu"
+        >
+          <Menu size={22} />
+        </button>
+
         {/* LOGO - RamCart Rebranded */}
         <Link to="/" className="nav-logo" aria-label="RamCart Home" style={{ display: "flex", alignItems: "center" }}>
           <img src="/RamCart_logo_v2.png" alt="RamCart Logo" style={{ height: "42px", objectFit: "contain" }} />

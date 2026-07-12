@@ -49,7 +49,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         {/* Links */}
         <ul className="mobile-menu-links">
           <li>
-            <Link to="/" onClick={handleLinkClick}>Shop</Link>
+            <Link to="/catalog" onClick={handleLinkClick}>Shop All</Link>
           </li>
           <li>
             <Link to="/mens" onClick={handleLinkClick}>Men</Link>
