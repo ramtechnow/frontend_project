@@ -27,9 +27,10 @@
 }
 
 .nav-logo img {
-  height: 40px;
+  height: 44px;
   width: auto;
   object-fit: contain;
+  display: block;
 }
 
 /* Desktop nav links — horizontal tabs like Myntra */
@@ -336,9 +337,14 @@
 /* ── Mobile: hide desktop nav, show hamburger ─────────────── */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 var(--space-4);
-    height: 56px;
-    justify-content: flex-start; /* Align logo and hamburger to the left */
+    padding: 0 12px;
+    height: 52px;
+    justify-content: flex-start;
+    gap: 0;
+  }
+
+  .nav-logo img {
+    height: 38px;
   }
 
   .nav-hamburger-mobile {
@@ -349,7 +355,8 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0 var(--space-3) 0 0;
+    padding: 0 10px 0 0;
+    flex-shrink: 0;
   }
 
   .nav-menu { display: none; }
@@ -359,12 +366,33 @@
   .nav-login-btn { display: none; }
 
   .nav-login-cart {
-    margin-left: auto; /* Push search/toggle/account dropdown to the right */
-    gap: var(--space-2);
+    margin-left: auto;
+    gap: 4px;
+  }
+
+  /* Shrink icon buttons on mobile */
+  .theme-toggle-btn,
+  .nav-action-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .nav-avatar-btn {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .nav-avatar-initial {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .navbar { padding: 0 var(--space-3); height: 52px; }
-  .nav-hamburger-mobile { padding-right: var(--space-2); }
+  .navbar { padding: 0 10px; height: 48px; }
+  .nav-logo img { height: 34px; }
+  .nav-hamburger-mobile { padding-right: 8px; }
 }
