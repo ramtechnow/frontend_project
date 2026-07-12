@@ -27,7 +27,22 @@ const Coupon = require('./models/Coupon');
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(cors());
+app.set('trust proxy', 1);
+app.use(cors({
+  origin(origin, callback) {
+    // Server-to-server calls and configured browser origins are allowed.
+    const allowedOrigins = (process.env.CORS_ORIGINS || '')
+      .split(',')
+      .map(value => value.trim())
+      .filter(Boolean);
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'auth-token']
+}));
 
 // Database connection with mongodb //
 async function seedDatabase() {
@@ -187,7 +202,15 @@ const bannerRoutes = require('./routes/bannerRoutes');
 
 // API CREATION
 app.get("/", (req, res) => {
-  res.send("Express App is Running");
+  res.json({ success: true, service: "ecommerce-backend", status: "ok" });
+});
+
+app.get('/health', (req, res) => {
+  res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({
+    success: mongoose.connection.readyState === 1,
+    service: 'ecommerce-backend',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'unavailable'
+  });
 });
 
 // Image Storage Engine
@@ -209,6 +232,9 @@ const upload = multer({ storage });
 app.use('/images', express.static(uploadDir));
 
 app.post("/upload", upload.single('product'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: 0, error: 'A product image is required.' });
+  }
   const host = req.get('host');
   const protocol = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.') || host.includes('10.') ? req.protocol : 'https';
   res.json({
@@ -223,5 +249,16 @@ app.use(userRoutes);
 app.use(orderRoutes);
 app.use(couponRoutes);
 app.use(bannerRoutes);
+
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+  if (error.message === 'Origin not allowed by CORS') {
+    return res.status(403).json({ success: false, error: 'This site is not allowed to call the API.' });
+  }
+  console.error('Unhandled request error:', error);
+  res.status(500).json({ success: false, error: 'Internal Server Error' });
+});
 
 startServer();
