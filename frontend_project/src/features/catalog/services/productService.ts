@@ -5,8 +5,13 @@ import staticProducts from "../../../data/products";
 
 // Fetch all available products with optional filters
 export const fetchProducts = async (category?: string): Promise<Product[]> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout for quick fallback
+
   try {
-    const res = await fetch(`${BACKEND_URL}/allproducts`);
+    const res = await fetch(`${BACKEND_URL}/allproducts`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (!res.ok) {
       throw new Error("Failed to fetch products from backend");
     }
@@ -34,6 +39,7 @@ export const fetchProducts = async (category?: string): Promise<Product[]> => {
 
     return list;
   } catch (err) {
+    clearTimeout(timeoutId);
     console.error("fetchProducts failed, using static products fallback:", err);
     const list: Product[] = staticProducts.map((p: any) => ({
       id: String(p.id),

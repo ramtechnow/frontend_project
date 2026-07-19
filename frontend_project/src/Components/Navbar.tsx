@@ -241,81 +241,84 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
 
-            {/* User greeting */}
-            {user && (
-              <div className="mob-drawer-user-info">
-                <div className="mob-drawer-user-avatar">{getUserInitial()}</div>
-                <div>
-                  <div className="mob-drawer-user-name">{user.name?.split(" ")[0] || "User"}</div>
-                  <div className="mob-drawer-user-email">{user.email}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Nav links */}
-            <nav className="mob-drawer-nav">
-              <p className="mob-drawer-section-label">Browse</p>
-              {navLinks.map(({ to, label, icon }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={`mob-drawer-link ${isActive(to) ? "mob-drawer-link--active" : ""}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span className="mob-drawer-link-icon">{icon}</span>
-                  {label}
-                </Link>
-              ))}
-
+            {/* Scrollable drawer body */}
+            <div className="mob-drawer-body-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              {/* User greeting */}
               {user && (
-                <>
-                  <p className="mob-drawer-section-label" style={{ marginTop: "16px" }}>Account</p>
-                  <Link to="/wishlist" className={`mob-drawer-link ${isActive("/wishlist") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
-                    <span className="mob-drawer-link-icon"><Heart size={17} /></span>
-                    Wishlist
-                    {wishlist.length > 0 && <span className="mob-drawer-badge">{wishlist.length}</span>}
+                <div className="mob-drawer-user-info">
+                  <div className="mob-drawer-user-avatar">{getUserInitial()}</div>
+                  <div>
+                    <div className="mob-drawer-user-name">{user.name?.split(" ")[0] || "User"}</div>
+                    <div className="mob-drawer-user-email">{user.email}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Nav links */}
+              <nav className="mob-drawer-nav" style={{ flex: "none", overflow: "visible" }}>
+                <p className="mob-drawer-section-label">Browse</p>
+                {navLinks.map(({ to, label, icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className={`mob-drawer-link ${isActive(to) ? "mob-drawer-link--active" : ""}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span className="mob-drawer-link-icon">{icon}</span>
+                    {label}
                   </Link>
-                  <Link to="/cart" className={`mob-drawer-link ${isActive("/cart") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
-                    <span className="mob-drawer-link-icon"><ShoppingCart size={17} /></span>
-                    My Cart
-                    {cartCount > 0 && <span className="mob-drawer-badge">{cartCount}</span>}
-                  </Link>
-                  <Link to="/orders" className={`mob-drawer-link ${isActive("/orders") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
-                    <span className="mob-drawer-link-icon"><Package size={17} /></span>
-                    Orders
-                  </Link>
-                  {user.role === "admin" && (
-                    <Link to="/admin" className="mob-drawer-link mob-drawer-link--admin" onClick={() => setMobileMenuOpen(false)}>
-                      <span className="mob-drawer-link-icon"><ShieldCheck size={17} /></span>
-                      Admin Panel
+                ))}
+
+                {user && (
+                  <>
+                    <p className="mob-drawer-section-label" style={{ marginTop: "16px" }}>Account</p>
+                    <Link to="/wishlist" className={`mob-drawer-link ${isActive("/wishlist") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
+                      <span className="mob-drawer-link-icon"><Heart size={17} /></span>
+                      Wishlist
+                      {wishlist.length > 0 && <span className="mob-drawer-badge">{wishlist.length}</span>}
                     </Link>
-                  )}
-                </>
-              )}
-            </nav>
+                    <Link to="/cart" className={`mob-drawer-link ${isActive("/cart") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
+                      <span className="mob-drawer-link-icon"><ShoppingCart size={17} /></span>
+                      My Cart
+                      {cartCount > 0 && <span className="mob-drawer-badge">{cartCount}</span>}
+                    </Link>
+                    <Link to="/orders" className={`mob-drawer-link ${isActive("/orders") ? "mob-drawer-link--active" : ""}`} onClick={() => setMobileMenuOpen(false)}>
+                      <span className="mob-drawer-link-icon"><Package size={17} /></span>
+                      Orders
+                    </Link>
+                    {user.role === "admin" && (
+                      <Link to="/admin" className="mob-drawer-link mob-drawer-link--admin" onClick={() => setMobileMenuOpen(false)}>
+                        <span className="mob-drawer-link-icon"><ShieldCheck size={17} /></span>
+                        Admin Panel
+                      </Link>
+                    )}
+                  </>
+                )}
+              </nav>
 
-            {/* Theme Customizer Panel */}
-            <div style={{ padding: "0 10px 10px 10px" }}>
-              <ThemeCustomizer />
-            </div>
+              {/* Theme Customizer Panel */}
+              <div style={{ padding: "0 10px 10px 10px" }}>
+                <ThemeCustomizer />
+              </div>
 
-            {/* Footer actions */}
-            <div className="mob-drawer-footer">
-              {user ? (
-                <button className="mob-drawer-logout-btn" onClick={handleLogout}>
-                  <LogOut size={16} /> Logout
-                </button>
-              ) : (
-                <Link to="/login" className="mob-drawer-login-btn" onClick={() => setMobileMenuOpen(false)}>
-                  <LogIn size={16} /> Login / Sign Up
-                </Link>
-              )}
+              {/* Footer actions */}
+              <div className="mob-drawer-footer" style={{ paddingBottom: "100px" }}>
+                {user ? (
+                  <button className="mob-drawer-logout-btn" onClick={handleLogout}>
+                    <LogOut size={16} /> Logout
+                  </button>
+                ) : (
+                  <Link to="/login" className="mob-drawer-login-btn" onClick={() => setMobileMenuOpen(false)}>
+                    <LogIn size={16} /> Login / Sign Up
+                  </Link>
+                )}
 
-              <div className="mob-drawer-support">
-                <a href="mailto:ramtechnow@gmail.com">📧 ramtechnow@gmail.com</a>
-                <a href="https://wa.me/919080339752" target="_blank" rel="noopener noreferrer">
-                  💬 WhatsApp Support
-                </a>
+                <div className="mob-drawer-support">
+                  <a href="mailto:ramtechnow@gmail.com">📧 ramtechnow@gmail.com</a>
+                  <a href="https://wa.me/919080339752" target="_blank" rel="noopener noreferrer">
+                    💬 WhatsApp Support
+                  </a>
+                </div>
               </div>
             </div>
           </aside>

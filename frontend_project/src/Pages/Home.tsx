@@ -43,12 +43,13 @@ export const Home: React.FC = () => {
   }
 
   return (
-    <main className="container home-main-container" id="main-content">
+    <>
       {/* 1. Hero Promo Banner */}
       <PromoBanner />
 
-      {/* 2. Top Categories Grid */}
-      <section aria-labelledby="cat-heading" className="home-section">
+      <main className="container home-main-container" id="main-content" style={{ marginTop: "24px" }}>
+        {/* 2. Top Categories Grid */}
+        <section aria-labelledby="cat-heading" className="home-section" style={{ marginTop: 0 }}>
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
             Collections
@@ -107,6 +108,7 @@ export const Home: React.FC = () => {
       {/* 7. Newsletter Signup */}
       <Newsletter />
     </main>
+    </>
   );
 };
 

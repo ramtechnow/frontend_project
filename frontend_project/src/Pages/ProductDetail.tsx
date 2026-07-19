@@ -462,56 +462,6 @@ export const ProductDetail: React.FC = () => {
           </div>
         </section>
       )}
-
-      {/* Sticky Mobile Add to Bag Bar */}
-      <div className="mobile-sticky-bag-bar">
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Total Price</span>
-          <span style={{ fontSize: "16px", fontWeight: "800" }}>₹{product.newPrice.toFixed(0)}</span>
-        </div>
-        <button 
-          onClick={handleAddToCart}
-          style={{
-            backgroundColor: "var(--accent-pink)",
-            color: "white",
-            height: "40px",
-            padding: "0 20px",
-            borderRadius: "4px",
-            fontWeight: "700",
-            fontSize: "12px",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          Add to Bag
-        </button>
-      </div>
-
-      <style>{`
-        .mobile-sticky-bag-bar {
-          display: none;
-        }
-        @media (max-width: 768px) {
-          .mobile-sticky-bag-bar {
-            display: flex;
-            position: fixed;
-            bottom: 60px; /* Right above the bottom nav bar */
-            left: 0;
-            right: 0;
-            height: 60px;
-            background-color: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            z-index: 850;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-          }
-          body {
-            padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
-          }
-        }
-      `}</style>
     </main>
   );
 };

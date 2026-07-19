@@ -1,13 +1,7 @@
-/* ── PromoBanner: Full-Bleed Carousel — Myntra-Inspired ──────────── */
-
-/* Break out of container padding to fill full viewport width */
+/* Full-width carousel container */
 .promo-wrapper {
-  width: 100vw;
+  width: 100%;
   position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
   margin-bottom: var(--space-8);
 }
 
@@ -123,6 +117,7 @@
 
 .hero-btn {
   height: 44px;
+  min-height: 0 !important; /* Overrides base.css min-height 44px */
   padding: 0 24px;
   border-radius: var(--border-radius-full);
   font-size: 13px;
@@ -262,6 +257,7 @@
 .carousel-indicators {
   margin-bottom: 16px !important;
   gap: 6px !important;
+  z-index: 15 !important;
 }
 
 .carousel-indicators [data-bs-target] {
@@ -269,6 +265,7 @@
   flex: 0 1 auto;
   width: 6px !important;
   height: 6px !important;
+  min-height: 0 !important; /* Overrides base.css button min-height 44px */
   padding: 0 !important;
   margin-right: 3px !important;
   margin-left: 3px !important;
