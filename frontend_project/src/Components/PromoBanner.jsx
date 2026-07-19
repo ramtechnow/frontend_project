@@ -95,7 +95,7 @@ const PromoBanner = ({ page = "home" }) => {
         indicators={banners.length > 1} 
         controls={banners.length > 1}
         interval={5000}
-        style={{ borderRadius: "16px", overflow: "hidden" }}
+        style={{ overflow: "hidden" }}
       >
         {banners.map((ban, idx) => (
           <Carousel.Item key={ban._id ?? idx}>

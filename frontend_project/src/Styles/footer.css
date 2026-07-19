@@ -10,10 +10,22 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Hide footer on mobile — bottom nav serves the same purpose */
+/* Stack footer columns nicely on mobile, add bottom padding to avoid overlapping bottom nav capsule */
 @media (max-width: 768px) {
   .footer-container {
-    display: none;
+    padding: var(--space-8) var(--space-4) calc(var(--space-10) + 80px) var(--space-4) !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-6) !important;
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: var(--space-4) !important;
   }
 }
 
