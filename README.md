@@ -85,8 +85,8 @@
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/ramtechnow/Ecommerce_webpage.git
-cd Ecommerce_webpage
+git clone https://github.com/ramtechnow/RamCart_Ecommerce_webpage.git
+cd RamCart_Ecommerce_webpage
 ```
 
 ### 2. Frontend Setup
@@ -117,7 +117,7 @@ npm start
 
 **Developer**: Full-Stack Software Engineer  
 - **Live Platform**: [https://ecommerce-website-dfd55.web.app](https://ecommerce-website-dfd55.web.app)
-- **GitHub Repository**: [https://github.com/ramtechnow/frontend_project](https://github.com/ramtechnow/frontend_project)
+- **GitHub Repository**: [https://github.com/ramtechnow/RamCart_Ecommerce_webpage](https://github.com/ramtechnow/RamCart_Ecommerce_webpage)
 
 ---
 *Built with passion, clean code principles, and modern web software craftsmanship.*
