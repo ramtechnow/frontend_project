@@ -8,6 +8,7 @@ router.get('/banners/active', bannerController.getActiveBanners);
 
 // Admin only routes for managing banners
 router.post('/admin/banners/create', fetchAdmin, bannerController.createBanner);
+router.post('/admin/banners/update', fetchAdmin, bannerController.updateBanner);
 router.get('/admin/banners/all', fetchAdmin, bannerController.getAllBanners);
 router.post('/admin/banners/toggle', fetchAdmin, bannerController.toggleBannerStatus);
 router.post('/admin/banners/delete', fetchAdmin, bannerController.deleteBanner);

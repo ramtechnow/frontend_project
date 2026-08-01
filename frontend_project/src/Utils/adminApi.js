@@ -61,6 +61,11 @@ export const adminApi = {
     return { success: true };
   },
 
+  async deleteOrder(orderId) {
+    await adminService.deleteOrder(orderId);
+    return { success: true };
+  },
+
   // Coupons / Promotions
   async fetchCoupons() {
     const coupons = await adminService.fetchCoupons();
@@ -89,6 +94,11 @@ export const adminApi = {
 
   async createBanner(bannerData) {
     await adminService.createBanner(bannerData);
+    return { success: true };
+  },
+
+  async updateBanner(bannerId, bannerData) {
+    await adminService.updateBanner(bannerId, bannerData);
     return { success: true };
   },
 

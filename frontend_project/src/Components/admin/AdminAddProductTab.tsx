@@ -4,7 +4,7 @@ import { adminApi } from '../../Utils/adminApi';
 import { compressImageToBase64 } from '../../Utils/adminHelpers';
 import { ProductVariant } from '../../features/catalog/types/productTypes';
 
-const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const PRESET_SIZES = ['Free Size', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36'];
 const PRESET_COLORS = ['Black', 'White', 'Navy Blue', 'Beige', 'Charcoal', 'Red', 'Blue', 'Green', 'Pink', 'Sandal', 'Maroon', 'Olive'];
 
 interface AdminAddProductTabProps {
@@ -28,6 +28,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
   // Chip selections
   const [selectedSizes, setSelectedSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
   const [selectedColors, setSelectedColors] = useState<string[]>(['Black', 'White']);
+  const [customSizeInput, setCustomSizeInput] = useState("");
   const [customColorInput, setCustomColorInput] = useState("");
   const [customHexColor, setCustomHexColor] = useState("#b80035");
 
@@ -56,6 +57,16 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
       prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]
     );
     setFieldErrors(prev => ({ ...prev, colors: null }));
+  };
+
+  const handleAddCustomSize = () => {
+    const trimmed = customSizeInput.trim().toUpperCase();
+    if (!trimmed) return;
+    if (!selectedSizes.includes(trimmed)) {
+      setSelectedSizes(prev => [...prev, trimmed]);
+      addToast(`Added custom size "${trimmed}"`, "success");
+    }
+    setCustomSizeInput("");
   };
 
   const handleAddCustomColor = () => {
@@ -333,11 +344,11 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           </div>
         </div>
 
-        {/* Sizes multiselect */}
+        {/* Sizes multiselect + Custom Size Adder */}
         <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Sizes Available</label>
-          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {AVAILABLE_SIZES.map((size) => (
+          <label style={{ fontWeight: '700' }}>Sizes Available (Select preset or enter custom size / Free Size)</label>
+          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+            {Array.from(new Set([...PRESET_SIZES, ...selectedSizes])).map((size) => (
               <button
                 key={size}
                 type="button"
@@ -348,6 +359,24 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
                 {size}
               </button>
             ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '380px' }}>
+            <input
+              type="text"
+              placeholder="Custom size (e.g. Free Size, 28, 30, 32, FS)"
+              value={customSizeInput}
+              onChange={(e) => setCustomSizeInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomSize(); } }}
+              style={{ flex: 1, padding: '8px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomSize}
+              style={{ padding: '8px 16px', backgroundColor: 'var(--accent-pink)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <Plus size={14} /> Add Size
+            </button>
           </div>
           {fieldErrors.sizes && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.sizes}</span>}
         </div>

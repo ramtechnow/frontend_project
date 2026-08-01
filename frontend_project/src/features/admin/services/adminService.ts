@@ -218,72 +218,17 @@ export const adminService = {
     if (!res.ok) throw new Error("Failed to update order status");
   },
 
-  // ── Coupons Management ───────────────────────────────────────────────────
-  async fetchCoupons(): Promise<AdminCoupon[]> {
+  async deleteOrder(orderId: string): Promise<void> {
     const token = localStorage.getItem("auth-token");
-    const res = await fetch(`${BACKEND_URL}/admin/coupons`, {
-      headers: { "auth-token": token || "" }
-    });
-    if (!res.ok) throw new Error("Failed to fetch coupons");
-    const data = await res.json();
-    const list = data.coupons || data;
-    return list.map((c: any) => ({
-      _id: c._id,
-      code: c.code,
-      discountType: c.discountType || "flat",
-      discountValue: Number(c.discountValue) || 0,
-      minOrderAmount: Number(c.minOrderAmount) || 0,
-      maxUses: Number(c.maxUses) || 0,
-      usedCount: Number(c.usedCount) || 0,
-      isActive: c.isActive !== false,
-      expiresAt: c.expiresAt ? new Date(c.expiresAt).toISOString() : null
-    }));
-  },
-
-  async createCoupon(couponData: Omit<AdminCoupon, "usedCount">): Promise<void> {
-    const token = localStorage.getItem("auth-token");
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/create`, {
+    const res = await fetch(`${BACKEND_URL}/admin/orders/delete`, {
       method: "POST",
       headers: {
         "auth-token": token || "",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        code: couponData.code,
-        discountType: couponData.discountType,
-        discountValue: Number(couponData.discountValue),
-        minOrderAmount: Number(couponData.minOrderAmount || 0),
-        maxUses: Number(couponData.maxUses || 0),
-        expiresAt: couponData.expiresAt ? new Date(couponData.expiresAt).toISOString() : null
-      })
+      body: JSON.stringify({ orderId })
     });
-    if (!res.ok) throw new Error("Failed to create coupon");
-  },
-
-  async toggleCoupon(couponId: string): Promise<void> {
-    const token = localStorage.getItem("auth-token");
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/toggle`, {
-      method: "POST",
-      headers: {
-        "auth-token": token || "",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ couponId })
-    });
-    if (!res.ok) throw new Error("Failed to toggle coupon");
-  },
-
-  async deleteCoupon(couponId: string): Promise<void> {
-    const token = localStorage.getItem("auth-token");
-    const res = await fetch(`${BACKEND_URL}/admin/coupons/delete`, {
-      method: "POST",
-      headers: {
-        "auth-token": token || "",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ couponId })
-    });
-    if (!res.ok) throw new Error("Failed to delete coupon");
+    if (!res.ok) throw new Error("Failed to delete order");
   },
 
   // ── Banners Management ───────────────────────────────────────────────────
@@ -307,6 +252,19 @@ export const adminService = {
       body: JSON.stringify(bannerData)
     });
     if (!res.ok) throw new Error("Failed to create banner");
+  },
+
+  async updateBanner(bannerId: string, bannerData: any): Promise<void> {
+    const token = localStorage.getItem("auth-token");
+    const res = await fetch(`${BACKEND_URL}/admin/banners/update`, {
+      method: "POST",
+      headers: {
+        "auth-token": token || "",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ bannerId, ...bannerData })
+    });
+    if (!res.ok) throw new Error("Failed to update banner");
   },
 
   async toggleBanner(bannerId: string, isActive: boolean): Promise<void> {

@@ -221,8 +221,24 @@ exports.markOrderAsSeen = async (req, res) => {
     } else {
       res.status(404).json({ success: false, error: "Order not found" });
     }
+// Delete order (Admin Only)
+exports.deleteOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ success: false, error: "Missing orderId field" });
+    }
+
+    const deleted = await Order.findByIdAndDelete(orderId);
+    if (deleted) {
+      console.log(`🗑️ Order ${orderId} deleted successfully by admin`);
+      res.json({ success: true, message: "Order deleted successfully" });
+    } else {
+      res.status(404).json({ success: false, error: "Order not found" });
+    }
   } catch (error) {
-    console.error("Error marking order as seen:", error);
+    console.error("Error deleting order:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
+

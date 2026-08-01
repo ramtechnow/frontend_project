@@ -21,10 +21,32 @@ exports.createBanner = async (req, res) => {
     console.log(`🎉 New promotional banner created for page ${page}`);
     res.json({ success: true, banner });
   } catch (error) {
-    console.error("Error creating banner:", error);
+// Update an existing banner (Admin Only)
+exports.updateBanner = async (req, res) => {
+  try {
+    const { bannerId, image, description, targetLink, discountType, discountValue, page } = req.body;
+    if (!bannerId) {
+      return res.status(400).json({ success: false, error: "Missing bannerId field" });
+    }
+
+    const updated = await Banner.findByIdAndUpdate(
+      bannerId,
+      { $set: { image, description, targetLink, discountType, discountValue, page } },
+      { new: true }
+    );
+
+    if (updated) {
+      console.log(`✏️ Banner ${bannerId} updated successfully`);
+      res.json({ success: true, banner: updated });
+    } else {
+      res.status(404).json({ success: false, error: "Banner not found" });
+    }
+  } catch (error) {
+    console.error("Error updating banner:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
+
 
 // Get all banners (Admin view)
 exports.getAllBanners = async (req, res) => {

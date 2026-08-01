@@ -307,6 +307,7 @@ export const AdminPanel: React.FC = () => {
               products={products as any}
               onRefreshOrders={fetchAllAdminData as any}
               addToast={triggerToast as any}
+              triggerConfirm={triggerConfirm as any}
               logAction={logAction as any}
             />
           )}

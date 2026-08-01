@@ -4,7 +4,7 @@ import "../Styles/navbar.css";
 import {
   ShoppingCart, Heart, LogOut, ChevronDown,
   Sun, Moon, X, Home, LayoutGrid, User, LogIn,
-  Package, ShieldCheck, Menu, Mic, Search, Sparkles
+  Package, ShieldCheck, Menu, Mic, Search, Sparkles, Bell
 } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -106,19 +106,24 @@ export const Navbar: React.FC = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Unseen orders check
+  const [unseenOrders, setUnseenOrders] = useState<any[]>([]);
+  const [showUserNotifications, setShowUserNotifications] = useState(false);
+
+  // Unseen orders check & store in state for Bell drawer
   useEffect(() => {
     if (user) {
       const checkUnseenOrders = async () => {
         try {
           const unseen = await fetchUnseenOrders();
-          for (const order of unseen) {
-            if (order && order.id) {
-              dispatch(addToast({
-                message: `Your order #RC-${order.id.substring(0, 8).toUpperCase()} status has updated to: ${order.status}!`,
-                type: "info"
-              }));
-              await markOrderAsSeen(order.id);
+          if (Array.isArray(unseen)) {
+            setUnseenOrders(unseen);
+            for (const order of unseen) {
+              if (order && order.id) {
+                dispatch(addToast({
+                  message: `Your order #RC-${order.id.substring(0, 8).toUpperCase()} is ${order.status}!`,
+                  type: "info"
+                }));
+              }
             }
           }
         } catch (e) {
@@ -126,8 +131,24 @@ export const Navbar: React.FC = () => {
         }
       };
       checkUnseenOrders();
+    } else {
+      setUnseenOrders([]);
     }
   }, [user, dispatch]);
+
+  const handleOpenUserNotifications = async () => {
+    setShowUserNotifications(prev => !prev);
+    if (unseenOrders.length > 0) {
+      for (const order of unseenOrders) {
+        if (order && order.id) {
+          try {
+            await markOrderAsSeen(order.id);
+          } catch (err) {}
+        }
+      }
+      setUnseenOrders([]);
+    }
+  };
 
   const handleLogout = async () => {
     setUserDropdownOpen(false);
@@ -194,6 +215,81 @@ export const Navbar: React.FC = () => {
               title={isDarkMode ? "Light Mode" : "Dark Mode"}>
               {isDarkMode ? <Sun size={19} className="theme-svg" /> : <Moon size={19} className="theme-svg" />}
             </button>
+
+            {/* User Notifications Bell */}
+            {user && (
+              <div style={{ position: "relative" }}>
+                <button
+                  className="nav-action-icon-btn"
+                  onClick={handleOpenUserNotifications}
+                  aria-label="View Order Notifications"
+                  title="Notifications"
+                  style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "var(--text-primary)" }}
+                >
+                  <Bell size={20} />
+                  {unseenOrders.length > 0 && (
+                    <div className="nav-cart-count">{unseenOrders.length}</div>
+                  )}
+                </button>
+
+                {/* User Notifications Drawer Dropdown */}
+                {showUserNotifications && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "46px",
+                      right: 0,
+                      width: "300px",
+                      backgroundColor: "var(--bg-secondary)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "16px",
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                      zIndex: 1000,
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "12px"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "800", color: "var(--text-primary)" }}>Order Notifications</span>
+                      <button onClick={() => setShowUserNotifications(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 0 }}><X size={15}/></button>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {unseenOrders.length === 0 ? (
+                        <div style={{ fontSize: "12px", color: "var(--text-muted)", textAlign: "center", padding: "12px 0" }}>
+                          No unread notifications. Your orders are up to date!
+                        </div>
+                      ) : (
+                        unseenOrders.map((order: any) => (
+                          <div
+                            key={order.id}
+                            style={{
+                              padding: "10px 12px",
+                              borderRadius: "8px",
+                              backgroundColor: "var(--accent-light)",
+                              fontSize: "12px",
+                              color: "var(--text-primary)",
+                              lineHeight: "1.4"
+                            }}
+                          >
+                            <strong style={{ color: "var(--accent-pink)" }}>Order Status Update!</strong><br/>
+                            Your order <strong>#RC-{order.id ? order.id.substring(0, 8).toUpperCase() : 'ORDER'}</strong> is currently <strong>{order.status}</strong>.
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <Link to="/orders" onClick={() => setShowUserNotifications(false)}>
+                      <button style={{ width: "100%", padding: "8px", borderRadius: "8px", border: "none", backgroundColor: "var(--accent-pink)", color: "#fff", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}>
+                        View All Orders
+                      </button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* User section */}
             {user ? (

@@ -12,5 +12,6 @@ router.post('/userorders/mark-seen', fetchUser, orderController.markOrderAsSeen)
 // Admin Order tracking endpoints
 router.get('/admin/orders', fetchAdmin, orderController.getAllOrders);
 router.post('/admin/orders/status', fetchAdmin, orderController.updateOrderStatus);
+router.post('/admin/orders/delete', fetchAdmin, orderController.deleteOrder);
 
 module.exports = router;
