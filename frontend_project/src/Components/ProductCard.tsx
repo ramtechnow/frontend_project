@@ -97,6 +97,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="product-card-discount-pct">({discountPercent}% OFF)</span>
             )}
           </div>
+          {/* Free Delivery tag — Flipkart style */}
+          <div className="product-card-free-delivery">🚚 Free Delivery</div>
         </div>
       </Link>
     </div>

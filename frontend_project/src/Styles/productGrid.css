@@ -1043,3 +1043,106 @@
     margin: 0 !important;
   }
 }
+
+/* ── Home Trust Bar (Flipkart-style) ─────────────────────── */
+.home-trust-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 14px 24px;
+  flex-wrap: wrap;
+}
+
+.home-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 24px;
+  flex-shrink: 0;
+}
+
+.home-trust-icon {
+  color: var(--accent-pink);
+  flex-shrink: 0;
+}
+
+.home-trust-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.home-trust-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.home-trust-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .home-trust-bar {
+    gap: 0;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .home-trust-bar::-webkit-scrollbar { display: none; }
+
+  .home-trust-item {
+    padding: 4px 16px;
+    flex-shrink: 0;
+  }
+
+  .home-trust-divider {
+    height: 30px;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Typography upgrades for product cards ───────────────── */
+.product-card-new-price {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+}
+
+.product-card-old-price {
+  font-size: 13px !important;
+}
+
+.product-card-discount-pct {
+  font-size: 13px !important;
+  color: var(--rating-green) !important;
+}
+
+.product-card-category {
+  font-size: 14px !important;
+}
+
+.product-card-title {
+  font-size: 13px !important;
+}
+
+/* Free delivery micro-label */
+.product-card-free-delivery {
+  font-size: 11px;
+  color: var(--rating-green);
+  font-weight: 600;
+  margin-top: 3px;
+}
+

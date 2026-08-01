@@ -4,11 +4,12 @@ import PromoBanner from "../Components/PromoBanner";
 import CategoryCard from "../Components/CategoryCard";
 import ProductCard from "../Components/ProductCard";
 import ProcessSteps from "../Components/ProcessSteps";
-import Testimonials from "../Components/Testimonials";
 import Newsletter from "../Components/Newsletter";
+import { TestimonialsSection } from "../Components/ui/testimonials-6";
 import categories from "../data/categories";
 import { fetchProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
+import { Truck, RotateCcw, Shield, Tag } from "lucide-react";
 import "../Styles/productGrid.css";
 
 export const ProductCardSkeleton: React.FC = () => {
@@ -43,8 +44,9 @@ export const Home: React.FC = () => {
   }, []);
 
   // Curate special selections
-  const newCollections = productsList.slice(0, 4);
-  const popularInWomen = productsList.filter(p => p.category === "women").slice(0, 4);
+  const newCollections = productsList.slice(0, 8);
+  const popularInWomen = productsList.filter(p => p.category === "women").slice(0, 8);
+  const popularInMen = productsList.filter(p => p.category === "men").slice(0, 8);
 
   return (
     <>
@@ -65,8 +67,43 @@ export const Home: React.FC = () => {
       {/* 1. Hero Promo Banner */}
       <PromoBanner />
 
+      {/* ── Trust Bar (Flipkart-style strip) ── */}
+      <div className="home-trust-bar">
+        <div className="home-trust-item">
+          <Truck size={18} className="home-trust-icon" />
+          <div>
+            <span className="home-trust-label">Free Delivery</span>
+            <span className="home-trust-sub">On orders above ₹499</span>
+          </div>
+        </div>
+        <div className="home-trust-divider" />
+        <div className="home-trust-item">
+          <RotateCcw size={18} className="home-trust-icon" />
+          <div>
+            <span className="home-trust-label">Easy Returns</span>
+            <span className="home-trust-sub">30-day hassle-free returns</span>
+          </div>
+        </div>
+        <div className="home-trust-divider" />
+        <div className="home-trust-item">
+          <Shield size={18} className="home-trust-icon" />
+          <div>
+            <span className="home-trust-label">Secure Payments</span>
+            <span className="home-trust-sub">100% safe & encrypted</span>
+          </div>
+        </div>
+        <div className="home-trust-divider" />
+        <div className="home-trust-item">
+          <Tag size={18} className="home-trust-icon" />
+          <div>
+            <span className="home-trust-label">Best Prices</span>
+            <span className="home-trust-sub">50,000+ happy customers</span>
+          </div>
+        </div>
+      </div>
+
       <main className="container home-main-container" id="main-content" style={{ marginTop: "24px" }}>
-        {/* 2. Top Categories Grid */}
+        {/* 2. Top Categories Grid — desktop only */}
         <section aria-labelledby="cat-heading" className="home-section desktop-only-section" style={{ marginTop: 0 }}>
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
             <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
@@ -85,13 +122,18 @@ export const Home: React.FC = () => {
 
         {/* 3. New Collections Grid */}
         <section aria-labelledby="new-heading" className="home-section">
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
-              New Arrivals
-            </span>
-            <h2 id="new-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "6px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
-              Latest Collections
-            </h2>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+                🔥 New Drops
+              </span>
+              <h2 id="new-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
+                Trending Now — New Arrivals
+              </h2>
+            </div>
+            <Link to="/catalog" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
+              View All →
+            </Link>
           </div>
           <div className="product-grid horizontal-scroll-mobile">
             {loading
@@ -105,29 +147,62 @@ export const Home: React.FC = () => {
         {/* 4. Process Value Propositions */}
         <ProcessSteps />
 
-        {/* 5. Popular In Women Grid */}
-        <section aria-labelledby="popular-heading" className="home-section">
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
-              Trending
-            </span>
-            <h2 id="popular-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "6px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
-              Popular In Women
-            </h2>
-          </div>
-          <div className="product-grid horizontal-scroll-mobile">
-            {loading
-              ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-              : popularInWomen.map((prod) => (
-                  <ProductCard key={prod.id} product={prod} />
-                ))}
-          </div>
-        </section>
+        {/* 5. Popular in Women */}
+        {(loading || popularInWomen.length > 0) && (
+          <section aria-labelledby="women-heading" className="home-section">
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
+              <div>
+                <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+                  Trending
+                </span>
+                <h2 id="women-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
+                  Most Loved by Women 💕
+                </h2>
+              </div>
+              <Link to="/womens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
+                View All →
+              </Link>
+            </div>
+            <div className="product-grid horizontal-scroll-mobile">
+              {loading
+                ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
+                : popularInWomen.map((prod) => (
+                    <ProductCard key={prod.id} product={prod} />
+                  ))}
+            </div>
+          </section>
+        )}
 
-        {/* 6. Testimonials */}
-        <Testimonials />
+        {/* 6. Popular in Men */}
+        {(loading || popularInMen.length > 0) && (
+          <section aria-labelledby="men-heading" className="home-section">
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
+              <div>
+                <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+                  Top Picks
+                </span>
+                <h2 id="men-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
+                  Men's Style Edit 👔
+                </h2>
+              </div>
+              <Link to="/mens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
+                View All →
+              </Link>
+            </div>
+            <div className="product-grid horizontal-scroll-mobile">
+              {loading
+                ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
+                : popularInMen.map((prod) => (
+                    <ProductCard key={prod.id} product={prod} />
+                  ))}
+            </div>
+          </section>
+        )}
 
-        {/* 7. Newsletter Signup */}
+        {/* 7. Animated Testimonials (21st.dev) */}
+        <TestimonialsSection />
+
+        {/* 8. Newsletter Signup */}
         <Newsletter />
       </main>
     </>
