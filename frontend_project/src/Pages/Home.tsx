@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import PromoBanner from "../Components/PromoBanner";
 import CategoryCard from "../Components/CategoryCard";
 import ProductCard from "../Components/ProductCard";
@@ -47,6 +48,20 @@ export const Home: React.FC = () => {
 
   return (
     <>
+      {/* Mobile Horizontal categories scroll (Flipkart style) */}
+      <div className="mobile-categories-scroll">
+        {categories.map((cat) => (
+          <Link to={`/${cat.name.toLowerCase()}s`} key={cat.id} className="mob-cat-pill">
+            <div className="mob-cat-img-wrapper">
+              <img src={cat.image} alt={cat.name} className="mob-cat-img" />
+            </div>
+            <span className="mob-cat-name">
+              {cat.name === "kid" ? "Kids" : cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase()}
+            </span>
+          </Link>
+        ))}
+      </div>
+
       {/* 1. Hero Promo Banner */}
       <PromoBanner />
 
@@ -78,7 +93,7 @@ export const Home: React.FC = () => {
               Latest Collections
             </h2>
           </div>
-          <div className="product-grid">
+          <div className="product-grid horizontal-scroll-mobile">
             {loading
               ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
               : newCollections.map((prod) => (
@@ -100,7 +115,7 @@ export const Home: React.FC = () => {
               Popular In Women
             </h2>
           </div>
-          <div className="product-grid">
+          <div className="product-grid horizontal-scroll-mobile">
             {loading
               ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
               : popularInWomen.map((prod) => (

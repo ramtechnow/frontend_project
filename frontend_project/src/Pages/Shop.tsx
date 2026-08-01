@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ProductCard from "../Components/ProductCard";
 import PromoBanner from "../Components/PromoBanner";
 import { fetchProducts } from "../features/catalog/services/productService";
@@ -17,6 +17,8 @@ const ITEMS_PER_PAGE = 8;
 
 export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchParamQuery = searchParams.get("search") || "";
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   // Database products state
@@ -41,6 +43,14 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
 
   // Mobile filters overlay toggle
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Sync URL search query parameter with state
+  useEffect(() => {
+    if (searchParamQuery !== null) {
+      setSearchQuery(searchParamQuery);
+      setDebouncedSearch(searchParamQuery);
+    }
+  }, [searchParamQuery]);
 
   // Sync category prop with state
   useEffect(() => {

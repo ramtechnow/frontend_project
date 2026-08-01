@@ -4,7 +4,7 @@ import "../Styles/navbar.css";
 import {
   ShoppingCart, Heart, LogOut, ChevronDown,
   Sun, Moon, X, Home, LayoutGrid, User, LogIn,
-  Package, ShieldCheck, Menu
+  Package, ShieldCheck, Menu, Mic, Search
 } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -31,6 +31,33 @@ export const Navbar: React.FC = () => {
 
   const isDarkMode = themeContext?.isDarkMode || false;
   const toggleTheme = themeContext?.toggleTheme || (() => {});
+
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mobileSearchQuery.trim()) {
+      navigate(`/catalog?search=${encodeURIComponent(mobileSearchQuery.trim())}`);
+    }
+  };
+
+  const handleVoiceSearch = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.start();
+      dispatch(addToast({ message: "Listening... Speak search query", type: "info" }));
+      
+      recognition.onresult = (event: any) => {
+        const spokenText = event.results[0][0].transcript;
+        setMobileSearchQuery(spokenText);
+        navigate(`/catalog?search=${encodeURIComponent(spokenText.trim())}`);
+      };
+    } else {
+      dispatch(addToast({ message: "Voice search is not supported in this browser.", type: "warning" }));
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -116,118 +143,137 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* ─── MAIN NAVBAR ─────────────────────────────────── */}
-      <nav className="navbar" aria-label="Main Navigation">
+      <header className="global-header-wrapper">
+        {/* ─── MAIN NAVBAR ─────────────────────────────────── */}
+        <nav className="navbar" aria-label="Main Navigation">
 
-        {/* Stylistic brand text logo */}
-        <Link to="/" className="nav-logo-text" aria-label="RamCart Home" style={{ textDecoration: "none" }}>
-          <span className="logo-ram">RAM</span>
-          <span className="logo-cart">CART</span>
-        </Link>
+          {/* Stylistic brand text logo */}
+          <Link to="/" className="nav-logo-text" aria-label="RamCart Home" style={{ textDecoration: "none" }}>
+            <span className="logo-ram">RAM</span>
+            <span className="logo-cart">CART</span>
+          </Link>
 
-        {/* Desktop nav links */}
-        <ul className="nav-menu">
-          {navLinks.map(({ to, label }) => (
-            <li key={to}>
-              <Link to={to} className={isActive(to) ? "active" : ""}>{label}</Link>
-            </li>
-          ))}
-        </ul>
+          {/* Desktop nav links */}
+          <ul className="nav-menu">
+            {navLinks.map(({ to, label }) => (
+              <li key={to}>
+                <Link to={to} className={isActive(to) ? "active" : ""}>{label}</Link>
+              </li>
+            ))}
+          </ul>
 
-        {/* Right action group */}
-        <div className="nav-login-cart">
-          {/* Theme toggle */}
-          <button className="theme-toggle-btn" onClick={toggleTheme}
-            aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            title={isDarkMode ? "Light Mode" : "Dark Mode"}>
-            {isDarkMode ? <Sun size={19} className="theme-svg" /> : <Moon size={19} className="theme-svg" />}
-          </button>
+          {/* Right action group */}
+          <div className="nav-login-cart">
+            {/* Theme toggle */}
+            <button className="theme-toggle-btn" onClick={toggleTheme}
+              aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              title={isDarkMode ? "Light Mode" : "Dark Mode"}>
+              {isDarkMode ? <Sun size={19} className="theme-svg" /> : <Moon size={19} className="theme-svg" />}
+            </button>
 
-          {/* User section */}
-          {user ? (
-            <div className="nav-user-dropdown-wrapper" ref={dropdownRef}>
-              <button
-                className="nav-avatar-btn"
-                onClick={() => setUserDropdownOpen(prev => !prev)}
-                aria-label="User account menu"
-                aria-expanded={userDropdownOpen}
-              >
-                <span className="nav-avatar-initial">{getUserInitial()}</span>
-                <span className="nav-avatar-name">{user.name?.split(" ")[0] || "Account"}</span>
-                <ChevronDown size={14} />
-              </button>
+            {/* User section */}
+            {user ? (
+              <div className="nav-user-dropdown-wrapper" ref={dropdownRef}>
+                <button
+                  className="nav-avatar-btn"
+                  onClick={() => setUserDropdownOpen(prev => !prev)}
+                  aria-label="User account menu"
+                  aria-expanded={userDropdownOpen}
+                >
+                  <span className="nav-avatar-initial">{getUserInitial()}</span>
+                  <span className="nav-avatar-name">{user.name?.split(" ")[0] || "Account"}</span>
+                  <ChevronDown size={14} />
+                </button>
 
-              {userDropdownOpen && (
-                <div className="nav-user-dropdown" role="menu">
-                  <div className="dropdown-user-info">
-                    <div className="dropdown-avatar-large">{getUserInitial()}</div>
-                    <div>
-                      <p className="dropdown-user-name">{user.name || "User"}</p>
-                      <p className="dropdown-user-email">{user.email}</p>
+                {userDropdownOpen && (
+                  <div className="nav-user-dropdown" role="menu">
+                    <div className="dropdown-user-info">
+                      <div className="dropdown-avatar-large">{getUserInitial()}</div>
+                      <div>
+                        <p className="dropdown-user-name">{user.name || "User"}</p>
+                        <p className="dropdown-user-email">{user.email}</p>
+                      </div>
                     </div>
+                    <div className="dropdown-divider" />
+                    <Link to="/profile" onClick={() => setUserDropdownOpen(false)}>
+                      <button className="dropdown-item" role="menuitem">
+                        <User size={15} /> My Profile
+                      </button>
+                    </Link>
+                    <Link to="/orders" onClick={() => setUserDropdownOpen(false)}>
+                      <button className="dropdown-item" role="menuitem">
+                        <Package size={15} /> My Orders
+                      </button>
+                    </Link>
+                    {user.role === "admin" && (
+                      <>
+                        <div className="dropdown-divider" />
+                        <Link to="/admin" onClick={() => setUserDropdownOpen(false)}>
+                          <button className="dropdown-item admin" role="menuitem">
+                            <ShieldCheck size={15} /> Admin Panel
+                          </button>
+                        </Link>
+                      </>
+                    )}
+                    <div className="dropdown-divider" />
+                    <button className="dropdown-item logout" onClick={handleLogout} role="menuitem">
+                      <LogOut size={15} /> Logout
+                    </button>
                   </div>
-                  <div className="dropdown-divider" />
-                  <Link to="/profile" onClick={() => setUserDropdownOpen(false)}>
-                    <button className="dropdown-item" role="menuitem">
-                      <User size={15} /> My Profile
-                    </button>
-                  </Link>
-                  <Link to="/orders" onClick={() => setUserDropdownOpen(false)}>
-                    <button className="dropdown-item" role="menuitem">
-                      <Package size={15} /> My Orders
-                    </button>
-                  </Link>
-                  {user.role === "admin" && (
-                    <>
-                      <div className="dropdown-divider" />
-                      <Link to="/admin" onClick={() => setUserDropdownOpen(false)}>
-                        <button className="dropdown-item admin" role="menuitem">
-                          <ShieldCheck size={15} /> Admin Panel
-                        </button>
-                      </Link>
-                    </>
-                  )}
-                  <div className="dropdown-divider" />
-                  <button className="dropdown-item logout" onClick={handleLogout} role="menuitem">
-                    <LogOut size={15} /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link to="/login" style={{ display: "flex", alignItems: "center" }}>
-              <button className="nav-login-btn">Login</button>
-              <button className="nav-mobile-login-icon-btn" aria-label="Login" style={{ padding: 0 }}>
-                <User size={18} />
-              </button>
-            </Link>
-          )}
+                )}
+              </div>
+            ) : (
+              <Link to="/login" style={{ display: "flex", alignItems: "center" }}>
+                <button className="nav-login-btn">Login</button>
+                <button className="nav-mobile-login-icon-btn" aria-label="Login" style={{ padding: 0 }}>
+                  <User size={18} />
+                </button>
+              </Link>
+            )}
 
-          {/* Wishlist (desktop) */}
-          <button className="nav-wishlist-wrapper" onClick={() => navigate("/wishlist")}
-            aria-label={`Wishlist (${wishlist.length} items)`}>
-            <Heart size={21} />
-            {wishlist.length > 0 && <div className="nav-cart-count">{wishlist.length}</div>}
-          </button>
-          {/* Cart (desktop) */}
-          <button className="nav-cart-wrapper" onClick={() => navigate("/cart")}
-            aria-label={`Cart (${cartCount} items)`}>
-            <ShoppingCart size={21} />
-            {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
-          </button>
+            {/* Wishlist (desktop) */}
+            <button className="nav-wishlist-wrapper" onClick={() => navigate("/wishlist")}
+              aria-label={`Wishlist (${wishlist.length} items)`}>
+              <Heart size={21} />
+              {wishlist.length > 0 && <div className="nav-cart-count">{wishlist.length}</div>}
+            </button>
+            {/* Cart (desktop) */}
+            <button className="nav-cart-wrapper" onClick={() => navigate("/cart")}
+              aria-label={`Cart (${cartCount} items)`}>
+              <ShoppingCart size={21} />
+              {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
+            </button>
 
-          {/* Mobile Menu Toggle (Hamburger) */}
-          <button 
-            className="nav-mobile-menu-btn" 
-            onClick={() => setMobileMenuOpen(prev => !prev)}
-            aria-label="Toggle Navigation Menu"
-            title="Menu"
-            style={{ padding: 0 }}
-          >
-            <Menu size={18} />
-          </button>
+            {/* Mobile Menu Toggle (Hamburger) */}
+            <button 
+              className="nav-mobile-menu-btn" 
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label="Toggle Navigation Menu"
+              title="Menu"
+              style={{ padding: 0 }}
+            >
+              <Menu size={18} />
+            </button>
+          </div>
+        </nav>
+
+        {/* Mobile Search Row (Flipkart-style) */}
+        <div className="mobile-search-row">
+          <form onSubmit={handleSearchSubmit} className="mobile-search-form">
+            <Search size={15} className="mob-search-icon" />
+            <input
+              type="text"
+              placeholder="Search products, brands and more..."
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              className="mobile-search-input"
+            />
+            <button type="button" onClick={handleVoiceSearch} className="mob-mic-btn" aria-label="Voice Search" style={{ padding: 0 }}>
+              <Mic size={15} />
+            </button>
+          </form>
         </div>
-      </nav>
+      </header>
 
       {/* ─── MOBILE SLIDE-IN DRAWER ──────────────────────── */}
       {mobileMenuOpen && (
