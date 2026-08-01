@@ -60,10 +60,11 @@ export interface OrderItem {
   price: number;
 }
 
-// Firestore Order Document Schema
 export interface Order {
   id?: string;
   userId: string;
+  userEmail?: string;
+  userName?: string;
   items: OrderItem[];
   amount: number;
   address: AddressValues;

@@ -195,8 +195,8 @@ export const AdminOrdersTab = ({
                                 fontSize: '0.85rem',
                                 lineHeight: '1.6'
                               }}>
-                                <p style={{ margin: '0 0 6px 0' }}><strong>Customer Email:</strong> <span style={{ color: 'var(--accent-color)', fontWeight: '700' }}>{o.userEmail || "N/A"}</span></p>
-                                <p style={{ margin: '0 0 6px 0' }}><strong>Name:</strong> {o.address?.fullName}</p>
+                                <p style={{ margin: '0 0 6px 0' }}><strong>Customer Email:</strong> <span style={{ color: 'var(--accent-color)', fontWeight: '700' }}>{o.userEmail || o.address?.email || o.email || "Customer Registered Email"}</span></p>
+                                <p style={{ margin: '0 0 6px 0' }}><strong>Name:</strong> {o.address?.fullName || o.userName || "Customer"}</p>
                                 <p style={{ margin: '0 0 6px 0' }}><strong>Street:</strong> {o.address?.addressLine}</p>
                                 <p style={{ margin: '0 0 6px 0' }}><strong>City/State:</strong> {o.address?.city}, {o.address?.state} - {o.address?.postalCode}</p>
                                 <p style={{ margin: 0 }}><strong>Phone:</strong> {o.address?.phone}</p>
