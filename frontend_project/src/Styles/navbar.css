@@ -690,3 +690,40 @@
     margin-left: 6px;
   }
 }
+
+/* Mobile Quick Menu Hamburger Icon styling */
+.nav-mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .nav-mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .nav-mobile-menu-btn:hover,
+  .nav-mobile-menu-btn:active {
+    border-color: var(--accent-pink);
+    color: var(--accent-pink);
+    background: var(--accent-light);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-mobile-menu-btn {
+    width: 30px;
+    height: 30px;
+    margin-left: 6px;
+  }
+}

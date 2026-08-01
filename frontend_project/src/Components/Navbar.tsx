@@ -4,7 +4,7 @@ import "../Styles/navbar.css";
 import {
   ShoppingCart, Heart, LogOut, ChevronDown,
   Sun, Moon, X, Home, LayoutGrid, User, LogIn,
-  Package, ShieldCheck
+  Package, ShieldCheck, Menu
 } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -209,12 +209,22 @@ export const Navbar: React.FC = () => {
             <Heart size={21} />
             {wishlist.length > 0 && <div className="nav-cart-count">{wishlist.length}</div>}
           </button>
-
           {/* Cart (desktop) */}
           <button className="nav-cart-wrapper" onClick={() => navigate("/cart")}
             aria-label={`Cart (${cartCount} items)`}>
             <ShoppingCart size={21} />
             {cartCount > 0 && <div className="nav-cart-count">{cartCount}</div>}
+          </button>
+
+          {/* Mobile Menu Toggle (Hamburger) */}
+          <button 
+            className="nav-mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Toggle Navigation Menu"
+            title="Menu"
+            style={{ padding: 0 }}
+          >
+            <Menu size={18} />
           </button>
         </div>
       </nav>

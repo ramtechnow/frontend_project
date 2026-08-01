@@ -224,10 +224,10 @@
   .hero-slide { height: 240px; }
   .demo-bar { font-size: 10px; padding: 6px 10px; }
   .demo-bar svg { display: none; }
-  .hero-content { max-width: 92%; gap: 5px; }
-  .hero-title { font-size: clamp(16px, 5vw, 22px); line-height: 1.2; }
-  .hero-promo-tag, .hero-tag { font-size: 9px; }
-  .hero-btn { height: 34px; padding: 0 12px; font-size: 11px; }
+  .hero-content { max-width: 92%; gap: 4px; }
+  .hero-title { font-size: clamp(12px, 3.5vw, 15px); line-height: 1.25; font-weight: 700; }
+  .hero-promo-tag, .hero-tag { font-size: 8.5px; padding: 2px 6px; letter-spacing: 1px; }
+  .hero-btn { height: 30px; padding: 0 10px; font-size: 10px; }
   .carousel-arrow { display: none; }
 }
 
