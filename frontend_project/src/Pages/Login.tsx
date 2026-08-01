@@ -90,17 +90,31 @@ export const Login: React.FC = () => {
         className="login-card"
       >
         {/* Header */}
-        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-          <img src="/RamCart_brand_logo_v2.png" alt="RamCart Brand Logo" style={{ height: "54px", objectFit: "contain", marginBottom: "4px" }} />
-          <h1 style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)", margin: 0 }}>
-            {isLoginState ? "Login to RamCart" : "Create Account"}
-          </h1>
-          <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>
-            {isLoginState 
-              ? "Access your saved wishlists, shopping bag, and live order details." 
-              : "Create an account to track your packages and unlock rewards."}
-          </p>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+          <div style={{
+            width: 88, height: 88, borderRadius: "24px",
+            background: "var(--bg-tertiary)", border: "1px solid var(--border-color)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.08)"
+          }}>
+            <img
+              src="/RamCart_brand_logo_v2.png"
+              alt="RamCart Brand Logo"
+              style={{ height: "64px", width: "64px", objectFit: "contain" }}
+            />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-primary)", margin: 0, lineHeight: 1.2 }}>
+              {isLoginState ? "Welcome Back 👋" : "Create Account"}
+            </h1>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "6px 0 0", lineHeight: "1.5" }}>
+              {isLoginState
+                ? "Login to access wishlists, orders & more."
+                : "Join RamCart to track packages and unlock rewards."}
+            </p>
+          </div>
         </div>
+
 
         {/* Auth Forms */}
         {isLoginState ? (

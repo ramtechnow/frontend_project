@@ -1643,3 +1643,284 @@
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 13px !important;
 }
+
+/* ============================================================
+   MOBILE ADMIN PANEL — Full UX Overhaul for daily mobile use
+   Breakpoint: ≤ 768px (phones)
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  /* ── Root Panel: stack vertically with bottom tab nav ── */
+  .admin-panel {
+    flex-direction: column !important;
+    padding-bottom: 68px !important; /* space for bottom tab bar */
+  }
+
+  /* ── Sidebar becomes a fixed BOTTOM TAB BAR ── */
+  .admin-sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: 60px !important;
+    flex-direction: row !important;
+    padding: 0 4px !important;
+    gap: 0 !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border-color) !important;
+    z-index: 9999 !important;
+    background: var(--bg-secondary) !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.1) !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+  }
+
+  /* Hide sidebar header on mobile tab bar */
+  .admin-sidebar .sidebar-header {
+    display: none !important;
+  }
+
+  /* Hide sidebar footer on mobile tab bar */
+  .admin-sidebar .sidebar-footer {
+    display: none !important;
+  }
+
+  /* Menu becomes horizontal scrollable tab row */
+  .admin-sidebar .sidebar-menu {
+    flex-direction: row !important;
+    gap: 0 !important;
+    width: 100% !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    height: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .admin-sidebar .sidebar-menu::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Each tab button — icon-only pill */
+  .admin-sidebar .sidebar-menu button {
+    flex: 1 !important;
+    min-width: 48px !important;
+    max-width: 72px !important;
+    width: auto !important;
+    height: 52px !important;
+    padding: 4px 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    border-radius: 0 !important;
+    border: none !important;
+    font-size: 0 !important; /* hide text label */
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border-right: none !important;
+    transform: none !important;
+    transition: color 0.15s !important;
+  }
+
+  .admin-sidebar .sidebar-menu button .menu-icon {
+    font-size: 1.35rem !important;
+    color: inherit !important;
+  }
+
+  .admin-sidebar .sidebar-menu button svg {
+    width: 22px !important;
+    height: 22px !important;
+    color: inherit !important;
+  }
+
+  .admin-sidebar .sidebar-menu button.active {
+    color: var(--accent-color) !important;
+    background: transparent !important;
+    border-right: none !important;
+    border-bottom: 3px solid var(--accent-color) !important;
+  }
+
+  .admin-sidebar .sidebar-menu button.active svg {
+    color: var(--accent-color) !important;
+  }
+
+  .admin-sidebar .sidebar-menu button:hover {
+    transform: none !important;
+    color: var(--text-primary) !important;
+  }
+
+  /* ── Main content: full width, compact padding ── */
+  .admin-panel > div:not(.admin-sidebar) {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .admin-content {
+    padding: 12px !important;
+    overflow-x: hidden !important;
+  }
+
+  .admin-content h2 {
+    font-size: 1.1rem !important;
+    margin-bottom: 12px !important;
+    padding-left: 10px !important;
+  }
+
+  /* Topbar compact */
+  .admin-topbar {
+    padding: 8px 12px !important;
+    min-height: 48px !important;
+  }
+
+  .admin-topbar h4,
+  .admin-topbar span {
+    font-size: 13px !important;
+  }
+
+  /* ── Metrics grid: 2 columns on phone ── */
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .metric-card {
+    padding: 12px !important;
+  }
+
+  .metric-value {
+    font-size: 1.2rem !important;
+  }
+
+  .metric-icon {
+    font-size: 1.6rem !important;
+  }
+
+  /* ── Charts: single column ── */
+  .charts-split {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── Admin forms: full width, comfortable inputs ── */
+  .admin-form {
+    padding: 16px !important;
+  }
+
+  .admin-form input,
+  .admin-form select,
+  .admin-form textarea {
+    width: 100% !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Form grid: single column on mobile */
+  .admin-form .form-grid-2,
+  .admin-form [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Image upload area: full width, taller */
+  .admin-form .image-upload-zone {
+    min-height: 120px !important;
+    padding: 20px !important;
+  }
+
+  /* Toggle chips: larger touch targets */
+  .admin-toggle-chip {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    min-height: 42px !important;
+  }
+
+  /* Submit / action buttons: full width */
+  .admin-form button[type="submit"],
+  .admin-submit-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+
+  /* ── Tables: horizontal scroll, compact rows ── */
+  .admin-table-wrapper,
+  [class*="table-wrap"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .admin-panel table {
+    min-width: 600px !important;
+    font-size: 12px !important;
+  }
+
+  .admin-panel table th,
+  .admin-panel table td {
+    padding: 8px 6px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Product thumbnail in table */
+  .admin-panel table img {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  /* Action buttons in table rows */
+  .admin-panel table button {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    min-height: 30px !important;
+  }
+
+  /* Search + filter row */
+  .list-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .audit-controls {
+    width: 100% !important;
+  }
+
+  .audit-search-input {
+    width: 100% !important;
+    font-size: 16px !important;
+  }
+
+  /* Inline stock controls */
+  .inline-stock-control-panel {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* ── Banner & coupon cards: single column ── */
+  .banners-grid,
+  .coupons-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* Tiny phones (< 360px) */
+@media (max-width: 360px) {
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-sidebar .sidebar-menu button {
+    min-width: 40px !important;
+  }
+}

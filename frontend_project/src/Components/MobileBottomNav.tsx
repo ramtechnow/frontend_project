@@ -1,15 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, LayoutGrid, ShoppingCart, Heart, User } from "lucide-react";
+import { Home, ShoppingCart, Heart, User } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import "../Styles/mobile-bottom-nav.css";
 
+// Menu icon tab removed — only Home (center), Cart, Wishlist, Profile
 const tabs = [
-  { to: "/",         Icon: Home,        label: "Home" },
-  { to: "/catalog",  Icon: LayoutGrid,  label: "Categories" },
-  { to: "/cart",     Icon: ShoppingCart,label: "Cart",     badge: "cart" },
+  { to: "/cart",     Icon: ShoppingCart, label: "Cart",     badge: "cart" },
+  { to: "/",         Icon: Home,         label: "Home",     center: true },
   { to: "/wishlist", Icon: Heart,        label: "Wishlist", badge: "wishlist" },
   { to: "/profile",  Icon: User,         label: "Account",  auth: true },
 ];
@@ -31,31 +31,23 @@ export const MobileBottomNav: React.FC = () => {
     return pathname.startsWith(to);
   };
 
-  const handleTabClick = (e: React.MouseEvent, label: string) => {
-    if (label === "Categories") {
-      e.preventDefault();
-      window.dispatchEvent(new CustomEvent("toggle-mobile-menu"));
-    }
-  };
-
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
-      {tabs.map(({ to, Icon, label, badge, auth }) => {
+      {tabs.map(({ to, Icon, label, badge, auth, center }) => {
         const active = isActive(to);
         const count  = getBadge(badge);
         const dest   = auth && !user ? "/login" : to;
 
         return (
-          <Link 
-            to={dest} 
-            key={to} 
-            className={`mbn-tab ${active ? "mbn-tab--active" : ""}`}
-            onClick={(e) => handleTabClick(e, label)}
+          <Link
+            to={dest}
+            key={to}
+            className={`mbn-tab ${active ? "mbn-tab--active" : ""} ${center ? "mbn-tab--center" : ""}`}
             aria-label={label}
             title={label}
           >
             <span className="mbn-icon-wrap">
-              <Icon size={25} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={center ? 28 : 24} strokeWidth={active ? 2.5 : 1.8} />
               {count != null && (
                 <span className="mbn-badge">{count > 99 ? "99+" : count}</span>
               )}

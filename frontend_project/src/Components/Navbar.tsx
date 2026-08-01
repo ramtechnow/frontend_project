@@ -35,6 +35,14 @@ export const Navbar: React.FC = () => {
 
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
 
+  // Show mobile search only on Home and catalog-type pages
+  const showMobileSearch = 
+    location.pathname === "/" ||
+    location.pathname.startsWith("/catalog") ||
+    location.pathname.startsWith("/mens") ||
+    location.pathname.startsWith("/womens") ||
+    location.pathname.startsWith("/kids");
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mobileSearchQuery.trim()) {
@@ -273,22 +281,25 @@ export const Navbar: React.FC = () => {
           </div>
         </nav>
 
-        {/* Mobile Search Row (Flipkart-style) */}
-        <div className="mobile-search-row">
-          <form onSubmit={handleSearchSubmit} className="mobile-search-form">
-            <Search size={15} className="mob-search-icon" />
-            <input
-              type="text"
-              placeholder="Search products, brands and more..."
-              value={mobileSearchQuery}
-              onChange={(e) => setMobileSearchQuery(e.target.value)}
-              className="mobile-search-input"
-            />
-            <button type="button" onClick={handleVoiceSearch} className="mob-mic-btn" aria-label="Voice Search" style={{ padding: 0 }}>
-              <Mic size={15} />
-            </button>
-          </form>
-        </div>
+        {/* Mobile Search Row — only on Home and catalog pages */}
+        {showMobileSearch && (
+          <div className="mobile-search-row">
+            <form onSubmit={handleSearchSubmit} className="mobile-search-form">
+              <Search size={15} className="mob-search-icon" />
+              <input
+                type="text"
+                placeholder="Search products, brands and more..."
+                value={mobileSearchQuery}
+                onChange={(e) => setMobileSearchQuery(e.target.value)}
+                className="mobile-search-input"
+              />
+              <button type="button" onClick={handleVoiceSearch} className="mob-mic-btn" aria-label="Voice Search" style={{ padding: 0 }}>
+                <Mic size={15} />
+              </button>
+            </form>
+          </div>
+        )}
+
       </header>
 
       {/* ─── MOBILE SLIDE-IN DRAWER ──────────────────────── */}

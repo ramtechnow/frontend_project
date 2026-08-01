@@ -19,17 +19,15 @@
     height: 60px;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
     border-radius: 0;
-    z-index: 999; /* Below the drawer (1101) but above page content */
+    z-index: 999;
     align-items: center;
     justify-content: space-around;
-    padding: 0 16px;
+    padding: 0 8px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    gap: 0;
   }
 
   /* Push body content up so fixed bottom nav doesn't cover it */
@@ -43,9 +41,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
+    flex: 1;
+    height: 56px;
+    border-radius: 12px;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -56,14 +54,35 @@
 
   .mbn-tab:hover {
     color: var(--text-primary);
-    transform: translateY(-3px);
   }
 
   .mbn-tab.mbn-tab--active {
     color: var(--accent-pink) !important;
-    background: var(--accent-light);
-    transform: translateY(-2px);
-    box-shadow: 0 0 14px rgba(255, 63, 108, 0.12);
+  }
+
+  /* Center Home tab — elevated pill style */
+  .mbn-tab.mbn-tab--center {
+    background: var(--accent-pink);
+    color: #fff !important;
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    margin: 0 8px;
+    box-shadow: 0 4px 18px rgba(255, 63, 108, 0.45);
+    transform: translateY(-6px);
+  }
+
+  .mbn-tab.mbn-tab--center:hover {
+    color: #fff !important;
+    transform: translateY(-8px);
+    box-shadow: 0 6px 22px rgba(255, 63, 108, 0.55);
+  }
+
+  .mbn-tab.mbn-tab--center.mbn-tab--active {
+    color: #fff !important;
+    background: var(--accent-pink) !important;
+    box-shadow: 0 4px 18px rgba(255, 63, 108, 0.5);
   }
 
   /* ── Icon wrapper (for badge positioning) ─── */
@@ -96,7 +115,14 @@
     border: 1.5px solid var(--bg-secondary);
   }
 
-  /* Labels hidden — icon-only pill */
+  /* Badge on center tab uses white border */
+  .mbn-tab--center .mbn-badge {
+    background: #fff;
+    color: var(--accent-pink);
+    border-color: var(--accent-pink);
+  }
+
+  /* Labels hidden — icon-only */
   .mbn-label {
     display: none;
   }
@@ -104,12 +130,13 @@
 
 @media (max-width: 480px) {
   .mobile-bottom-nav {
-    height: 56px;
-    padding: 0 12px;
+    height: 58px;
+    padding: 0 4px;
   }
 
-  .mbn-tab {
-    width: 42px;
-    height: 42px;
+  .mbn-tab.mbn-tab--center {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
   }
 }

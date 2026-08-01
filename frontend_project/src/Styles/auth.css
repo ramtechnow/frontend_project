@@ -208,17 +208,21 @@
 /* Mobile responsive styles */
 @media (max-width: 480px) {
   .login-container {
-    padding: var(--space-6) var(--space-3);
-    min-height: calc(100vh - 120px);
+    padding: var(--space-4) var(--space-3);
+    min-height: 100dvh;
+    align-items: flex-start;
+    padding-top: 32px;
   }
 
   .login-card {
-    padding: var(--space-6) var(--space-4) !important;
+    padding: var(--space-6) var(--space-5) !important;
     gap: var(--space-5) !important;
+    border-radius: 16px !important;
+    max-width: 100% !important;
   }
 
   .login-card h1 {
-    font-size: 18px !important;
+    font-size: 20px !important;
   }
 
   .otp-box {
@@ -231,3 +235,4 @@
     padding: var(--space-6) var(--space-4) !important;
   }
 }
+
