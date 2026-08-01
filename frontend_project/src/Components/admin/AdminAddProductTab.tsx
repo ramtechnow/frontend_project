@@ -1,11 +1,11 @@
 import React, { useState, useMemo, DragEvent, ChangeEvent } from 'react';
-import { FolderPlus, Upload, ShieldAlert, Loader2, Trash2, Edit2 } from 'lucide-react';
+import { FolderPlus, Upload, ShieldAlert, Loader2, Trash2, Plus, Palette } from 'lucide-react';
 import { adminApi } from '../../Utils/adminApi';
 import { compressImageToBase64 } from '../../Utils/adminHelpers';
 import { ProductVariant } from '../../features/catalog/types/productTypes';
 
 const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-const AVAILABLE_COLORS = ['Black', 'White', 'Navy', 'Beige', 'Charcoal', 'Red', 'Blue', 'Green', 'Pink'];
+const PRESET_COLORS = ['Black', 'White', 'Navy Blue', 'Beige', 'Charcoal', 'Red', 'Blue', 'Green', 'Pink', 'Sandal', 'Maroon', 'Olive'];
 
 interface AdminAddProductTabProps {
   onProductAdded: () => void;
@@ -28,7 +28,9 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
   // Chip selections
   const [selectedSizes, setSelectedSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
   const [selectedColors, setSelectedColors] = useState<string[]>(['Black', 'White']);
-  
+  const [customColorInput, setCustomColorInput] = useState("");
+  const [customHexColor, setCustomHexColor] = useState("#b80035");
+
   // Drag & drop multiple images (base64 string array)
   const [images, setImages] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -38,7 +40,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
-  // Manual overrides for variants
+  // Manual overrides for variants (price & stock per size/color)
   const [manualVariants, setManualVariants] = useState<Partial<ProductVariant>[]>([]);
 
   // Size/Color chip toggle handlers
@@ -54,6 +56,17 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
       prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]
     );
     setFieldErrors(prev => ({ ...prev, colors: null }));
+  };
+
+  const handleAddCustomColor = () => {
+    const trimmed = customColorInput.trim();
+    if (!trimmed) return;
+    const formatted = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    if (!selectedColors.includes(formatted)) {
+      setSelectedColors(prev => [...prev, formatted]);
+      addToast(`Added custom color "${formatted}"`, "success");
+    }
+    setCustomColorInput("");
   };
 
   // Drag handlers
@@ -110,11 +123,6 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
     }
   };
 
-  const handleReplaceClick = (index: number) => {
-    setReplaceIndex(index);
-    document.getElementById('add-multiple-file-input')?.click();
-  };
-
   const handleDeleteImage = (index: number) => {
     setImages(prev => prev.filter((_, idx) => idx !== index));
     addToast("Image removed from uploader", "info");
@@ -140,7 +148,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           sku: override?.sku || skuPattern,
           color,
           size,
-          stock: override?.stock !== undefined ? override.stock : 50,
+          stock: override?.stock !== undefined ? override.stock : 10,
           price: override?.price !== undefined ? override.price : Number(newPrice) || 0
         });
       });
@@ -164,8 +172,8 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           color,
           size,
           sku: currentGenerated?.sku || "",
-          stock: currentGenerated?.stock || 50,
-          price: currentGenerated?.price || 0,
+          stock: currentGenerated?.stock || 10,
+          price: currentGenerated?.price || Number(newPrice) || 0,
           [field]: value
         });
       }
@@ -213,129 +221,121 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
       colors: selectedColors,
       variants: generatedVariants,
       stockCount: totalCalculatedStock,
-      image: primaryImage, // Keep backwards compatibility
-      images: images,      // Save array of all uploaded images
+      image: primaryImage,
+      images: images,
       available: true
     };
 
     try {
       await adminApi.addProduct(payload);
-      addToast("🎉 Product launched successfully!", "success");
+      addToast(`🎉 Added product "${name}" with ${generatedVariants.length} variants!`, "success");
       logAction(`Launched new product: "${name}" with ${generatedVariants.length} variants`);
-      
-      // Reset Form State
-      setName("");
-      setDescription("");
-      setCategory("women");
-      setNewPrice("");
-      setOldPrice("");
-      setSelectedSizes(['S', 'M', 'L', 'XL']);
-      setSelectedColors(['Black', 'White']);
-      setImages([]);
-      setManualVariants([]);
-      
       onProductAdded();
     } catch (err: any) {
-      console.error(err);
-      addToast(err.message || "Failed to add product to database", "error");
+      console.error("Error creating product:", err);
+      addToast(err.message || "Failed to create product listing.", "error");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="admin-add-section animate-fade-in" style={{ color: 'var(--text-primary)' }}>
-      <h2>Launch New Product Listing</h2>
-      
+    <div className="admin-add-product-container animate-fade-in" style={{ maxWidth: '900px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <div style={{ padding: '10px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', color: 'var(--accent-pink)' }}>
+          <FolderPlus size={24} />
+        </div>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800' }}>Launch New Product Listing</h2>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Publish catalog items with custom per-size pricing, color picker and stock counts.</span>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* Product Name */}
+        {/* Title */}
         <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Product Title</label>
+          <label style={{ fontWeight: '700' }}>Product Title *</label>
           <input 
             type="text" 
-            value={name} 
-            onChange={(e) => { setName(e.target.value); setFieldErrors(prev => ({ ...prev, name: null })); }} 
-            placeholder="e.g. Premium Slim Fit Cotton Denim Shirt"
+            placeholder="e.g. Premium Slim Fit Cotton Denim Shirt" 
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setFieldErrors(prev => ({ ...prev, name: null }));
+            }}
             style={{ border: fieldErrors.name ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
           />
           {fieldErrors.name && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.name}</span>}
         </div>
 
-        {/* Product Description */}
+        {/* Description */}
         <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Detailed Description</label>
+          <label style={{ fontWeight: '700' }}>Detailed Description *</label>
           <textarea 
-            value={description} 
-            onChange={(e) => { setDescription(e.target.value); setFieldErrors(prev => ({ ...prev, description: null })); }} 
-            placeholder="Write a brief overview of materials, sizing fits, design details..."
-            rows={3}
+            rows={4} 
+            placeholder="Write a brief overview of materials, sizing fits, design details..." 
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setFieldErrors(prev => ({ ...prev, description: null }));
+            }}
             style={{ 
+              border: fieldErrors.description ? '1px solid #ef4444' : '1px solid var(--border-color)',
               width: '100%',
               padding: '12px',
-              borderRadius: '10px',
-              border: fieldErrors.description ? '1px solid #ef4444' : '1px solid var(--border-color)',
-              backgroundColor: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              fontFamily: 'inherit',
-              outline: 'none'
+              borderRadius: '8px',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)'
             }}
           />
           {fieldErrors.description && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.description}</span>}
         </div>
 
-        {/* Target, prices and stock */}
-        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+        {/* Category & Prices */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
           <div className="form-group">
-            <label style={{ fontWeight: '700' }}>Audience Target</label>
+            <label style={{ fontWeight: '700' }}>Catalog Category *</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="women">Women Fashion</option>
-              <option value="men">Men Apparel</option>
-              <option value="kid">Kids Collection</option>
+              <option value="women">Womens Apparel</option>
+              <option value="men">Mens Collection</option>
+              <option value="kid">Kids Wear</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label style={{ fontWeight: '700' }}>Promo Price (₹)</label>
+            <label style={{ fontWeight: '700' }}>Base Price (₹) *</label>
             <input 
               type="number" 
-              value={newPrice} 
-              onChange={(e) => { setNewPrice(e.target.value); setFieldErrors(prev => ({ ...prev, newPrice: null })); }} 
-              placeholder="e.g. 1499"
-              min="1"
+              placeholder="e.g. 599" 
+              value={newPrice}
+              onChange={(e) => {
+                setNewPrice(e.target.value);
+                setFieldErrors(prev => ({ ...prev, newPrice: null }));
+              }}
               style={{ border: fieldErrors.newPrice ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
             />
             {fieldErrors.newPrice && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.newPrice}</span>}
           </div>
 
           <div className="form-group">
-            <label style={{ fontWeight: '700' }}>MSRP Original (₹)</label>
+            <label style={{ fontWeight: '700' }}>MSRP / Strike Price (₹) *</label>
             <input 
               type="number" 
-              value={oldPrice} 
-              onChange={(e) => { setOldPrice(e.target.value); setFieldErrors(prev => ({ ...prev, oldPrice: null })); }} 
-              placeholder="e.g. 2999"
-              min="1"
+              placeholder="e.g. 1199" 
+              value={oldPrice}
+              onChange={(e) => {
+                setOldPrice(e.target.value);
+                setFieldErrors(prev => ({ ...prev, oldPrice: null }));
+              }}
               style={{ border: fieldErrors.oldPrice ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
             />
             {fieldErrors.oldPrice && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.oldPrice}</span>}
-          </div>
-
-          <div className="form-group">
-            <label style={{ fontWeight: '700' }}>Total Inventory (Auto-calc)</label>
-            <input 
-              type="number" 
-              value={totalCalculatedStock} 
-              disabled
-              placeholder="Auto-calculated"
-              style={{ backgroundColor: 'var(--bg-primary)', opacity: 0.8, cursor: 'not-allowed', border: '1px solid var(--border-color)' }}
-            />
           </div>
         </div>
 
         {/* Sizes multiselect */}
         <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Inventory Sizing Available (Select multiple)</label>
+          <label style={{ fontWeight: '700' }}>Sizes Available</label>
           <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {AVAILABLE_SIZES.map((size) => (
               <button
@@ -352,11 +352,13 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           {fieldErrors.sizes && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.sizes}</span>}
         </div>
 
-        {/* Colors multiselect */}
+        {/* Colors selector + Custom Color Adder & Color Picker */}
         <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Inventory Colors Available (Select multiple)</label>
-          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {AVAILABLE_COLORS.map((color) => (
+          <label style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Palette size={16} /> Inventory Colors (Select preset or add custom color)
+          </label>
+          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {Array.from(new Set([...PRESET_COLORS, ...selectedColors])).map((color) => (
               <button
                 key={color}
                 type="button"
@@ -368,13 +370,38 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Add custom color input box + Hex Color Picker */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '420px' }}>
+            <input
+              type="color"
+              value={customHexColor}
+              onChange={(e) => setCustomHexColor(e.target.value)}
+              style={{ width: 38, height: 38, border: 'none', borderRadius: 8, cursor: 'pointer', padding: 0 }}
+              title="Pick Hex Color"
+            />
+            <input
+              type="text"
+              placeholder="Type custom color name (e.g. Sandal, Maroon, Navy Blue)"
+              value={customColorInput}
+              onChange={(e) => setCustomColorInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomColor(); } }}
+              style={{ flex: 1, padding: '8px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomColor}
+              style={{ padding: '8px 16px', backgroundColor: 'var(--accent-pink)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <Plus size={14} /> Add Color
+            </button>
+          </div>
           {fieldErrors.colors && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.colors}</span>}
         </div>
 
         {/* Drag-and-Drop Image Uploader */}
         <div className="form-group">
           <label style={{ fontWeight: '700' }}>Product Image Showcase (Drop multiple files)</label>
-          
           <div 
             onDragEnter={handleDrag}
             onDragOver={handleDrag}
@@ -396,105 +423,35 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
               <p style={{ margin: 0, fontWeight: '700', fontSize: '0.9rem' }}>
                 Drag & Drop product images here, or <span style={{ color: 'var(--accent-pink)' }}>browse files</span>
               </p>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upload 1 or more images. The first image will be set as primary.</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upload 1 or more images. First image is set as primary.</span>
             </div>
             <input 
-              type="file"
-              id="add-multiple-file-input"
-              multiple
-              accept="image/*"
-              onChange={handleFileInput}
-              style={{ display: 'none' }}
+              id="add-multiple-file-input" 
+              type="file" 
+              accept="image/*" 
+              multiple 
+              onChange={handleFileInput} 
+              style={{ display: 'none' }} 
             />
           </div>
           {fieldErrors.images && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.images}</span>}
 
-          {/* Grid Preview of Uploaded Images */}
+          {/* Upload previews */}
           {images.length > 0 && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
-              gap: '12px',
-              marginTop: '16px',
-              padding: '16px',
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '12px',
-              border: '1px solid var(--border-color)'
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px', marginTop: '16px' }}>
               {images.map((img, idx) => (
-                <div 
-                  key={idx} 
-                  style={{
-                    position: 'relative',
-                    aspectRatio: '4/5',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    border: idx === 0 ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)',
-                    boxShadow: 'var(--shadow-sm)'
-                  }}
-                >
+                <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '12px', overflow: 'hidden', border: idx === 0 ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)' }}>
                   <img src={img} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  
-                  {/* Primary marker badge */}
                   {idx === 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      backgroundColor: 'var(--accent-pink)',
-                      color: 'white',
-                      fontSize: '8px',
-                      textAlign: 'center',
-                      fontWeight: '800',
-                      padding: '2px 0',
-                      textTransform: 'uppercase'
-                    }}>
+                    <span style={{ position: 'absolute', bottom: '4px', left: '4px', backgroundColor: 'var(--accent-pink)', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 6px', borderRadius: '4px' }}>
                       Primary
-                    </div>
+                    </span>
                   )}
-
-                  {/* Actions overlay on hover */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    opacity: 0,
-                    transition: 'opacity 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
-                  >
-                    <button 
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleReplaceClick(idx); }}
-                      style={{
-                        padding: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'var(--text-primary)'
-                      }}
-                      title="Replace Image"
-                    >
-                      <Edit2 size={12} />
-                    </button>
+                  <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
                     <button 
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDeleteImage(idx); }}
-                      style={{
-                        padding: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: '#ef4444',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'white'
-                      }}
+                      style={{ padding: '4px', borderRadius: '50%', backgroundColor: '#ef4444', border: 'none', cursor: 'pointer', color: 'white' }}
                       title="Delete Image"
                     >
                       <Trash2 size={12} />
@@ -506,7 +463,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           )}
         </div>
 
-        {/* Dynamic SKU & Variant Manager Table */}
+        {/* Dynamic SKU & Per-Size Pricing / Stock Matrix Table */}
         {generatedVariants.length > 0 && (
           <div style={{
             backgroundColor: 'var(--bg-secondary)',
@@ -515,10 +472,17 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
             padding: '24px',
             boxShadow: 'var(--shadow-sm)'
           }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: '800' }}>Variant Catalog & SKU Generation</h3>
-            <p style={{ margin: '0 0 20px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Configure details (SKUs, stock and price) for each generated size/color combination.
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Variant Catalog & Per-Size Pricing Matrix</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Set custom prices (e.g. S: ₹499, M: ₹549) and exact stock quantities per size.
+                </p>
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-pink)' }}>
+                Total Stock: {totalCalculatedStock} units
+              </span>
+            </div>
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
@@ -527,7 +491,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
                     <th style={{ padding: '12px 8px', fontWeight: '700' }}>Variant Details</th>
                     <th style={{ padding: '12px 8px', fontWeight: '700' }}>SKU Code</th>
                     <th style={{ padding: '12px 8px', fontWeight: '700' }}>Stock Units</th>
-                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>Price (₹)</th>
+                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>Price per Size (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -600,32 +564,30 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
         )}
 
         {/* Submit */}
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={saving}
-          style={{ 
-            marginTop: '10px', 
-            height: '52px', 
-            borderRadius: 'var(--border-radius-full)', 
-            fontWeight: '700',
+          style={{
+            padding: '14px 28px',
+            backgroundColor: 'var(--accent-pink)',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '1rem',
+            fontWeight: '800',
+            cursor: saving ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            backgroundColor: saving ? 'var(--border-color)' : 'var(--accent-pink)',
-            color: 'white',
-            border: 'none',
-            fontSize: '0.95rem',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            transition: 'opacity 0.2s'
+            boxShadow: '0 4px 16px rgba(184, 0, 53, 0.3)',
+            marginTop: '12px'
           }}
         >
-          {saving ? <Loader2 size={18} className="animate-spin" /> : <FolderPlus size={18} />}
-          {saving ? "Publishing listing details..." : "Create & Publish Product Listing"}
+          {saving ? <Loader2 size={18} className="spin" /> : <FolderPlus size={18} />}
+          {saving ? "Publishing Listing..." : "Publish Product Listing"}
         </button>
       </form>
     </div>
   );
 };
-
-export default AdminAddProductTab;

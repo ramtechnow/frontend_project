@@ -190,26 +190,26 @@ export default function ProductDemo() {
           )}
 
           {/* CTAs */}
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={handleAddToCart}
               style={{
-                flex: 1, height: 50, background: added ? "var(--rating-green)" : "var(--accent-pink)", color: "#fff", border: "none", borderRadius: 8,
-                fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s"
+                flex: 1, height: 42, background: added ? "var(--rating-green)" : "var(--accent-pink)", color: "#fff", border: "none", borderRadius: 8,
+                fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s"
               }}
             >
-              <ShoppingBag size={18} />
+              <ShoppingBag size={16} />
               {added ? "Added to Cart ✓" : "Add to Cart"}
             </button>
             <button
               onClick={() => toggleWishlist(product.id)}
               style={{
-                width: 50, height: 50, border: isWishlisted ? "2px solid var(--accent-pink)" : "1px solid var(--border-color)", borderRadius: 8,
+                width: 42, height: 42, border: isWishlisted ? "2px solid var(--accent-pink)" : "1px solid var(--border-color)", borderRadius: 8,
                 background: isWishlisted ? "var(--accent-light)" : "transparent", color: isWishlisted ? "var(--accent-pink)" : "var(--text-muted)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s"
               }}
             >
-              <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+              <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
             </button>
           </div>
 
