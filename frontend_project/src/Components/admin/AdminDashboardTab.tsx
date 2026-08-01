@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, Activity, ShoppingBag, Users, ArrowUpRight, Plus, PlusCircle, ShoppingCart, DollarSign, Warehouse, BarChart3, MoreVertical } from 'lucide-react';
+import { AlertTriangle, Activity, ShoppingBag, Users, ArrowUpRight, Plus, PlusCircle, ShoppingCart, IndianRupee, Warehouse, BarChart3, MoreVertical } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -266,7 +266,7 @@ export const AdminDashboardTab: React.FC<AdminDashboardTabProps> = ({
             </div>
           </div>
           <div style={{ padding: '10px', borderRadius: 'var(--border-radius-md)', backgroundColor: 'rgba(184, 0, 53, 0.08)', color: 'var(--accent-color)' }}>
-            <DollarSign size={22} />
+            <IndianRupee size={22} />
           </div>
         </div>
 

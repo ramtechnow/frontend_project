@@ -61,12 +61,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={resolvedType}
             onChange={handleOnChange}
             title={isPassword ? "Password must be at least 6 characters" : props.title}
+            style={{
+              paddingLeft: icon ? "42px" : "14px",
+              paddingRight: isPassword ? "40px" : "14px",
+            }}
             className={twMerge(
               clsx(
-                "w-full h-11 bg-bg-primary text-text-primary border border-border rounded-md px-3 outline-none transition-all duration-200 focus:border-text-primary text-sm placeholder:text-text-muted/60",
+                "w-full h-11 bg-bg-primary text-text-primary border border-border rounded-md outline-none transition-all duration-200 focus:border-text-primary text-sm placeholder:text-text-muted/60",
                 {
-                  "pl-10":  !!icon,
-                  "pr-10":  isPassword,
                   "border-red-500 focus:border-red-500": !!error,
                 }
               ),

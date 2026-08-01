@@ -24,7 +24,7 @@ const ProcessSteps = () => {
     <div 
       style={{ 
         display: "grid", 
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
+        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", 
         gap: "var(--space-6)", 
         margin: "var(--space-10) 0",
         padding: "var(--space-6) var(--space-4)",
@@ -37,20 +37,45 @@ const ProcessSteps = () => {
       {steps.map((step, index) => (
         <div 
           key={index}
+          className="process-step-card"
           style={{ 
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center", 
             textAlign: "center", 
             padding: "var(--space-4) var(--space-3)",
-            gap: "var(--space-2)"
+            gap: "var(--space-2)",
+            borderRadius: "12px",
+            transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+            cursor: "pointer"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-4px)";
+            e.currentTarget.style.backgroundColor = "var(--bg-tertiary)";
+            e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 63, 108, 0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
-          <div style={{ marginBottom: "var(--space-2)" }}>{step.icon}</div>
+          <div style={{
+            marginBottom: "var(--space-2)",
+            padding: "12px",
+            borderRadius: "50%",
+            background: "rgba(184, 0, 53, 0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 0.3s ease"
+          }}>
+            {step.icon}
+          </div>
           <h3 style={{ fontSize: "var(--text-md)", fontWeight: "700", color: "var(--text-primary)" }}>
             {step.title}
           </h3>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "260px" }}>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "260px", lineHeight: "1.5" }}>
             {step.description}
           </p>
         </div>

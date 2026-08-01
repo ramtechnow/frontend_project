@@ -45,10 +45,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <button
         className={`product-card-wishlist-btn${isWishlisted ? " active" : ""}`}
         onClick={handleWishlistToggle}
+        onMouseDown={(e) => e.stopPropagation()}
         aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-        style={{ zIndex: 10 }}
+        style={{ zIndex: 20 }}
       >
-        <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} />
+        <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} />
       </button>
 
       <Link to={`/product/${product.id}`} style={{ display: "flex", flexDirection: "column", height: "100%", textDecoration: "none", color: "inherit" }}>

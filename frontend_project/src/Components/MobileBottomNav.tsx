@@ -6,10 +6,9 @@ import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import "../Styles/mobile-bottom-nav.css";
 
-// Menu icon tab removed — only Home (center), Cart, Wishlist, Profile
 const tabs = [
+  { to: "/",         Icon: Home,         label: "Home" },
   { to: "/cart",     Icon: ShoppingCart, label: "Cart",     badge: "cart" },
-  { to: "/",         Icon: Home,         label: "Home",     center: true },
   { to: "/wishlist", Icon: Heart,        label: "Wishlist", badge: "wishlist" },
   { to: "/profile",  Icon: User,         label: "Account",  auth: true },
 ];
@@ -33,7 +32,7 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
-      {tabs.map(({ to, Icon, label, badge, auth, center }) => {
+      {tabs.map(({ to, Icon, label, badge, auth }) => {
         const active = isActive(to);
         const count  = getBadge(badge);
         const dest   = auth && !user ? "/login" : to;
@@ -42,12 +41,12 @@ export const MobileBottomNav: React.FC = () => {
           <Link
             to={dest}
             key={to}
-            className={`mbn-tab ${active ? "mbn-tab--active" : ""} ${center ? "mbn-tab--center" : ""}`}
+            className={`mbn-tab ${active ? "mbn-tab--active" : ""}`}
             aria-label={label}
             title={label}
           >
             <span className="mbn-icon-wrap">
-              <Icon size={center ? 28 : 24} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={24} strokeWidth={active ? 2.5 : 1.8} />
               {count != null && (
                 <span className="mbn-badge">{count > 99 ? "99+" : count}</span>
               )}
