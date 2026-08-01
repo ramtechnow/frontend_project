@@ -1,35 +1,52 @@
-import React from "react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
+import { cn } from "src/lib/utils";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
-  size?: "sm" | "md" | "lg";
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.98]",
+  {
+    variants: {
+      variant: {
+        default: "bg-text-primary text-bg-primary hover:bg-text-primary/95 shadow-sm shadow-black/5",
+        primary: "bg-text-primary text-bg-primary hover:bg-text-primary/95 shadow-sm shadow-black/5",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm shadow-black/5 hover:bg-destructive/90",
+        danger: "bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-black/5",
+        outline: "border border-input bg-background shadow-sm shadow-black/5 hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm shadow-black/5 hover:bg-secondary/80 border border-border",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        md: "h-9 px-4 py-2",
+        sm: "h-8 rounded-lg px-3 text-xs",
+        lg: "h-10 rounded-lg px-8",
+        icon: "h-9 w-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  },
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
   isLoading?: boolean;
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", isLoading, disabled, children, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, isLoading, disabled, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
     return (
-      <button
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || isLoading}
-        className={twMerge(
-          clsx(
-            "inline-flex items-center justify-center rounded-md font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-pink/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]",
-            {
-              "bg-text-primary text-bg-primary hover:bg-text-primary/95": variant === "primary",
-              "bg-bg-tertiary text-text-primary hover:bg-bg-tertiary/80 border border-border": variant === "secondary",
-              "bg-transparent text-text-primary border border-border hover:bg-bg-tertiary": variant === "outline",
-              "bg-red-500 text-white hover:bg-red-600": variant === "danger",
-              "bg-transparent text-text-primary hover:bg-bg-tertiary": variant === "ghost",
-              "px-3 py-1.5 text-xs": size === "sm",
-              "px-4 py-2 text-sm": size === "md",
-              "px-6 py-3 text-base": size === "lg",
-            },
-            className
-          )
-        )}
         {...props}
       >
         {isLoading && (
@@ -39,9 +56,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {children}
-      </button>
+      </Comp>
     );
-  }
+  },
 );
-
 Button.displayName = "Button";
+
+export { Button, buttonVariants };
