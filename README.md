@@ -116,8 +116,8 @@ npm start
 ## 👨‍💻 Author & Contact
 
 **Developer**: Full-Stack Software Engineer  
-🌐 **Live App**: [https://ecommerce-website-dfd55.web.app](https://ecommerce-website-dfd55.web.app)  
-🐙 **GitHub**: [github.com/ramtechnow](https://github.com/ramtechnow)
+- **Live Platform**: [https://ecommerce-website-dfd55.web.app](https://ecommerce-website-dfd55.web.app)
+- **GitHub Repository**: [https://github.com/ramtechnow/frontend_project](https://github.com/ramtechnow/frontend_project)
 
 ---
 *Built with passion, clean code principles, and modern web software craftsmanship.*
