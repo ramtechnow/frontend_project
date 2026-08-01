@@ -1,7 +1,5 @@
 import { Product } from "../types/productTypes";
 import { BACKEND_URL } from "../../../config";
-// @ts-ignore
-import staticProducts from "../../../data/products";
 
 // Fetch all available products with optional filters
 export const fetchProducts = async (category?: string): Promise<Product[]> => {
@@ -40,29 +38,8 @@ export const fetchProducts = async (category?: string): Promise<Product[]> => {
     return list;
   } catch (err) {
     clearTimeout(timeoutId);
-    console.error("fetchProducts failed, using static products fallback:", err);
-    const list: Product[] = staticProducts.map((p: any) => ({
-      id: String(p.id),
-      name: p.name,
-      description: p.description || `Premium quality ${p.name} from RamCart.`,
-      category: p.category,
-      newPrice: Number(p.new_price || 0),
-      oldPrice: Number(p.old_price || 0),
-      sizes: p.sizes || ['S', 'M', 'L', 'XL'],
-      colors: p.colors || ['Black', 'White'],
-      variants: p.variants || [],
-      stockCount: Number(p.stockCount || 0),
-      image: p.image || "",
-      images: p.images || [],
-      available: p.available !== false,
-      createdAt: p.date || new Date().toISOString()
-    }));
-
-    if (category) {
-      return list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
-    }
-
-    return list;
+    console.error("fetchProducts failed, returning empty list:", err);
+    return [];
   }
 };
 

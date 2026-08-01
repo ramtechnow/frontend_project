@@ -40,7 +40,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : "RamCart";
 
   return (
-    <div className="product-card">
+    <div className="product-card" style={{ position: "relative" }}>
+      {/* Wishlist heart - Rendered OUTSIDE Link to prevent event propagation conflicts */}
+      <button
+        className={`product-card-wishlist-btn${isWishlisted ? " active" : ""}`}
+        onClick={handleWishlistToggle}
+        aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+        style={{ zIndex: 10 }}
+      >
+        <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} />
+      </button>
+
       <Link to={`/product/${product.id}`} style={{ display: "flex", flexDirection: "column", height: "100%", textDecoration: "none", color: "inherit" }}>
         {/* ── Image area ── */}
         <div className="product-card-image-wrapper">
@@ -50,15 +60,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {discountPercent}% OFF
             </div>
           )}
-
-          {/* Wishlist heart */}
-          <button
-            className={`product-card-wishlist-btn${isWishlisted ? " active" : ""}`}
-            onClick={handleWishlistToggle}
-            aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-          >
-            <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} />
-          </button>
 
           {/* Product image */}
           <img

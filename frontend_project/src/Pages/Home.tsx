@@ -67,7 +67,7 @@ export const Home: React.FC = () => {
 
       <main className="container home-main-container" id="main-content" style={{ marginTop: "24px" }}>
         {/* 2. Top Categories Grid */}
-        <section aria-labelledby="cat-heading" className="home-section" style={{ marginTop: 0 }}>
+        <section aria-labelledby="cat-heading" className="home-section desktop-only-section" style={{ marginTop: 0 }}>
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
             <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
               Collections

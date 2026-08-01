@@ -4,7 +4,7 @@ import "../Styles/navbar.css";
 import {
   ShoppingCart, Heart, LogOut, ChevronDown,
   Sun, Moon, X, Home, LayoutGrid, User, LogIn,
-  Package, ShieldCheck, Menu, Mic, Search
+  Package, ShieldCheck, Menu, Mic, Search, Sparkles
 } from "lucide-react";
 import { useCart } from "../features/checkout/hooks/useCart";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -19,6 +19,7 @@ export const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopCustomizerOpen, setDesktopCustomizerOpen] = useState(false);
 
   const { cartCount, clearCart } = useCart();
   const { user, logoutUser } = useAuth();
@@ -161,6 +162,21 @@ export const Navbar: React.FC = () => {
               </li>
             ))}
           </ul>
+
+          {/* Desktop search bar (Flipkart style) */}
+          <form onSubmit={handleSearchSubmit} className="desktop-search-form">
+            <Search size={16} className="desktop-search-icon" />
+            <input
+              type="text"
+              placeholder="Search products, brands and more..."
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              className="desktop-search-input"
+            />
+            <button type="button" onClick={handleVoiceSearch} className="desktop-mic-btn" aria-label="Voice Search" style={{ padding: 0 }}>
+              <Mic size={15} />
+            </button>
+          </form>
 
           {/* Right action group */}
           <div className="nav-login-cart">
@@ -383,6 +399,29 @@ export const Navbar: React.FC = () => {
           </aside>
         </>
       )}
+
+      {/* ─── DESKTOP FLOATING THEME CUSTOMIZER ────────────────── */}
+      <div className="desktop-customizer-floating-wrapper">
+        <button 
+          className="desktop-customizer-trigger"
+          onClick={() => setDesktopCustomizerOpen(prev => !prev)}
+          aria-label="Customize Theme"
+          title="Theme Customizer"
+        >
+          <Sparkles size={20} />
+        </button>
+        {desktopCustomizerOpen && (
+          <div className="desktop-customizer-panel">
+            <div className="desktop-customizer-header">
+              <h3>Theme Customizer</h3>
+              <button className="desktop-customizer-close" onClick={() => setDesktopCustomizerOpen(false)}>&times;</button>
+            </div>
+            <div className="desktop-customizer-body">
+              <ThemeCustomizer />
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };
