@@ -12,28 +12,29 @@
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: clamp(280px, 85vw, 340px);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     height: 60px;
-    background: rgba(12, 14, 18, 0.95);
-    border-radius: 30px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
     z-index: 999; /* Below the drawer (1101) but above page content */
     align-items: center;
     justify-content: space-around;
-    padding: 0 10px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    padding: 0 16px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
 
-  /* Push body content up so floating pill doesn't cover it */
+  /* Push body content up so fixed bottom nav doesn't cover it */
   body {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* ── Each tab icon button ─── */
@@ -45,7 +46,7 @@
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
@@ -54,15 +55,15 @@
   }
 
   .mbn-tab:hover {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     transform: translateY(-3px);
   }
 
   .mbn-tab.mbn-tab--active {
     color: var(--accent-pink) !important;
-    background: rgba(255, 63, 108, 0.16);
+    background: var(--accent-light);
     transform: translateY(-2px);
-    box-shadow: 0 0 14px rgba(255, 63, 108, 0.2);
+    box-shadow: 0 0 14px rgba(255, 63, 108, 0.12);
   }
 
   /* ── Icon wrapper (for badge positioning) ─── */
@@ -92,7 +93,7 @@
     justify-content: center;
     padding: 0 2px;
     line-height: 1;
-    border: 1.5px solid rgba(12, 14, 18, 0.95);
+    border: 1.5px solid var(--bg-secondary);
   }
 
   /* Labels hidden — icon-only pill */
@@ -103,10 +104,8 @@
 
 @media (max-width: 480px) {
   .mobile-bottom-nav {
-    bottom: 14px;
     height: 56px;
-    width: clamp(260px, 88vw, 310px);
-    border-radius: 28px;
+    padding: 0 12px;
   }
 
   .mbn-tab {

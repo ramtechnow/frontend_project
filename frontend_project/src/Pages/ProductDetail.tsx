@@ -36,7 +36,17 @@ export const ProductDetail: React.FC = () => {
         const prod = await fetchProductById(productId);
         if (prod) {
           setProduct(prod);
-          setActiveImage(prod.image || "");
+          
+          // Construct and clean unique images list to set proper default activeImage
+          const cleanImgs = Array.from(
+            new Set(
+              [prod.image, ...(prod.images || [])]
+                .map((img) => (typeof img === "string" ? img.trim() : ""))
+                .filter((img) => img !== "" && img !== "null" && img !== "undefined")
+            )
+          );
+          setActiveImage(cleanImgs[0] || prod.image || "");
+          
           // Set defaults if colors/sizes are present
           if (prod.sizes && prod.sizes.length > 0) setSelectedSize(prod.sizes[0]);
           if (prod.colors && prod.colors.length > 0) setSelectedColor(prod.colors[0]);
@@ -108,10 +118,18 @@ export const ProductDetail: React.FC = () => {
   const ratingVal = (product as any).rating || 4.5;
   const reviewsCount = (product as any).reviewsCount || 108;
 
-  // Use dynamic images from list if available
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
-    : [product.image || "https://placehold.co/400x500?text=Apparel"];
+  // Use dynamic images from list if available, ensuring clean unique values to prevent duplicates and empty thumbnails
+  const productImages = (() => {
+    const rawImages = [product.image, ...(product.images || [])];
+    const unique = Array.from(
+      new Set(
+        rawImages
+          .map((img) => (typeof img === "string" ? img.trim() : ""))
+          .filter((img) => img !== "" && img !== "null" && img !== "undefined")
+      )
+    );
+    return unique.length > 0 ? unique : [product.image || "https://placehold.co/400x500?text=Apparel"];
+  })();
 
   // Brand Name
   const brandName = product.category 
