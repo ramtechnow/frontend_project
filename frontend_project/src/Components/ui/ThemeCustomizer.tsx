@@ -1,10 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ThemeContext } from "../../Context/ThemeContext";
-import { Sun, Moon, Check, Sparkles } from "lucide-react";
-import { Accordion } from "react-bootstrap";
+import { Sun, Moon, Check, Sparkles, ChevronDown } from "lucide-react";
 
 export const ThemeCustomizer: React.FC = () => {
   const themeCtx = useContext(ThemeContext);
+  const [expanded, setExpanded] = useState(false);
 
   if (!themeCtx) return null;
 
@@ -41,18 +41,55 @@ export const ThemeCustomizer: React.FC = () => {
 
   return (
     <div className="theme-customizer-accordion-wrapper" style={{ marginTop: "10px" }}>
-      <Accordion flush style={{ background: "transparent" }}>
-        <Accordion.Item eventKey="0" style={{ background: "var(--bg-tertiary)", border: "1px solid var(--border-color)", borderRadius: "12px", overflow: "hidden" }}>
-          <Accordion.Header className="custom-accordion-header">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Sparkles size={13} style={{ color: "var(--accent-pink)" }} />
-              <span style={{ fontSize: "10.5px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-primary)" }}>
-                Theme Customizer
-              </span>
-            </div>
-          </Accordion.Header>
-          <Accordion.Body style={{ background: "var(--bg-tertiary)", padding: "12px 12px 14px" }}>
-            
+      <div 
+        style={{ 
+          background: "var(--bg-tertiary)", 
+          border: "1px solid var(--border-color)", 
+          borderRadius: "12px", 
+          overflow: "hidden" 
+        }}
+      >
+        {/* Accordion header button */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: "none",
+            border: "none",
+            padding: "12px 14px",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            outline: "none"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Sparkles size={13} style={{ color: "var(--accent-pink)" }} />
+            <span style={{ fontSize: "10.5px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px" }}>
+              Theme Customizer
+            </span>
+          </div>
+          <ChevronDown 
+            size={14} 
+            style={{ 
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)", 
+              transition: "transform 0.2s ease",
+              color: "var(--text-secondary)"
+            }} 
+          />
+        </button>
+
+        {/* Collapsible panel body */}
+        {expanded && (
+          <div 
+            style={{ 
+              background: "var(--bg-tertiary)", 
+              padding: "12px 12px 14px",
+              borderTop: "1px solid var(--border-color)"
+            }}
+          >
             {/* Mode */}
             <div style={{ marginBottom: "12px" }}>
               <span style={{ fontSize: "9px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", display: "block", marginBottom: "5px" }}>Mode</span>
@@ -158,7 +195,7 @@ export const ThemeCustomizer: React.FC = () => {
             <button
               onClick={() => {
                 setThemeColor("rose");
-                setFontFamily("sans");
+                setFontFamily("geometric");
                 setBorderRadius("rounded");
                 if (isDarkMode) toggleTheme();
               }}
@@ -170,9 +207,9 @@ export const ThemeCustomizer: React.FC = () => {
             >
               Reset Defaults
             </button>
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -35,7 +35,7 @@
   width: 100%;
   height: clamp(280px, 48vw, 500px);
   background-size: cover;
-  background-position: center 30%;
+  background-position: center top; /* Keeps faces in upper half of banner from getting cut off */
   display: flex;
   align-items: center;
   padding: 0 clamp(20px, 6vw, 80px);
@@ -91,12 +91,12 @@
 
 /* Main headline */
 .hero-title {
-  font-size: clamp(22px, 4vw, 48px);
-  font-weight: 900;
+  font-size: clamp(20px, 3.2vw, 36px);
+  font-weight: 800;
   color: #fff;
-  line-height: 1.1;
+  line-height: 1.15;
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 /* Subline */
@@ -341,5 +341,96 @@
   .carousel-control-prev,
   .carousel-control-next {
     display: none !important;
+  }
+}
+
+/* ── Shimmer Loader Skeleton for Banners ── */
+.hero-slide-skeleton {
+  width: 100%;
+  height: clamp(280px, 48vw, 500px);
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmerAnim 1.6s infinite linear;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 clamp(20px, 6vw, 80px);
+  box-sizing: border-box;
+  gap: 14px;
+}
+
+@keyframes shimmerAnim {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-line {
+  background: rgba(120, 120, 120, 0.12);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  transform: translateX(-100%);
+  animation: shimmerLineAnim 1.4s infinite;
+}
+
+@keyframes shimmerLineAnim {
+  100% { transform: translateX(100%); }
+}
+
+.tag-shimmer {
+  width: 150px;
+  height: 12px;
+}
+
+.title-shimmer-1 {
+  width: 380px;
+  max-width: 80%;
+  height: 32px;
+}
+
+.title-shimmer-2 {
+  width: 260px;
+  max-width: 60%;
+  height: 32px;
+}
+
+.subtitle-shimmer {
+  width: 440px;
+  max-width: 90%;
+  height: 14px;
+  margin-top: 6px;
+}
+
+.btn-shimmer-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-shimmer {
+  width: 120px;
+  height: 38px;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .hero-slide-skeleton {
+    height: clamp(220px, 55vw, 300px);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-slide-skeleton {
+    height: 240px;
   }
 }

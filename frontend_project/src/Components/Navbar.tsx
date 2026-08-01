@@ -195,8 +195,11 @@ export const Navbar: React.FC = () => {
               )}
             </div>
           ) : (
-            <Link to="/login">
+            <Link to="/login" style={{ display: "flex", alignItems: "center" }}>
               <button className="nav-login-btn">Login</button>
+              <button className="nav-mobile-login-icon-btn" aria-label="Login" style={{ padding: 0 }}>
+                <User size={18} />
+              </button>
             </Link>
           )}
 

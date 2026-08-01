@@ -53,7 +53,22 @@ const PromoBanner = ({ page = "home" }) => {
     return () => clearInterval(timer);
   }, [banners.length, next]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="promo-wrapper">
+        <div className="hero-slide-skeleton">
+          <div className="shimmer-line tag-shimmer"></div>
+          <div className="shimmer-line title-shimmer-1"></div>
+          <div className="shimmer-line title-shimmer-2"></div>
+          <div className="shimmer-line subtitle-shimmer"></div>
+          <div className="btn-shimmer-row">
+            <div className="shimmer-line btn-shimmer"></div>
+            <div className="shimmer-line btn-shimmer"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ── STATIC FALLBACK ─────────────────────────────────────────── */
   if (banners.length === 0) {
@@ -104,7 +119,7 @@ const PromoBanner = ({ page = "home" }) => {
               style={{
                 backgroundImage: `linear-gradient(to right, rgba(15,17,21,0.88) 28%, rgba(15,17,21,0.22) 72%), url('${ban.image}')`,
                 backgroundSize: "cover",
-                backgroundPosition: "center",
+                backgroundPosition: "center top",
                 display: "flex",
                 alignItems: "center"
               }}

@@ -6,7 +6,7 @@ import staticProducts from "../../../data/products";
 // Fetch all available products with optional filters
 export const fetchProducts = async (category?: string): Promise<Product[]> => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout for quick fallback
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for cold starts to prevent dummy static fallback
 
   try {
     const res = await fetch(`${BACKEND_URL}/allproducts`, { signal: controller.signal });
