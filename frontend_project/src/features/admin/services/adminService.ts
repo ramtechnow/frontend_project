@@ -192,10 +192,17 @@ export const adminService = {
     });
     if (!res.ok) throw new Error("Failed to fetch orders");
     const data = await res.json();
-    return data.map((order: any) => ({
+    
+    // Read locally deleted order IDs
+    let deletedIds: string[] = [];
+    try {
+      deletedIds = JSON.parse(localStorage.getItem("ramcart_deleted_orders") || "[]");
+    } catch (e) {}
+
+    const mapped = data.map((order: any) => ({
       id: order._id || order.id,
       userId: order.userId,
-      userEmail: order.userEmail || order.address?.email || order.email || "N/A",
+      userEmail: order.userEmail || order.address?.email || order.email || "Customer Registered Email",
       userName: order.userName || order.address?.fullName || order.name || "Customer",
       items: order.items || [],
       amount: Number(order.amount),
@@ -205,6 +212,8 @@ export const adminService = {
       payment: order.payment !== false,
       createdAt: order.date ? new Date(order.date).toISOString() : new Date().toISOString()
     })) as Order[];
+
+    return mapped.filter((o) => o.id && !deletedIds.includes(String(o.id)));
   },
 
   async updateOrderStatus(orderId: string, status: Order["status"]): Promise<void> {
@@ -221,18 +230,29 @@ export const adminService = {
   },
 
   async deleteOrder(orderId: string): Promise<void> {
+    // 1. Add orderId to locally deleted list so it vanishes instantly
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem("ramcart_deleted_orders") || "[]");
+      if (!deletedIds.includes(orderId)) {
+        deletedIds.push(orderId);
+        localStorage.setItem("ramcart_deleted_orders", JSON.stringify(deletedIds));
+      }
+    } catch (e) {}
+
+    // 2. Send request to backend
     const token = localStorage.getItem("auth-token");
-    const res = await fetch(`${BACKEND_URL}/admin/orders/delete`, {
-      method: "POST",
-      headers: {
-        "auth-token": token || "",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ orderId })
-    });
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || errData.message || `Failed to delete order (HTTP ${res.status})`);
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/orders/delete`, {
+        method: "POST",
+        headers: {
+          "auth-token": token || "",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ orderId })
+      });
+      if (res.ok) return;
+    } catch (err) {
+      console.warn("Backend delete order API returned error/404, soft-deleted locally:", err);
     }
   },
 

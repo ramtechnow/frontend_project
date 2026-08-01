@@ -1,46 +1,18 @@
 import React, { useState } from 'react';
-import { User, Eye, Bell, CheckCheck, ShoppingBag, MessageSquare, AlertCircle, X } from 'lucide-react';
+import { User, Eye, Bell, CheckCheck, ShoppingBag, MessageSquare, AlertCircle, X, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export const AdminTopbar = ({ adminUser }) => {
+export const AdminTopbar = ({ 
+  adminUser, 
+  notifications = [], 
+  onMarkAllRead, 
+  onMarkSingleRead, 
+  onProcessOrder 
+}) => {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Order Received",
-      message: "Order #RC-9842 placed by Shriram (₹1,490)",
-      time: "10 mins ago",
-      type: "order",
-      unread: true
-    },
-    {
-      id: 2,
-      title: "Customer Query / Concern",
-      message: "Size exchange query received for Order #RC-9812",
-      time: "45 mins ago",
-      type: "concern",
-      unread: true
-    },
-    {
-      id: 3,
-      title: "Low Inventory Alert",
-      message: "Striped Flutter Blouse stock is below 5 units",
-      time: "2 hours ago",
-      type: "alert",
-      unread: true
-    }
-  ]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-  };
-
-  const markSingleAsRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
-  };
 
   return (
     <header className="admin-topbar" style={{
@@ -69,7 +41,7 @@ export const AdminTopbar = ({ adminUser }) => {
           fontSize: '0.72rem',
           color: 'var(--text-muted)'
         }}>
-          Manage Catalog, Accounts, and Shop Status
+          Manage Catalog, Accounts, and Real-time Orders
         </span>
       </div>
 
@@ -131,8 +103,8 @@ export const AdminTopbar = ({ adminUser }) => {
               position: 'absolute',
               top: '48px',
               right: 0,
-              width: '320px',
-              maxHeight: '420px',
+              width: '340px',
+              maxHeight: '440px',
               backgroundColor: 'var(--bg-secondary)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
@@ -153,7 +125,7 @@ export const AdminTopbar = ({ adminUser }) => {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
-                    Notifications
+                    Admin Notifications
                   </span>
                   {unreadCount > 0 && (
                     <span style={{
@@ -171,8 +143,8 @@ export const AdminTopbar = ({ adminUser }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {unreadCount > 0 && (
                     <button
-                      onClick={markAllAsRead}
-                      title="Mark all as read"
+                      onClick={onMarkAllRead}
+                      title="Clear notifications"
                       style={{
                         background: 'none',
                         border: 'none',
@@ -186,7 +158,7 @@ export const AdminTopbar = ({ adminUser }) => {
                         padding: 0
                       }}
                     >
-                      <CheckCheck size={14} /> Clear
+                      <CheckCheck size={14} /> Clear All
                     </button>
                   )}
                   <button
@@ -202,50 +174,80 @@ export const AdminTopbar = ({ adminUser }) => {
               <div style={{ overflowY: 'auto', flex: 1 }}>
                 {notifications.length === 0 ? (
                   <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
-                    No recent notifications
+                    No recent order notifications
                   </div>
                 ) : (
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => markSingleAsRead(n.id)}
+                      onClick={() => onMarkSingleRead && onMarkSingleRead(n.id)}
                       style={{
                         padding: '12px 16px',
                         borderBottom: '1px solid var(--border-color)',
                         backgroundColor: n.unread ? 'var(--accent-light)' : 'transparent',
                         cursor: 'pointer',
                         display: 'flex',
-                        gap: '10px',
-                        alignItems: 'flex-start',
+                        flexDirection: 'column',
+                        gap: '8px',
                         transition: 'background 0.15s'
                       }}
                     >
-                      <div style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        backgroundColor: n.type === 'order' ? 'rgba(16, 185, 129, 0.15)' : n.type === 'concern' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                        color: n.type === 'order' ? '#10b981' : n.type === 'concern' ? '#3b82f6' : '#ef4444',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        marginTop: 2
-                      }}>
-                        {n.type === 'order' ? <ShoppingBag size={14} /> : n.type === 'concern' ? <MessageSquare size={14} /> : <AlertCircle size={14} />}
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                        <div style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
+                          backgroundColor: n.type === 'order' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          color: n.type === 'order' ? '#10b981' : '#ef4444',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: 2
+                        }}>
+                          {n.type === 'order' ? <ShoppingBag size={14} /> : <AlertCircle size={14} />}
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                              {n.title}
+                            </span>
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{n.time}</span>
+                          </div>
+                          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '3px 0 0', lineHeight: 1.4 }}>
+                            {n.message}
+                          </p>
+                        </div>
                       </div>
 
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                            {n.title}
-                          </span>
-                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{n.time}</span>
-                        </div>
-                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '3px 0 0', lineHeight: 1.4 }}>
-                          {n.message}
-                        </p>
-                      </div>
+                      {/* Process Order CTA button */}
+                      {n.orderId && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onMarkSingleRead && onMarkSingleRead(n.id);
+                            setShowNotifications(false);
+                            onProcessOrder && onProcessOrder(n.orderId);
+                          }}
+                          style={{
+                            alignSelf: 'flex-end',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            backgroundColor: 'var(--accent-color)',
+                            color: '#ffffff',
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          Process & Ship Order <ArrowRight size={12} />
+                        </button>
+                      )}
                     </div>
                   ))
                 )}
@@ -273,8 +275,6 @@ export const AdminTopbar = ({ adminUser }) => {
             minHeight: 'auto',
             boxShadow: 'var(--shadow-sm)'
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-color)'}
         >
           <Eye size={14} />
           Storefront
@@ -290,7 +290,6 @@ export const AdminTopbar = ({ adminUser }) => {
           borderRadius: 'var(--border-radius-full)',
           border: '1px solid var(--border-color)'
         }}>
-          {/* Avatar */}
           <div style={{
             display: 'flex',
             alignItems: 'center',

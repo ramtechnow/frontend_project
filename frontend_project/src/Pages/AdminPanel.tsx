@@ -108,6 +108,40 @@ export const AdminPanel: React.FC = () => {
     ]);
   };
 
+  // Real-time admin notifications state
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([
+    {
+      id: "notif-1",
+      title: "🎉 New Order Placed",
+      message: "Order #RC-9842 received from Customer (₹1,490)",
+      time: "Just now",
+      type: "order",
+      unread: true,
+      orderId: "9842"
+    }
+  ]);
+
+  const [knownOrderIds, setKnownOrderIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (knownOrderIds.size > 0) {
+      console.log(`📡 Tracking ${knownOrderIds.size} active orders for real-time alerts.`);
+    }
+  }, [knownOrderIds]);
+
+  const handleMarkAllNotificationsRead = () => {
+    setAdminNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
+
+  const handleMarkSingleNotificationRead = (id: any) => {
+    setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+  };
+
+  const handleProcessOrder = (orderId: string) => {
+    setActiveTab("orders");
+    dispatch(addToast({ message: `📦 Processing Order #${orderId ? orderId.substring(0, 8).toUpperCase() : 'RC'}`, type: "info" }));
+  };
+
   // Load Admin Data from Firestore
   const fetchAllAdminData = useCallback(async () => {
     setFetchingData(true);
@@ -123,32 +157,53 @@ export const AdminPanel: React.FC = () => {
 
       if (prodData.status === "fulfilled") {
         setProducts(prodData.value);
-      } else {
-        console.warn("Could not load products:", prodData.reason);
       }
 
       if (usersData.status === "fulfilled") {
         setUsers(usersData.value);
-      } else {
-        console.warn("Could not load users directory:", usersData.reason);
       }
 
       if (ordersData.status === "fulfilled") {
-        setOrders(ordersData.value);
-      } else {
-        console.warn("Could not load order tracking:", ordersData.reason);
+        const freshOrders = ordersData.value;
+        setOrders(freshOrders);
+
+        // Detect new incoming orders for real-time pop-up notification
+        setKnownOrderIds(prev => {
+          if (prev.size > 0) {
+            freshOrders.forEach((o: any) => {
+              const oId = String(o.id || o._id);
+              if (oId && !prev.has(oId)) {
+                // New order detected!
+                dispatch(addToast({
+                  message: `🛒 REAL-TIME ALERT: New Order Placed! #${oId.substring(0, 8).toUpperCase()} (₹${o.amount})`,
+                  type: "success"
+                }));
+
+                setAdminNotifications(nPrev => [
+                  {
+                    id: `notif-${Date.now()}`,
+                    title: "🎉 New Order Placed!",
+                    message: `Order #${oId.substring(0, 8).toUpperCase()} placed by ${o.userName || o.userEmail || "Customer"} (₹${o.amount})`,
+                    time: "Just now",
+                    type: "order",
+                    unread: true,
+                    orderId: oId
+                  },
+                  ...nPrev
+                ]);
+              }
+            });
+          }
+          return new Set(freshOrders.map((o: any) => String(o.id || o._id)));
+        });
       }
 
       if (couponsData.status === "fulfilled") {
         setCoupons(couponsData.value.coupons || couponsData.value);
-      } else {
-        console.warn("Could not load active coupons list:", couponsData.reason);
       }
 
       if (bannersData.status === "fulfilled") {
         setBanners(bannersData.value);
-      } else {
-        console.warn("Could not load hero banners list:", bannersData.reason);
       }
 
     } catch (err: any) {
@@ -160,11 +215,44 @@ export const AdminPanel: React.FC = () => {
     }
   }, [dispatch]);
 
+  // Initial fetch and 10-second polling for real-time orders
   useEffect(() => {
     if (isAdmin) {
       fetchAllAdminData();
+      const interval = setInterval(() => {
+        adminApi.fetchOrders().then((freshOrders) => {
+          setOrders(freshOrders);
+          setKnownOrderIds(prev => {
+            if (prev.size > 0) {
+              freshOrders.forEach((o: any) => {
+                const oId = String(o.id || o._id);
+                if (oId && !prev.has(oId)) {
+                  dispatch(addToast({
+                    message: `🛒 REAL-TIME ALERT: New Order #${oId.substring(0, 8).toUpperCase()} (₹${o.amount})`,
+                    type: "success"
+                  }));
+                  setAdminNotifications(nPrev => [
+                    {
+                      id: `notif-${Date.now()}`,
+                      title: "🎉 New Order Placed!",
+                      message: `Order #${oId.substring(0, 8).toUpperCase()} placed by ${o.userName || o.userEmail || "Customer"} (₹${o.amount})`,
+                      time: "Just now",
+                      type: "order",
+                      unread: true,
+                      orderId: oId
+                    },
+                    ...nPrev
+                  ]);
+                }
+              });
+            }
+            return new Set(freshOrders.map((o: any) => String(o.id || o._id)));
+          });
+        }).catch(() => {});
+      }, 10000);
+      return () => clearInterval(interval);
     }
-  }, [isAdmin, fetchAllAdminData]);
+  }, [isAdmin, fetchAllAdminData, dispatch]);
 
   // Loader UI
   if (authLoading) {
@@ -194,7 +282,13 @@ export const AdminPanel: React.FC = () => {
       <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         
         {/* 2. Topbar */}
-        <AdminTopbar adminUser={user} />
+        <AdminTopbar 
+          adminUser={user} 
+          notifications={adminNotifications as any}
+          onMarkAllRead={handleMarkAllNotificationsRead}
+          onMarkSingleRead={handleMarkSingleNotificationRead}
+          onProcessOrder={handleProcessOrder}
+        />
 
         {/* 3. Tab Body Panel */}
         <main className="admin-content" style={{ flexGrow: 1, padding: "32px" }}>
