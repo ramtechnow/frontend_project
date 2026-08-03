@@ -21,6 +21,11 @@ exports.createBanner = async (req, res) => {
     console.log(`🎉 New promotional banner created for page ${page}`);
     res.json({ success: true, banner });
   } catch (error) {
+    console.error("Error creating banner:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
 // Update an existing banner (Admin Only)
 exports.updateBanner = async (req, res) => {
   try {
@@ -46,7 +51,6 @@ exports.updateBanner = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
-
 
 // Get all banners (Admin view)
 exports.getAllBanners = async (req, res) => {
