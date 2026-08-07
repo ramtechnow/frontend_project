@@ -5,7 +5,7 @@ import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import { fetchProductById, fetchRelatedProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
 import ProductCard from "../Components/ProductCard";
-import { Star, Heart, ShoppingBag, ShieldCheck, Check, Loader2 } from "lucide-react";
+import { Star, Heart, ShoppingBag, ShieldCheck, Check } from "lucide-react";
 import "../Styles/productGrid.css";
 
 export const ProductDetail: React.FC = () => {
@@ -68,10 +68,34 @@ export const ProductDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Loader2 size={30} className="animate-spin text-accent-pink mb-4" />
-        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Fetching specifications...</span>
-      </div>
+      <main className="container" style={{ padding: "32px var(--space-4) 80px", color: 'var(--text-primary)' }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "40px", alignItems: "start" }}>
+          {/* Image skeleton */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "500px", width: "100%", margin: "0 auto" }}>
+            <div className="shimmer-line" style={{ width: "100%", aspectRatio: "4/5", borderRadius: "8px", background: "rgba(120,120,120,0.12)" }} />
+            <div style={{ display: "flex", gap: "8px" }}>
+              {[1,2,3].map(i => <div key={i} className="shimmer-line" style={{ width: 60, height: 75, borderRadius: 6, background: "rgba(120,120,120,0.1)", flexShrink: 0 }} />)}
+            </div>
+          </div>
+          {/* Text skeleton */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
+            <div className="shimmer-line" style={{ width: "50%", height: "14px", borderRadius: 4, background: "rgba(120,120,120,0.12)" }} />
+            <div className="shimmer-line" style={{ width: "80%", height: "22px", borderRadius: 4, background: "rgba(120,120,120,0.1)" }} />
+            <div className="shimmer-line" style={{ width: "30%", height: "20px", borderRadius: 4, background: "rgba(120,120,120,0.12)" }} />
+            <div style={{ display: "flex", gap: "12px" }}>
+              <div className="shimmer-line" style={{ width: 80, height: "36px", borderRadius: 20, background: "rgba(120,120,120,0.1)" }} />
+              <div className="shimmer-line" style={{ width: 80, height: "36px", borderRadius: 20, background: "rgba(120,120,120,0.1)" }} />
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {[1,2,3,4].map(i => <div key={i} className="shimmer-line" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(120,120,120,0.1)" }} />)}
+            </div>
+            <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+              <div className="shimmer-line" style={{ flex: 1, height: "44px", borderRadius: 6, background: "rgba(120,120,120,0.12)" }} />
+              <div className="shimmer-line" style={{ flex: 1, height: "44px", borderRadius: 6, background: "rgba(120,120,120,0.1)" }} />
+            </div>
+          </div>
+        </div>
+      </main>
     );
   }
 

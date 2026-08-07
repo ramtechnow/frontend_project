@@ -4,7 +4,7 @@ import { useWishlist } from "../features/catalog/hooks/useWishlist";
 import { fetchProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
 import ProductCard from "../Components/ProductCard";
-import { HeartCrack, Loader2 } from "lucide-react";
+import { HeartCrack } from "lucide-react";
 import "../Styles/productGrid.css";
 
 export const Wishlist: React.FC = () => {
@@ -38,14 +38,6 @@ export const Wishlist: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Loader2 size={30} className="animate-spin text-accent-pink mb-4" />
-        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Loading saved styles...</span>
-      </div>
-    );
-  }
 
   return (
     <main className="container" style={{ padding: "32px var(--space-4) 80px", minHeight: "60vh", color: 'var(--text-primary)' }}>
@@ -70,7 +62,19 @@ export const Wishlist: React.FC = () => {
       </div>
 
       {/* Grid displays */}
-      {wishlistedProducts.length === 0 ? (
+      {loading ? (
+        <div className="product-grid">
+          {[1,2,3,4].map((id) => (
+            <div key={id} style={{ background: "var(--bg-secondary)", borderRadius: "12px", border: "1px solid var(--border-color)", overflow: "hidden" }}>
+              <div className="shimmer-line" style={{ width: "100%", aspectRatio: "4/5", background: "rgba(120,120,120,0.12)" }} />
+              <div style={{ padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div className="shimmer-line" style={{ width: "40%", height: "9px", background: "rgba(120,120,120,0.1)", borderRadius: "4px" }} />
+                <div className="shimmer-line" style={{ width: "80%", height: "11px", background: "rgba(120,120,120,0.08)", borderRadius: "4px" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : wishlistedProducts.length === 0 ? (
         <div 
           style={{ 
             textAlign: "center", 

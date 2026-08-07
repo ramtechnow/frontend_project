@@ -133,9 +133,17 @@ export const Orders: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="orders-loading-container">
-          <div className="orders-spinner animate-spin" />
-          <p>Retrieving your purchase specifications...</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "8px 0" }}>
+          {[1, 2, 3].map((id) => (
+            <div key={id} style={{ background: "var(--bg-secondary)", borderRadius: "12px", border: "1px solid var(--border-color)", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="shimmer-line" style={{ width: "40%", height: "14px", borderRadius: 4, background: "rgba(120,120,120,0.12)" }} />
+                <div className="shimmer-line" style={{ width: "80px", height: "22px", borderRadius: 20, background: "rgba(120,120,120,0.1)" }} />
+              </div>
+              <div className="shimmer-line" style={{ width: "60%", height: "11px", borderRadius: 4, background: "rgba(120,120,120,0.08)" }} />
+              <div className="shimmer-line" style={{ width: "30%", height: "11px", borderRadius: 4, background: "rgba(120,120,120,0.07)" }} />
+            </div>
+          ))}
         </div>
       ) : orders.length === 0 ? (
         <div className="orders-empty-state max-w-md mx-auto text-center py-16 px-6 bg-bg-secondary border border-border rounded-2xl shadow-sm">
