@@ -30,17 +30,21 @@ export const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const loadProducts = async () => {
       try {
         const data = await fetchProducts();
-        setProductsList(data);
+        if (isMounted && data && data.length > 0) {
+          setProductsList(data);
+        }
       } catch (err) {
         console.error("Failed to load products for home page:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     loadProducts();
+    return () => { isMounted = false; };
   }, []);
 
   // Curate special selections
@@ -148,56 +152,52 @@ export const Home: React.FC = () => {
         <ProcessSteps />
 
         {/* 5. Popular in Women */}
-        {(loading || popularInWomen.length > 0) && (
-          <section aria-labelledby="women-heading" className="home-section">
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
-                  Trending
-                </span>
-                <h2 id="women-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
-                  Most Loved by Women 💕
-                </h2>
-              </div>
-              <Link to="/womens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
-                View All →
-              </Link>
+        <section aria-labelledby="women-heading" className="home-section">
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+                Trending
+              </span>
+              <h2 id="women-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
+                Most Loved by Women 💕
+              </h2>
             </div>
-            <div className="product-grid horizontal-scroll-mobile">
-              {loading
-                ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-                : popularInWomen.map((prod) => (
-                    <ProductCard key={prod.id} product={prod} />
-                  ))}
-            </div>
-          </section>
-        )}
+            <Link to="/womens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
+              View All →
+            </Link>
+          </div>
+          <div className="product-grid horizontal-scroll-mobile">
+            {loading
+              ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
+              : (popularInWomen.length > 0 ? popularInWomen : productsList.slice(0, 4)).map((prod) => (
+                  <ProductCard key={prod.id} product={prod} />
+                ))}
+          </div>
+        </section>
 
         {/* 6. Popular in Men */}
-        {(loading || popularInMen.length > 0) && (
-          <section aria-labelledby="men-heading" className="home-section">
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
-                  Top Picks
-                </span>
-                <h2 id="men-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
-                  Men's Style Edit 👔
-                </h2>
-              </div>
-              <Link to="/mens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
-                View All →
-              </Link>
+        <section aria-labelledby="men-heading" className="home-section">
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <span style={{ color: "var(--accent-pink)", fontSize: "11px", fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+                Top Picks
+              </span>
+              <h2 id="men-heading" style={{ fontSize: "20px", fontWeight: "800", marginTop: "4px", letterSpacing: "-0.3px", color: "var(--text-primary)" }}>
+                Men's Style Edit 👔
+              </h2>
             </div>
-            <div className="product-grid horizontal-scroll-mobile">
-              {loading
-                ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-                : popularInMen.map((prod) => (
-                    <ProductCard key={prod.id} product={prod} />
-                  ))}
-            </div>
-          </section>
-        )}
+            <Link to="/mens" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-pink)", whiteSpace: "nowrap" }}>
+              View All →
+            </Link>
+          </div>
+          <div className="product-grid horizontal-scroll-mobile">
+            {loading
+              ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
+              : (popularInMen.length > 0 ? popularInMen : productsList.slice(4, 8)).map((prod) => (
+                  <ProductCard key={prod.id} product={prod} />
+                ))}
+          </div>
+        </section>
 
         {/* 7. Animated Testimonials (21st.dev) */}
         <TestimonialsSection />
