@@ -28,26 +28,11 @@ const ScrollToTop: React.FC = () => {
     <button
       onClick={scrollUp}
       aria-label="Scroll to top"
+      className="scroll-to-top-btn"
       style={{
-        position: "fixed",
-        bottom: "80px",        /* above MobileBottomNav on mobile */
-        right: "16px",
-        zIndex: 999,
-        width: "42px",
-        height: "42px",
-        borderRadius: "50%",
-        border: "none",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "var(--accent-pink)",
-        color: "#fff",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? "auto" : "none",
         transform: visible ? "translateY(0) scale(1)" : "translateY(12px) scale(0.85)",
-        transition: "opacity 0.25s ease, transform 0.25s ease",
       }}
     >
       <ChevronUp size={20} strokeWidth={2.5} />
