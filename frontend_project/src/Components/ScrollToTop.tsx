@@ -11,9 +11,12 @@ const ScrollToTop: React.FC = () => {
 
   useEffect(() => {
     const onScroll = () => {
-      setVisible(window.scrollY > 300);
+      const scrolled = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      setVisible(scrolled > 300);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    // Run initially in case page is already scrolled
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
