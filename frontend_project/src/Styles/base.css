@@ -41,7 +41,6 @@ textarea:focus-visible {
 }
 
 /* Base button and interactive targets sizing checklist (min 44px for main touch targets) */
-button, 
 .interactive-target {
   font-family: inherit;
   cursor: pointer;

@@ -12,7 +12,6 @@
 }
 
 html {
-  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -23,7 +22,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -107,23 +106,10 @@ img, svg, video, canvas {
   }
 }
 
-/* ── Cart badge (global) ─────────────────────────────────── */
-.nav-cart-count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: var(--accent-pink);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 800;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 3px;
-  line-height: 1;
+/* headings word break settings */
+h1, h2, h3, .heading-1, .heading-2, .heading-3 {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* ── Interactive target (min touch 44px) ─────────────────── */
@@ -275,7 +261,7 @@ h3, .heading-3 {
   align-items: center;
   justify-content: center;
   background-color: var(--accent-pink);
-  color: #ffffff;
+  color: var(--text-light);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.2s ease;
 }

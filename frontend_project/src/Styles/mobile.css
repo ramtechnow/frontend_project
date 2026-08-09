@@ -12,34 +12,15 @@
   color: var(--text-primary);
 }
 
-/* ── 4-Column Card Tuning (tablet) ──────────────────────── */
+/* ── Mobile layout tuning (tablet) ──────────────────────── */
 @media (max-width: 768px) {
   .home-section { margin: 14px 0; }
   .home-main-container { padding-bottom: 20px; }
-
-  .product-card-info { padding: 5px !important; }
-  .product-card-category { font-size: 9px !important; margin-bottom: 1px !important; }
-  .product-card-title { font-size: 9.5px !important; min-height: auto !important; margin-bottom: 3px !important; line-height: 1.2; }
-  .product-card-new-price { font-size: 10px !important; }
-  .product-card-old-price,
-  .product-card-discount-pct { font-size: 9px !important; }
 }
 
-/* ── 4-Column Card Tuning (small phone) ─────────────────── */
+/* ── Mobile layout tuning (small phone) ─────────────────── */
 @media (max-width: 480px) {
   .container { padding: 0 10px; }
   .home-section { margin: 10px 0; }
   .home-main-container { padding-bottom: 12px; }
-
-  .product-card-info { padding: 3px !important; }
-  .product-card-category { font-size: 7.5px !important; font-weight: 800; margin-bottom: 0 !important; }
-  .product-card-title { font-size: 8px !important; min-height: auto !important; margin-bottom: 1px !important; line-height: 1.1; }
-  .product-card-rating { display: none !important; }
-  .product-card-price-row { flex-direction: column !important; align-items: flex-start !important; gap: 0 !important; }
-  .product-card-new-price { font-size: 9px !important; font-weight: 800; }
-  .product-card-old-price { font-size: 7.5px !important; margin-left: 0 !important; }
-  .product-card-discount-pct { font-size: 7px !important; margin-left: 0 !important; }
-  .product-card-badge { font-size: 6px !important; padding: 1px 2px !important; top: 3px !important; left: 3px !important; }
-  .product-card-wishlist-btn { width: 16px !important; height: 16px !important; top: 3px !important; right: 3px !important; }
-  .product-card-wishlist-btn svg { width: 8px !important; height: 8px !important; }
 }

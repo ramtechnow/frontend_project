@@ -32,12 +32,16 @@
 
   /* Push body content up so fixed bottom nav doesn't cover it */
   body {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ── Each tab icon button ─── */
   .mbn-tab {
-    all: unset;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,7 +81,7 @@
     top: -4px;
     right: -5px;
     background: var(--accent-pink);
-    color: #fff;
+    color: var(--text-light);
     font-size: 8px;
     font-weight: 800;
     min-width: 14px;

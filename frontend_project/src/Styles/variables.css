@@ -70,6 +70,10 @@
   --input-bg: #F5F5F6;
   --overlay-bg: rgba(28, 28, 28, 0.65);
   --success-color: #14958F;
+  --error-color: #EF4444;
+  --error-bg: #FEF2F2;
+  --warning-color: #F59E0B;
+  --warning-bg: #FFFBEB;
 }
 
 /* ── Dark Theme — Myntra Dark Palette ────────────────────── */
@@ -102,7 +106,11 @@
   --card-bg: #282828;
   --input-bg: #363636;
   --overlay-bg: rgba(0, 0, 0, 0.80);
-  --success-color: #1DB6AF;
+  --success-color: #15958F;
+  --error-color: #F87171;
+  --error-bg: #2A1515;
+  --warning-color: #FBBF24;
+  --warning-bg: #2A2000;
 }
 
 /* ============================================================

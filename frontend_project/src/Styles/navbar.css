@@ -41,6 +41,7 @@
 
 .logo-cart {
   background: linear-gradient(135deg, var(--accent-pink) 20%, #a892ff 100%);
+  color: transparent;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -295,9 +296,9 @@
 
 .dropdown-item:hover { background: var(--bg-tertiary); color: var(--accent-pink); }
 .dropdown-item.admin { color: var(--accent-pink); font-weight: 600; }
-.dropdown-item.logout { color: #ef4444; }
-.dropdown-item.logout:hover { background: #fff0f0; color: #dc2626; }
-.dark-theme .dropdown-item.logout:hover { background: #2a1515; }
+.dropdown-item.logout { color: var(--error-color); }
+.dropdown-item.logout:hover { background: var(--error-bg); color: var(--error-color); }
+.dark-theme .dropdown-item.logout:hover { background: var(--error-bg); }
 
 /* ── Mobile hamburger — ALWAYS HIDDEN on desktop ─────── */
 .nav-hamburger-mobile { display: none; }
@@ -351,6 +352,7 @@
   font-weight: 900;
   font-family: 'Outfit', 'Inter', sans-serif;
   background: linear-gradient(135deg, var(--accent-pink) 20%, #a892ff 100%);
+  color: transparent;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -383,7 +385,7 @@
   width: 34px; height: 34px;
   border-radius: 8px;
   background: var(--bg-tertiary);
-  border: 2px solid #F59E0B;
+  border: 2px solid var(--warning-color);
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -391,10 +393,10 @@
   cursor: pointer;
   transition: all 0.15s ease;
   min-height: auto;
-  box-shadow: 0 0 8px rgba(245,158,11,0.2);
+  box-shadow: 0 0 8px var(--warning-bg);
 }
 
-.mob-drawer-close-btn:hover { background: rgba(245,158,11,0.12); }
+.mob-drawer-close-btn:hover { background: var(--warning-bg); }
 
 /* User info strip */
 .mob-drawer-user-info {
@@ -649,22 +651,7 @@
   border: none !important;
 }
 
-/* Mobile Quick Login Icon styling */
-.nav-mobile-login-icon-btn {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .nav-mobile-login-icon-btn {
-    display: none !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .nav-mobile-login-icon-btn {
-    display: none !important;
-  }
-}
+/* Mobile Quick Login Icon styling removed */
 
 /* Mobile Quick Menu Hamburger Icon styling */
 .nav-mobile-menu-btn {
