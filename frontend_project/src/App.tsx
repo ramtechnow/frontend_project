@@ -11,6 +11,7 @@ import { syncUserProfile } from "./features/auth/services/authService";
 import { setUser, setAuthLoading, setAuthError, clearAuth } from "./store/slices/authSlice";
 import { useAppDispatch } from "./store/hooks";
 import Pattern from "./Components/Pattern";
+import ScrollToTop from "./Components/ScrollToTop";
 
 // Lazy load pages for code splitting and optimized bundles
 const Home = lazy(() => import("./Pages/Home"));
@@ -149,6 +150,9 @@ export const App: React.FC = () => {
           <MobileBottomNav />
         </div>
       </div>
+
+      {/* Scroll to Top — global floating button */}
+      <ScrollToTop />
 
       {/* Global Toast Notification System */}
       <ToastContainer />

@@ -2,7 +2,7 @@
    ProductCard.tsx — Myntra-inspired card component
    No backend/data logic modified.
    ============================================================ */
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Star } from "lucide-react";
 import { useWishlist } from "../features/catalog/hooks/useWishlist";
@@ -16,6 +16,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product.id);
+  const [imgError, setImgError] = useState(false);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,14 +35,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((oldPrice - price) / oldPrice) * 100)
     : 0;
 
-  // Brand label — derive from category (Myntra shows brand name bold at top)
+  // Brand label — derive from category
   const brandLabel = product.category
     ? product.category.charAt(0).toUpperCase() + product.category.slice(1).toLowerCase()
     : "RamCart";
 
+  // Show styled name-alt instead of broken image
+  const showAltName = imgError || !product.image;
+
   return (
     <div className="product-card" style={{ position: "relative" }}>
-      {/* Wishlist heart - Rendered OUTSIDE Link to prevent event propagation conflicts */}
       <button
         className={`product-card-wishlist-btn${isWishlisted ? " active" : ""}`}
         onClick={handleWishlistToggle}
@@ -55,31 +58,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} style={{ display: "flex", flexDirection: "column", height: "100%", textDecoration: "none", color: "inherit" }}>
         {/* ── Image area ── */}
         <div className="product-card-image-wrapper">
-          {/* Discount badge */}
           {discountPercent > 0 && (
-            <div className="product-card-badge">
-              {discountPercent}% OFF
-            </div>
+            <div className="product-card-badge">{discountPercent}% OFF</div>
           )}
 
-          {/* Product image */}
-          <img
-            src={product.image || "https://placehold.co/300x400?text=Apparel"}
-            alt={product.name}
-            className="product-card-image"
-            loading="lazy"
-          />
+          {showAltName ? (
+            /* No image: show styled product name as alt */
+            <div style={{
+              width: "100%", height: "100%",
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              backgroundColor: "var(--bg-secondary)",
+              padding: "16px", gap: "8px", textAlign: "center"
+            }}>
+              <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
+                {brandLabel}
+              </span>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                {product.name}
+              </span>
+            </div>
+          ) : (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="product-card-image"
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+          )}
         </div>
 
         {/* ── Info panel ── */}
         <div className="product-card-info">
-          {/* Brand — bold, near-black (Myntra shows brand prominently) */}
           <span className="product-card-category">{brandLabel}</span>
-
-          {/* Title — regular weight, grey */}
           <h3 className="product-card-title">{product.name}</h3>
 
-          {/* Rating chip — Myntra green style */}
           <div className="product-card-rating">
             <span className="product-card-rating-chip">
               <Star size={9} fill="#fff" stroke="none" />
@@ -88,17 +102,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="product-card-rating-count">| {reviewsCount}</span>
           </div>
 
-          {/* Price row */}
           <div className="product-card-price-row">
             <span className="product-card-new-price">₹{price.toFixed(0)}</span>
-            {oldPrice && (
-              <span className="product-card-old-price">₹{oldPrice.toFixed(0)}</span>
-            )}
-            {discountPercent > 0 && (
-              <span className="product-card-discount-pct">({discountPercent}% OFF)</span>
-            )}
+            {oldPrice && <span className="product-card-old-price">₹{oldPrice.toFixed(0)}</span>}
+            {discountPercent > 0 && <span className="product-card-discount-pct">({discountPercent}% OFF)</span>}
           </div>
-          {/* Free Delivery tag — Flipkart style */}
           <div className="product-card-free-delivery">🚚 Free Delivery</div>
         </div>
       </Link>

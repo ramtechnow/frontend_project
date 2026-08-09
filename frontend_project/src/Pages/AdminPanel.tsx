@@ -108,18 +108,9 @@ export const AdminPanel: React.FC = () => {
     ]);
   };
 
-  // Real-time admin notifications state
-  const [adminNotifications, setAdminNotifications] = useState<any[]>([
-    {
-      id: "notif-1",
-      title: "🎉 New Order Placed",
-      message: "Order #RC-9842 received from Customer (₹1,490)",
-      time: "Just now",
-      type: "order",
-      unread: true,
-      orderId: "9842"
-    }
-  ]);
+  // Real-time admin notifications state — starts empty, populated only from real backend orders
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
+
 
   const [knownOrderIds, setKnownOrderIds] = useState<Set<string>>(new Set());
 

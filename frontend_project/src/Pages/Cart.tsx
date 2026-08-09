@@ -82,11 +82,31 @@ export const Cart: React.FC = () => {
                     position: "relative"
                   }}
                 >
-                  <img 
-                    src={item.image || "https://placehold.co/100x120?text=Product"} 
-                    alt={item.name} 
-                    style={{ width: "64px", height: "80px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)" }}
-                  />
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      style={{ width: "64px", height: "80px", objectFit: "cover", borderRadius: "4px", border: "1px solid var(--border-color)", flexShrink: 0 }}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = "none";
+                        const sibling = target.nextElementSibling as HTMLElement;
+                        if (sibling) sibling.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+                  <div style={{
+                    width: "64px", height: "80px", flexShrink: 0,
+                    display: item.image ? "none" : "flex",
+                    flexDirection: "column", alignItems: "center", justifyContent: "center",
+                    backgroundColor: "var(--bg-secondary)", borderRadius: "4px",
+                    border: "1px solid var(--border-color)",
+                    padding: "4px", textAlign: "center", gap: "4px"
+                  }}>
+                    <span style={{ fontSize: "8px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Item</span>
+                    <span style={{ fontSize: "9px", fontWeight: "600", color: "var(--text-secondary)", lineHeight: "1.2" }}>{item.name}</span>
+                  </div>
+
 
                   {/* Info details */}
                   <div style={{ flexGrow: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "2px" }}>
