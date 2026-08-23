@@ -50,20 +50,23 @@ export const AdminOrdersTab = ({
     });
   };
 
-  // 1. Dynamic Stepper Counts from database
+  // 1. Dynamic Stepper Counts from database (Fully Safe wrapper)
   const pipelineStats = useMemo(() => {
     let pending = 0;
     let processing = 0;
     let shipped = 0;
     let delivered = 0;
 
-    orders.forEach((o) => {
-      const status = o.status || 'Pending';
-      if (status === 'Pending') pending++;
-      else if (status === 'Processing') processing++;
-      else if (status === 'Shipped') shipped++;
-      else if (status === 'Delivered') delivered++;
-    });
+    if (Array.isArray(orders)) {
+      orders.forEach((o) => {
+        if (!o) return;
+        const status = o.status || 'Pending';
+        if (status === 'Pending') pending++;
+        else if (status === 'Processing') processing++;
+        else if (status === 'Shipped') shipped++;
+        else if (status === 'Delivered') delivered++;
+      });
+    }
 
     return { pending, processing, shipped, delivered };
   }, [orders]);
@@ -72,16 +75,23 @@ export const AdminOrdersTab = ({
   const delayedOrders = useMemo(() => {
     const threshold = 48 * 60 * 60 * 1000; // 48 hours
     const now = Date.now();
+    
+    if (!Array.isArray(orders)) return [];
+    
     return orders.filter(o => {
+      if (!o) return false;
       const isPending = o.status === 'Pending' || o.status === 'Processing';
-      const isOld = (now - new Date(o.date).getTime()) > threshold;
+      const isOld = o.date ? (now - new Date(o.date).getTime()) > threshold : false;
       return isPending && isOld;
     });
   }, [orders]);
 
   // 3. Filter orders based on status & search
   const filteredOrders = useMemo(() => {
+    if (!Array.isArray(orders)) return [];
+    
     return orders.filter((o) => {
+      if (!o) return false;
       const idStr = String(o._id || o.id || '').toLowerCase();
       const nameStr = String(o.userName || o.address?.fullName || '').toLowerCase();
       const emailStr = String(o.userEmail || o.address?.email || '').toLowerCase();
@@ -180,7 +190,7 @@ export const AdminOrdersTab = ({
           </div>
           <div className="mt-4">
             <span className="text-[10px] font-black text-[#878787] uppercase tracking-wider">Total Active Orders</span>
-            <p className="text-2xl font-bold text-[#db2b60] mt-0.5">{orders.length} Records</p>
+            <p className="text-2xl font-bold text-[#db2b60] mt-0.5">{Array.isArray(orders) ? orders.length : 0} Records</p>
           </div>
         </div>
       </div>
@@ -233,17 +243,17 @@ export const AdminOrdersTab = ({
             <tbody className="divide-y divide-[#e2bec2]/20 dark:divide-white/5">
               {filteredOrders.map((o) => {
                 const isExpanded = expandedOrderId === o._id;
-                const orderDate = new Date(o.date).toLocaleDateString('en-IN', {
+                const orderDate = o.date ? new Date(o.date).toLocaleDateString('en-IN', {
                   year: 'numeric',
                   month: 'short',
                   day: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit'
-                });
+                }) : 'N/A';
 
                 // Highlight delays or row backgrounds
                 const threshold = 48 * 60 * 60 * 1000;
-                const isDelayedRow = (Date.now() - new Date(o.date).getTime()) > threshold && (o.status === 'Pending' || o.status === 'Processing');
+                const isDelayedRow = o.date ? ((Date.now() - new Date(o.date).getTime()) > threshold && (o.status === 'Pending' || o.status === 'Processing')) : false;
                 const rowBg = isExpanded 
                   ? "bg-[#ffd9de]/5" 
                   : isDelayedRow 
@@ -304,7 +314,7 @@ export const AdminOrdersTab = ({
                             value={o.status}
                             disabled={o.status === "Delivered" || updatingOrderId === o._id}
                             onChange={(e) => handleUpdateStatus(o._id, e.target.value)}
-                            className="h-8 px-2.5 rounded-lg border border-[#e2bec2]/50 bg-white dark:bg-[#1e2029] text-[11px] font-bold outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="h-8 px-2.5 rounded-lg border border-[#e2bec2]/50 bg-white dark:bg-[#1e2029] text-[11px] font-bold outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-[#191c1e] dark:text-white"
                           >
                             <option value="Pending">Pending</option>
                             <option value="Processing">Processing</option>
@@ -350,7 +360,7 @@ export const AdminOrdersTab = ({
                             <div className="flex-1">
                               <h4 className="text-xs font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider mb-3">📦 Purchased Items</h4>
                               <div className="flex flex-col gap-2.5">
-                                {o.items.map((item, idx) => {
+                                {(o.items || []).map((item, idx) => {
                                   const prodDetails = products.find(p => p.id === item.productId);
                                   return (
                                     <div key={idx} className="p-3 border border-[#e2bec2]/30 dark:border-white/5 bg-[#f2f4f7]/20 dark:bg-[#1e2029]/20 rounded-xl flex items-center justify-between gap-3 text-xs">
