@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import MobileBottomNav from "./Components/MobileBottomNav";
@@ -31,6 +31,13 @@ const NotFound = lazy(() => import("./Pages/NotFound"));
 const Profile = lazy(() => import("./Pages/Profile"));
 const ProductDemo = lazy(() => import("./Pages/ProductDemo"));
 const TestimonialsDemo = lazy(() => import("./Pages/TestimonialsDemo"));
+
+const FestiveParticlesWrapper: React.FC<{ promo: SeasonalPromo | null }> = ({ promo }) => {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
+  if (isAdminPage || !promo || !promo.enableParticles) return null;
+  return <FestiveParticles type={promo.particleType} enable={true} />;
+};
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -66,10 +73,7 @@ export const App: React.FC = () => {
           bg={activePromo.announcementBg} 
         />
       )}
-      <FestiveParticles 
-        type={activePromo?.particleType || "star"} 
-        enable={activePromo?.enableParticles || false} 
-      />
+      <FestiveParticlesWrapper promo={activePromo} />
       <div 
         style={{ 
           display: "flex", 
@@ -92,7 +96,7 @@ export const App: React.FC = () => {
         </Suspense>
         
         {/* Main Content Viewport with Suspense fallback */}
-        <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
+        <div style={{ flexGrow: 1, position: "relative", zIndex: 2 }}>
           <Suspense 
             fallback={
               <div className="min-h-[60vh] flex items-center justify-center bg-bg-primary text-text-primary">

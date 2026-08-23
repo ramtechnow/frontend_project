@@ -1026,9 +1026,9 @@
     display: flex !important;
     overflow-x: auto !important;
     scroll-snap-type: x mandatory;
-    gap: 12px !important;
-    padding: 6px 14px 14px 14px !important;
-    margin: 0 -14px !important;
+    gap: 14px !important;
+    padding: 6px 16px 16px 16px !important;
+    margin: 0 -10px !important;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
