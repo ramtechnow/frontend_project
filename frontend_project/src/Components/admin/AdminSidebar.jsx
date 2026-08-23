@@ -11,7 +11,8 @@ import {
   User as UserIcon,
   LogOut,
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react';
 
 export const AdminSidebar = ({ 
@@ -43,11 +44,16 @@ export const AdminSidebar = ({
   ];
 
   return (
-    <aside className="admin-sidebar w-64 bg-[#f2f4f7] dark:bg-[#12141c] border-r border-[#e2bec2]/40 dark:border-white/10 flex flex-col h-screen py-6 px-4 gap-2 shrink-0">
+    <aside className="admin-sidebar w-[230px] bg-[#f8fafc] dark:bg-[#12141c] border-r border-[#e2bec2]/40 dark:border-white/10 flex flex-col h-screen py-6 px-4 gap-2 shrink-0 transition-colors duration-200">
       {/* Brand Header */}
-      <div className="sidebar-header px-3 mb-6">
-        <h1 className="text-xl font-bold text-[#b80149] dark:text-[#ff3366] tracking-tight">RamCart Admin</h1>
-        <p className="text-xs font-semibold text-[#878787] uppercase tracking-wider mt-0.5">Management Console</p>
+      <div className="sidebar-header px-3 mb-6 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-[#db2b60] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+          R
+        </div>
+        <div>
+          <h1 className="text-sm font-extrabold text-[#191c1e] dark:text-white tracking-tight">RamCart Admin</h1>
+          <p className="text-[10px] font-bold text-[#878787] uppercase tracking-wider">Management Console</p>
+        </div>
       </div>
 
       {/* Navigation Menu */}
@@ -64,15 +70,15 @@ export const AdminSidebar = ({
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                 isActive 
                   ? "active bg-[#db2b60] text-white font-bold shadow-md shadow-[#db2b60]/20" 
-                  : "text-[#5a4044] dark:text-[#a3b0cc] hover:bg-[#e6e8eb] dark:hover:bg-[#1e2029]"
+                  : "text-gray-700 dark:text-[#a3b0cc] hover:bg-gray-100 dark:hover:bg-[#1e2029]"
               }`}
             >
               <div className="flex items-center gap-3">
                 <Icon size={18} className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? "text-white" : "text-[#8e6f73] dark:text-[#8090a6]"}`} />
-                <span className="text-sm font-medium tracking-wide">{item.label}</span>
+                <span className="text-xs font-bold tracking-wide">{item.label}</span>
               </div>
               {item.count !== undefined && item.count > 0 && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                   isActive 
                     ? "bg-white/20 text-white" 
                     : "bg-[#e6e8eb] dark:bg-[#1e2029] text-[#5a4044] dark:text-[#a3b0cc] border border-[#e2bec2]/30 dark:border-white/5"
@@ -85,31 +91,42 @@ export const AdminSidebar = ({
         })}
       </nav>
 
-      {/* Bottom Profile and Logout */}
-      <div className="sidebar-footer mt-auto pt-4 border-t border-[#e2bec2]/40 dark:border-white/10 flex flex-col gap-4">
+      {/* Bottom Profile and Action Buttons */}
+      <div className="sidebar-footer mt-auto pt-4 border-t border-[#e2bec2]/40 dark:border-white/10 flex flex-col gap-3">
         <div className="flex items-center gap-3 px-1">
-          <div className="w-10 h-10 rounded-full bg-[#ffd9de] dark:bg-[#ffd9de]/10 text-[#b80149] dark:text-[#ff3366] flex items-center justify-center font-bold">
-            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={20} />}
+          <div className="w-9 h-9 rounded-full bg-[#ffd9de] dark:bg-[#ffd9de]/10 text-[#b80149] dark:text-[#ff3366] flex items-center justify-center font-bold text-xs">
+            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={16} />}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-bold text-[#191c1e] dark:text-[#ebf1ff] truncate">
+            <span className="text-xs font-bold text-[#191c1e] dark:text-[#ebf1ff] truncate">
               {user?.name || 'Admin User'}
             </span>
-            <span className="text-[10px] font-bold text-[#878787] uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-[#878787] uppercase tracking-wider">
               {user?.role === 'admin' ? 'System Root' : 'Administrator'}
             </span>
           </div>
         </div>
 
+        {/* Quick Action button matching template mockup */}
+        <button 
+          type="button"
+          onClick={() => alert("⚡ Quick Admin console drawer coming soon!")}
+          className="w-full flex items-center justify-center gap-1.5 py-2 px-4 bg-[#db2b60] hover:bg-[#b80149] text-white rounded-xl transition-all duration-200 text-xs font-black cursor-pointer shadow-sm shadow-[#db2b60]/20 border-none"
+        >
+          <Zap size={12} className="fill-current" />
+          Quick Action
+        </button>
+
         <button 
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-all duration-200 text-sm font-semibold cursor-pointer"
+          className="w-full flex items-center justify-center gap-1.5 py-2 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-xl transition-all duration-200 text-xs font-semibold cursor-pointer border-none"
         >
-          <LogOut size={16} />
+          <LogOut size={12} />
           Logout
         </button>
       </div>
     </aside>
   );
 };
+export default AdminSidebar;
