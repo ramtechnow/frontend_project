@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Save, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Sparkles, Save, Plus, Trash2, Loader2, Megaphone } from 'lucide-react';
 import { fetchActivePromo, savePromo } from '../../features/catalog/services/promoService';
 import { SeasonalPromo, BankOffer } from '../../features/catalog/types/promoTypes';
 
@@ -12,7 +12,7 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Schema state fields
+  // Database settings fields state
   const [theme, setTheme] = useState('General');
   const [announcementText, setAnnouncementText] = useState('');
   const [announcementBg, setAnnouncementBg] = useState('linear-gradient(90deg, #ec4899, #8b5cf6)');
@@ -20,13 +20,13 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
   const [particleType, setParticleType] = useState('star');
   const [bankOffers, setBankOffers] = useState<BankOffer[]>([]);
 
-  // New bank offer creation helper state
+  // New bank offer creation state
   const [newBank, setNewBank] = useState('');
   const [newBadgeColor, setNewBadgeColor] = useState('#004B87');
   const [newOfferText, setNewOfferText] = useState('');
   const [newMinOrder, setNewMinOrder] = useState('1000');
 
-  // Themes list
+  // Themes list mapping
   const THEME_OPTIONS = [
     { value: 'General', label: 'General / No Theme' },
     { value: 'VinayagarChaturthi', label: '🕉️ Vinayagar Chaturthi Theme' },
@@ -35,11 +35,11 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
     { value: 'Pongal', label: '🌾 Pongal Harvest Festival Theme' }
   ];
 
-  // Colors preset gradients for marquee background
+  // Preset background gradient selections
   const GRADIENT_PRESETS = [
     { value: 'linear-gradient(90deg, #ec4899, #8b5cf6)', label: 'Pink Violet (General)' },
-    { value: 'linear-gradient(90deg, #f59e0b, #ef4444)', label: 'Orange Red (Vinayagar/Diwali)' },
-    { value: 'linear-gradient(90deg, #10b981, #059669)', label: 'Green Emerald (Pongal)' },
+    { value: 'linear-gradient(90deg, #f59e0b, #ef4444)', label: 'Orange Red (Festive Vinayagar / Diwali)' },
+    { value: 'linear-gradient(90deg, #10b981, #059669)', label: 'Green Emerald (Harvest Pongal)' },
     { value: 'linear-gradient(90deg, #3b82f6, #1d4ed8)', label: 'Blue Ocean (New Year)' },
     { value: '#0f172a', label: 'Slate Dark (Minimalist)' }
   ];
@@ -57,7 +57,7 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
           setBankOffers(settings.bankOffers || []);
         }
       } catch (err) {
-        addToast('Failed to load seasonal configuration from server', 'error');
+        addToast('Failed to load seasonal configuration from database collections', 'error');
       } finally {
         setLoading(false);
       }
@@ -69,7 +69,7 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
   const handleAddBankOffer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBank.trim() || !newOfferText.trim()) {
-      addToast('Please fill in both Bank Name and Offer text fields', 'warning');
+      addToast('Please enter Bank name and promotional offer description', 'warning');
       return;
     }
 
@@ -83,12 +83,12 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
     setBankOffers(prev => [...prev, offer]);
     setNewBank('');
     setNewOfferText('');
-    addToast('💳 Added bank card offer to current list', 'info');
+    addToast('💳 Added credit/debit card offer successfully', 'info');
   };
 
   const handleRemoveBankOffer = (idx: number) => {
     setBankOffers(prev => prev.filter((_, i) => i !== idx));
-    addToast('Removed offer card', 'info');
+    addToast('Removed promotional card offer', 'info');
   };
 
   const handleSaveSettings = async () => {
@@ -103,16 +103,15 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
         bankOffers
       };
       await savePromo(data);
-      addToast('✨ Seasonal Promo configurations updated successfully!', 'success');
-      logAction(`Updated Seasonal Promos Settings: Theme=${theme}, Particles=${enableParticles}`);
+      addToast('✨ Seasonal settings saved & synchronized successfully!', 'success');
+      logAction(`Saved new Festive Promo configs: Theme=${theme}, ActiveParticles=${enableParticles}`);
     } catch (err: any) {
-      addToast(err.message || 'Failed to update seasonal settings', 'error');
+      addToast(err.message || 'Failed to sync promo configurations', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  // Sync particle selections with theme automatically for admin convenience
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
     if (newTheme === 'VinayagarChaturthi' || newTheme === 'Diwali') {
@@ -135,87 +134,49 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '12px' }}>
-        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--accent-color)' }} />
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Retrieving seasonal settings...</span>
+      <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
+        <Loader2 size={32} className="animate-spin text-[#db2b60]" />
+        <span className="text-xs font-semibold text-[#878787]">Syncing seasonal settings from database collections...</span>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="flex flex-col gap-6 animate-fade-in w-full text-[#191c1e] dark:text-[#ebf1ff]">
       
-      {/* 1. Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, color: 'var(--text-primary)' }}>
-            Seasonal & Festive Promo Settings
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            Configure marquee announcement text, floating animated decorations, and bank credit card deals.
-          </p>
+          <h2 className="text-xl font-bold tracking-tight">Seasonal &amp; Festive Settings</h2>
+          <p className="text-sm text-[#878787] mt-0.5">Control live storefront theme templates, drift decorations, and card promo highlights.</p>
         </div>
+
         <button
           onClick={handleSaveSettings}
           disabled={saving}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 24px',
-            backgroundColor: 'var(--accent-color, var(--accent-pink))',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '700',
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            opacity: saving ? 0.7 : 1
-          }}
+          className="px-6 py-2.5 bg-[#db2b60] hover:bg-[#b80149] text-white font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-md shadow-[#db2b60]/20 disabled:opacity-75 border-none transition-all duration-150 text-xs"
         >
-          {saving ? (
-            <>
-              <Loader2 size={16} className="animate-spin" /> Saving Changes
-            </>
-          ) : (
-            <>
-              <Save size={16} /> Save Settings
-            </>
-          )}
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          <span>{saving ? "Saving Configurations..." : "Save Settings"}</span>
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      {/* Bento Grid panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Left Column: Theme & Particle Controls */}
-        <div style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '16px',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={16} style={{ color: 'var(--accent-color)' }} />
-            Festive Theme Settings
+        {/* Left Bento: Theme and particle options */}
+        <div className="bg-white dark:bg-[#12141c] rounded-2xl border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-5 shadow-sm transition-colors duration-200">
+          <h3 className="text-xs font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider border-b border-[#e2bec2]/20 dark:border-white/5 pb-3 flex items-center gap-2">
+            <Sparkles size={16} /> Theme &amp; Decoration Settings
           </h3>
 
-          {/* Theme Dropdown */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Festive Template Theme</label>
+          {/* Theme select */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Live Page Festive Template Theme</label>
             <select
               value={theme}
               onChange={(e) => handleThemeChange(e.target.value)}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.85rem'
-              }}
+              className="w-full h-11 px-3.5 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs font-semibold outline-none cursor-pointer"
             >
               {THEME_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -223,40 +184,25 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
             </select>
           </div>
 
-          {/* Announcement Text Input */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Announcement text (Top Marquee)</label>
+          {/* Announcement text */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Top Announcement Header Marquee Text</label>
             <textarea
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
-              placeholder="e.g. 15% discount live on all collections! Credit Card cashback offers active."
+              placeholder="e.g. 🎉 Vinayagar Chaturthi Sale: Get up to 10% Instant Discount on HDFC Cards! &bull; Free Shipping on orders above ₹1,000"
               rows={3}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.85rem',
-                resize: 'vertical'
-              }}
+              className="w-full p-3.5 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none resize-none leading-relaxed"
             />
           </div>
 
-          {/* Marquee Background Presets */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Marquee background color/gradient</label>
+          {/* Gradient backdrop select */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Marquee Banner Background Style</label>
             <select
               value={announcementBg}
               onChange={(e) => setAnnouncementBg(e.target.value)}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.85rem'
-              }}
+              className="w-full h-10 px-3.5 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs font-semibold outline-none cursor-pointer"
             >
               {GRADIENT_PRESETS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -267,211 +213,155 @@ export const AdminSeasonalTab: React.FC<AdminSeasonalTabProps> = ({ addToast, lo
               value={announcementBg}
               onChange={(e) => setAnnouncementBg(e.target.value)}
               placeholder="Custom color hex or linear-gradient css value"
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.85rem',
-                marginTop: '6px'
-              }}
+              className="w-full h-10 px-3.5 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none font-mono"
             />
           </div>
 
-          {/* Floating Animations Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 0', borderTop: '1px solid var(--border-color)' }}>
+          {/* Particles active state */}
+          <div className="flex items-center gap-3 pt-3 border-t border-[#e2bec2]/20 dark:border-white/5 mt-1">
             <input
               type="checkbox"
               id="enable-particles-toggle"
               checked={enableParticles}
               onChange={(e) => setEnableParticles(e.target.checked)}
-              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              className="w-4 h-4 text-[#db2b60] border-gray-300 rounded focus:ring-[#db2b60] cursor-pointer"
             />
-            <label htmlFor="enable-particles-toggle" style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-primary)', cursor: 'pointer' }}>
+            <label htmlFor="enable-particles-toggle" className="text-xs font-bold text-[#191c1e] dark:text-[#ebf1ff] cursor-pointer selection:bg-transparent select-none">
               Enable drifting festive background elements
             </label>
           </div>
 
-          {/* Particle Element Type selection */}
+          {/* Particles dropdown selection */}
           {enableParticles && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Drifting object shape</label>
+            <div className="flex flex-col gap-1.5 animate-slide-down">
+              <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Drifting element decoration shape</label>
               <select
                 value={particleType}
                 onChange={(e) => setParticleType(e.target.value)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.85rem'
-                }}
+                className="w-full h-10 px-3.5 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs font-semibold outline-none cursor-pointer"
               >
-                <option value="star">Golden shining stars (General)</option>
-                <option value="lamp">Clay glowing lamps (Vinayagar/Diwali)</option>
+                <option value="star">Shining golden stars (General)</option>
+                <option value="lamp">Clay glowing lamps / Diya (Vinayagar/Diwali)</option>
                 <option value="flower">Traditional flower petals (Pongal/Spring)</option>
-                <option value="balloon">Colorful balloons (Celebrations)</option>
+                <option value="balloon">Floating balloons (Festivals/Celebrations)</option>
               </select>
             </div>
           )}
         </div>
 
-        {/* Right Column: Bank Card Promos Creator */}
-        <div style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '16px',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Plus size={16} style={{ color: 'var(--accent-color)' }} />
-            Manage Bank Offers
+        {/* Right Bento: Credit cards manager */}
+        <div className="bg-white dark:bg-[#12141c] rounded-2xl border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-5 shadow-sm transition-colors duration-200">
+          <h3 className="text-xs font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider border-b border-[#e2bec2]/20 dark:border-white/5 pb-3 flex items-center gap-2">
+            <Megaphone size={16} /> Manage Active Bank Offers
           </h3>
 
-          {/* Add bank offer form */}
-          <form onSubmit={handleAddBankOffer} style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Bank Name</label>
+          {/* New promo create form */}
+          <form onSubmit={handleAddBankOffer} className="flex flex-col gap-4 border-b border-[#e2bec2]/20 dark:border-white/5 pb-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Bank Provider Name</label>
                 <input
                   type="text"
                   placeholder="e.g. HDFC Bank"
                   value={newBank}
                   onChange={(e) => setNewBank(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.8rem'
-                  }}
+                  className="w-full h-10 px-3 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none"
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Badge color</label>
-                <input
-                  type="color"
-                  value={newBadgeColor}
-                  onChange={(e) => setNewBadgeColor(e.target.value)}
-                  style={{
-                    width: '100%',
-                    height: '35px',
-                    padding: '2px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--bg-primary)',
-                    cursor: 'pointer'
-                  }}
-                />
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Badge/Chip Theme Color</label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="color"
+                    value={newBadgeColor}
+                    onChange={(e) => setNewBadgeColor(e.target.value)}
+                    className="w-10 h-10 border border-[#e2bec2]/40 rounded-xl cursor-pointer p-0 bg-transparent shrink-0"
+                    title="Choose Badge Palette"
+                  />
+                  <input
+                    type="text"
+                    value={newBadgeColor}
+                    onChange={(e) => setNewBadgeColor(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none font-mono"
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Offer Description</label>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Cashback / Discount Offer Details</label>
               <input
                 type="text"
                 placeholder="e.g. 10% Instant Discount up to ₹1,500"
                 value={newOfferText}
                 onChange={(e) => setNewOfferText(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.8rem'
-                }}
+                className="w-full h-10 px-3 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none"
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', alignItems: 'end' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Min order amount (₹)</label>
+            <div className="grid grid-cols-3 gap-4 items-end">
+              <div className="col-span-2 flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Minimum Order Value (₹)</label>
                 <input
                   type="number"
                   value={newMinOrder}
                   onChange={(e) => setNewMinOrder(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.8rem'
-                  }}
+                  className="w-full h-10 px-3 rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] text-xs outline-none"
                 />
               </div>
+
               <button
                 type="submit"
-                style={{
-                  height: '35px',
-                  backgroundColor: 'var(--text-primary)',
-                  color: 'var(--bg-primary)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: '700',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  cursor: 'pointer'
-                }}
+                className="h-10 px-4 bg-[#db2b60] hover:bg-[#b80149] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-sm transition-all"
               >
-                <Plus size={14} /> Add Card
+                <Plus size={14} /> Add Card Offer
               </button>
             </div>
           </form>
 
-          {/* Active bank offers list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '240px', overflowY: 'auto' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-secondary)' }}>
-              Active bank offers ({bankOffers.length})
+          {/* List display */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[11px] font-black text-[#878787] uppercase tracking-wider">
+              Active Credit/Debit Card Promos ({bankOffers.length})
             </span>
-            {bankOffers.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px', border: '1px dashed var(--border-color)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                No active card discount offers added yet.
-              </div>
-            ) : (
-              bankOffers.map((offer, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--bg-primary)',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: offer.badgeColor }} />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <strong style={{ fontSize: '0.8rem' }}>{offer.bank}</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{offer.offer} (Min: ₹{offer.minOrder})</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveBankOffer(idx)}
-                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
+
+            <div className="flex flex-col gap-2.5 max-h-56 overflow-y-auto pr-1">
+              {bankOffers.length === 0 ? (
+                <div className="text-center p-8 border border-dashed border-[#e2bec2]/60 dark:border-white/10 rounded-2xl text-xs text-[#878787] font-semibold bg-[#f2f4f7]/20">
+                  No active card cashback offers created yet.
                 </div>
-              ))
-            )}
+              ) : (
+                bankOffers.map((offer, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 border border-[#e2bec2]/30 dark:border-white/5 bg-[#f2f4f7]/30 dark:bg-[#1e2029]/30 rounded-xl flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-3.5 h-3.5 rounded-full border border-white dark:border-[#12141c] shadow shrink-0" 
+                        style={{ backgroundColor: offer.badgeColor }} 
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <strong className="text-xs text-[#191c1e] dark:text-white font-extrabold truncate w-44">{offer.bank}</strong>
+                        <span className="text-[11px] text-[#878787] mt-0.5">{offer.offer} (Min Order: ₹{offer.minOrder})</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBankOffer(idx)}
+                      className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg cursor-pointer border-none bg-transparent transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+export default AdminSeasonalTab;

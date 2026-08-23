@@ -1,5 +1,5 @@
 import React, { useState, useMemo, DragEvent, ChangeEvent } from 'react';
-import { FolderPlus, Upload, ShieldAlert, Loader2, Trash2, Plus, Palette } from 'lucide-react';
+import { FolderPlus, Upload, ShieldAlert, Loader2, Trash2, Plus, FileText, DollarSign, Tag, Image as ImageIcon } from 'lucide-react';
 import { adminApi } from '../../Utils/adminApi';
 import { compressImageToBase64 } from '../../Utils/adminHelpers';
 import { ProductVariant } from '../../features/catalog/types/productTypes';
@@ -139,7 +139,7 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
     addToast("Image removed from uploader", "info");
   };
 
-  // 1. Reactive Variant Builder: computes options based on colors and sizes selected
+  // Variant Builder
   const generatedVariants = useMemo(() => {
     const list: ProductVariant[] = [];
     const baseSlugName = name
@@ -151,8 +151,6 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
     selectedColors.forEach(color => {
       selectedSizes.forEach(size => {
         const skuPattern = `RC-${category.substring(0, 3).toUpperCase()}-${baseSlugName}-${color.toUpperCase()}-${size}`;
-        
-        // Lookup manual overrides to preserve user inputs
         const override = manualVariants.find(v => v.color === color && v.size === size);
 
         list.push({
@@ -219,8 +217,6 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
     }
 
     setSaving(true);
-    
-    // Primary display image is index 0; remaining are sub-images
     const primaryImage = images[0];
     const payload = {
       name,
@@ -239,8 +235,8 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
 
     try {
       await adminApi.addProduct(payload);
-      addToast(`🎉 Added product "${name}" with ${generatedVariants.length} variants!`, "success");
-      logAction(`Launched new product: "${name}" with ${generatedVariants.length} variants`);
+      addToast(`🎉 Added product "${name}" successfully!`, "success");
+      logAction(`Launched new product: "${name}"`);
       onProductAdded();
     } catch (err: any) {
       console.error("Error creating product:", err);
@@ -251,337 +247,367 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
   };
 
   return (
-    <div className="admin-add-product-container animate-fade-in" style={{ maxWidth: '900px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <div style={{ padding: '10px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', color: 'var(--accent-pink)' }}>
-          <FolderPlus size={24} />
-        </div>
+    <div className="flex flex-col gap-6 animate-fade-in w-full text-[#191c1e] dark:text-[#ebf1ff]">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800' }}>Launch New Product Listing</h2>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Publish catalog items with custom per-size pricing, color picker and stock counts.</span>
+          <h2 className="text-xl font-bold tracking-tight">Add New Product</h2>
+          <p className="text-sm text-[#878787] mt-0.5">Create a new listing in the catalog</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Title */}
-        <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Product Title *</label>
-          <input 
-            type="text" 
-            placeholder="e.g. Premium Slim Fit Cotton Denim Shirt" 
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setFieldErrors(prev => ({ ...prev, name: null }));
-            }}
-            style={{ border: fieldErrors.name ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
-          />
-          {fieldErrors.name && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.name}</span>}
-        </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        {/* Form Bento Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Columns (Main Info) */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* General Info Card */}
+            <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4">
+              <h3 className="text-sm font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+                <FileText size={18} /> Basic Information
+              </h3>
+              
+              {/* Title */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Product Title <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Premium Cotton Blend Slim Fit Shirt" 
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setFieldErrors(prev => ({ ...prev, name: null }));
+                  }}
+                  className={`w-full h-11 px-4 rounded-xl border bg-white dark:bg-[#1e2029] outline-none text-sm transition-all focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] ${
+                    fieldErrors.name ? 'border-red-500' : 'border-[#e2bec2]/40 dark:border-white/10'
+                  }`}
+                />
+                {fieldErrors.name && (
+                  <span className="text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1">
+                    <ShieldAlert size={12}/>{fieldErrors.name}
+                  </span>
+                )}
+              </div>
 
-        {/* Description */}
-        <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Detailed Description *</label>
-          <textarea 
-            rows={4} 
-            placeholder="Write a brief overview of materials, sizing fits, design details..." 
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              setFieldErrors(prev => ({ ...prev, description: null }));
-            }}
-            style={{ 
-              border: fieldErrors.description ? '1px solid #ef4444' : '1px solid var(--border-color)',
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          />
-          {fieldErrors.description && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.description}</span>}
-        </div>
-
-        {/* Category & Prices */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          <div className="form-group">
-            <label style={{ fontWeight: '700' }}>Catalog Category *</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="women">Womens Apparel</option>
-              <option value="men">Mens Collection</option>
-              <option value="kid">Kids Wear</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label style={{ fontWeight: '700' }}>Base Price (₹) *</label>
-            <input 
-              type="number" 
-              placeholder="e.g. 599" 
-              value={newPrice}
-              onChange={(e) => {
-                setNewPrice(e.target.value);
-                setFieldErrors(prev => ({ ...prev, newPrice: null }));
-              }}
-              style={{ border: fieldErrors.newPrice ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
-            />
-            {fieldErrors.newPrice && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.newPrice}</span>}
-          </div>
-
-          <div className="form-group">
-            <label style={{ fontWeight: '700' }}>MSRP / Strike Price (₹) *</label>
-            <input 
-              type="number" 
-              placeholder="e.g. 1199" 
-              value={oldPrice}
-              onChange={(e) => {
-                setOldPrice(e.target.value);
-                setFieldErrors(prev => ({ ...prev, oldPrice: null }));
-              }}
-              style={{ border: fieldErrors.oldPrice ? '1px solid #ef4444' : '1px solid var(--border-color)' }}
-            />
-            {fieldErrors.oldPrice && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldAlert size={12}/>{fieldErrors.oldPrice}</span>}
-          </div>
-        </div>
-
-        {/* Sizes multiselect + Custom Size Adder */}
-        <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Sizes Available (Select preset or enter custom size / Free Size)</label>
-          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-            {Array.from(new Set([...PRESET_SIZES, ...selectedSizes])).map((size) => (
-              <button
-                key={size}
-                type="button"
-                className={`admin-toggle-chip ${selectedSizes.includes(size) ? 'active' : ''}`}
-                onClick={() => toggleSize(size)}
-                style={{ padding: '8px 16px', borderRadius: 'var(--border-radius-full)', fontWeight: '600' }}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '380px' }}>
-            <input
-              type="text"
-              placeholder="Custom size (e.g. Free Size, 28, 30, 32, FS)"
-              value={customSizeInput}
-              onChange={(e) => setCustomSizeInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomSize(); } }}
-              style={{ flex: 1, padding: '8px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-            />
-            <button
-              type="button"
-              onClick={handleAddCustomSize}
-              style={{ padding: '8px 16px', backgroundColor: 'var(--accent-pink)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <Plus size={14} /> Add Size
-            </button>
-          </div>
-          {fieldErrors.sizes && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.sizes}</span>}
-        </div>
-
-        {/* Colors selector + Custom Color Adder & Color Picker */}
-        <div className="form-group">
-          <label style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Palette size={16} /> Inventory Colors (Select preset or add custom color)
-          </label>
-          <div className="admin-checkbox-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            {Array.from(new Set([...PRESET_COLORS, ...selectedColors])).map((color) => (
-              <button
-                key={color}
-                type="button"
-                className={`admin-toggle-chip ${selectedColors.includes(color) ? 'active' : ''}`}
-                onClick={() => toggleColor(color)}
-                style={{ padding: '8px 16px', borderRadius: 'var(--border-radius-full)', fontWeight: '600' }}
-              >
-                {color}
-              </button>
-            ))}
-          </div>
-
-          {/* Add custom color input box + Hex Color Picker */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '420px' }}>
-            <input
-              type="color"
-              value={customHexColor}
-              onChange={(e) => setCustomHexColor(e.target.value)}
-              style={{ width: 38, height: 38, border: 'none', borderRadius: 8, cursor: 'pointer', padding: 0 }}
-              title="Pick Hex Color"
-            />
-            <input
-              type="text"
-              placeholder="Type custom color name (e.g. Sandal, Maroon, Navy Blue)"
-              value={customColorInput}
-              onChange={(e) => setCustomColorInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomColor(); } }}
-              style={{ flex: 1, padding: '8px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-            />
-            <button
-              type="button"
-              onClick={handleAddCustomColor}
-              style={{ padding: '8px 16px', backgroundColor: 'var(--accent-pink)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <Plus size={14} /> Add Color
-            </button>
-          </div>
-          {fieldErrors.colors && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.colors}</span>}
-        </div>
-
-        {/* Drag-and-Drop Image Uploader */}
-        <div className="form-group">
-          <label style={{ fontWeight: '700' }}>Product Image Showcase (Drop multiple files)</label>
-          <div 
-            onDragEnter={handleDrag}
-            onDragOver={handleDrag}
-            onDragLeave={handleDrag}
-            onDrop={handleDrop}
-            style={{
-              border: fieldErrors.images ? '2px dashed #ef4444' : dragActive ? '2px dashed var(--accent-pink)' : '2px dashed var(--border-color)',
-              borderRadius: '16px',
-              padding: '24px',
-              textAlign: 'center',
-              backgroundColor: dragActive ? 'rgba(235, 104, 150, 0.05)' : 'var(--bg-primary)',
-              transition: 'all 0.2s',
-              cursor: 'pointer'
-            }}
-            onClick={() => document.getElementById('add-multiple-file-input')?.click()}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <Upload size={32} style={{ color: 'var(--accent-pink)' }} />
-              <p style={{ margin: 0, fontWeight: '700', fontSize: '0.9rem' }}>
-                Drag & Drop product images here, or <span style={{ color: 'var(--accent-pink)' }}>browse files</span>
-              </p>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upload 1 or more images. First image is set as primary.</span>
+              {/* Description */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Detailed Description <span className="text-red-500">*</span></label>
+                <textarea 
+                  rows={4} 
+                  placeholder="Enter details, materials guidelines, or care instructions..." 
+                  value={description}
+                  onChange={(e) => {
+                    setDescription(e.target.value);
+                    setFieldErrors(prev => ({ ...prev, description: null }));
+                  }}
+                  className={`w-full p-4 rounded-xl border bg-white dark:bg-[#1e2029] outline-none text-sm resize-none transition-all focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] ${
+                    fieldErrors.description ? 'border-red-500' : 'border-[#e2bec2]/40 dark:border-white/10'
+                  }`}
+                />
+                {fieldErrors.description && (
+                  <span className="text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1">
+                    <ShieldAlert size={12}/>{fieldErrors.description}
+                  </span>
+                )}
+              </div>
             </div>
-            <input 
-              id="add-multiple-file-input" 
-              type="file" 
-              accept="image/*" 
-              multiple 
-              onChange={handleFileInput} 
-              style={{ display: 'none' }} 
-            />
-          </div>
-          {fieldErrors.images && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{fieldErrors.images}</span>}
 
-          {/* Upload previews */}
-          {images.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px', marginTop: '16px' }}>
-              {images.map((img, idx) => (
-                <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '12px', overflow: 'hidden', border: idx === 0 ? '2px solid var(--accent-pink)' : '1px solid var(--border-color)' }}>
-                  <img src={img} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  {idx === 0 && (
-                    <span style={{ position: 'absolute', bottom: '4px', left: '4px', backgroundColor: 'var(--accent-pink)', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 6px', borderRadius: '4px' }}>
-                      Primary
+            {/* Pricing & Inventory Configuration */}
+            <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4">
+              <h3 className="text-sm font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+                <DollarSign size={18} /> Pricing &amp; Sizing Specs
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Base price */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Discounted Price (₹) <span className="text-red-500">*</span></label>
+                  <input 
+                    type="number" 
+                    placeholder="e.g. 799" 
+                    value={newPrice}
+                    onChange={(e) => {
+                      setNewPrice(e.target.value);
+                      setFieldErrors(prev => ({ ...prev, newPrice: null }));
+                    }}
+                    className={`w-full h-11 px-4 rounded-xl border bg-white dark:bg-[#1e2029] outline-none text-sm focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] ${
+                      fieldErrors.newPrice ? 'border-red-500' : 'border-[#e2bec2]/40 dark:border-white/10'
+                    }`}
+                  />
+                  {fieldErrors.newPrice && (
+                    <span className="text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1">
+                      <ShieldAlert size={12}/>{fieldErrors.newPrice}
                     </span>
                   )}
-                  <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
-                    <button 
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteImage(idx); }}
-                      style={{ padding: '4px', borderRadius: '50%', backgroundColor: '#ef4444', border: 'none', cursor: 'pointer', color: 'white' }}
-                      title="Delete Image"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
                 </div>
-              ))}
+
+                {/* MSRP */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Maximum Retail Price / MSRP (₹) <span className="text-red-500">*</span></label>
+                  <input 
+                    type="number" 
+                    placeholder="e.g. 1499" 
+                    value={oldPrice}
+                    onChange={(e) => {
+                      setOldPrice(e.target.value);
+                      setFieldErrors(prev => ({ ...prev, oldPrice: null }));
+                    }}
+                    className={`w-full h-11 px-4 rounded-xl border bg-white dark:bg-[#1e2029] outline-none text-sm focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] ${
+                      fieldErrors.oldPrice ? 'border-red-500' : 'border-[#e2bec2]/40 dark:border-white/10'
+                    }`}
+                  />
+                  {fieldErrors.oldPrice && (
+                    <span className="text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1">
+                      <ShieldAlert size={12}/>{fieldErrors.oldPrice}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Sizes available */}
+              <div className="flex flex-col gap-2.5 mt-2">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Select Available Sizes</label>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(new Set([...PRESET_SIZES, ...selectedSizes])).map((size) => {
+                    const isSelected = selectedSizes.includes(size);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => toggleSize(size)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                          isSelected 
+                            ? "bg-[#db2b60] border-[#db2b60] text-white" 
+                            : "bg-[#f2f4f7] dark:bg-[#1e2029] border-[#e2bec2]/40 text-[#5a4044] dark:text-[#a3b0cc]"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Custom size adder */}
+                <div className="flex gap-2 max-w-sm mt-1">
+                  <input
+                    type="text"
+                    placeholder="Custom size (e.g. FS, 38, 40)"
+                    value={customSizeInput}
+                    onChange={(e) => setCustomSizeInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomSize(); } }}
+                    className="flex-1 h-9 px-3 rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSize}
+                    className="h-9 px-3 bg-[#db2b60] hover:bg-[#b80149] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer border-none shadow-sm"
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+                {fieldErrors.sizes && <span className="text-[10px] text-red-500 font-bold mt-1">{fieldErrors.sizes}</span>}
+              </div>
+
+              {/* Colors selection */}
+              <div className="flex flex-col gap-2.5 mt-2">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Select Available Colors</label>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(new Set([...PRESET_COLORS, ...selectedColors])).map((color) => {
+                    const isSelected = selectedColors.includes(color);
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => toggleColor(color)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                          isSelected 
+                            ? "bg-[#db2b60] border-[#db2b60] text-white" 
+                            : "bg-[#f2f4f7] dark:bg-[#1e2029] border-[#e2bec2]/40 text-[#5a4044] dark:text-[#a3b0cc]"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Custom Color adder */}
+                <div className="flex gap-2 max-w-sm mt-1">
+                  <input
+                    type="color"
+                    value={customHexColor}
+                    onChange={(e) => setCustomHexColor(e.target.value)}
+                    className="w-9 h-9 border border-[#e2bec2]/40 rounded-lg cursor-pointer p-0 bg-transparent shrink-0"
+                    title="Choose Palette"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Custom color (e.g. Mustard, Sandal)"
+                    value={customColorInput}
+                    onChange={(e) => setCustomColorInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomColor(); } }}
+                    className="flex-1 h-9 px-3 rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomColor}
+                    className="h-9 px-3 bg-[#db2b60] hover:bg-[#b80149] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer border-none shadow-sm"
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+                {fieldErrors.colors && <span className="text-[10px] text-red-500 font-bold mt-1">{fieldErrors.colors}</span>}
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Right Column (Media Upload & Info) */}
+          <div className="flex flex-col gap-6">
+            {/* Image Upload card */}
+            <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4">
+              <h3 className="text-sm font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+                <ImageIcon size={18} /> Media Files
+              </h3>
+              
+              {/* Drag zone */}
+              <div 
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('add-multiple-file-input')?.click()}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-2.5 ${
+                  dragActive 
+                    ? "border-[#db2b60] bg-[#db2b60]/5" 
+                    : fieldErrors.images 
+                      ? "border-red-500 bg-red-500/5" 
+                      : "border-[#e2bec2]/60 dark:border-white/10 bg-[#f2f4f7]/30 dark:bg-[#1e2029]/30 hover:bg-[#e6e8eb] dark:hover:bg-[#363636]"
+                }`}
+              >
+                <Upload size={28} className="text-[#db2b60] animate-bounce" />
+                <div>
+                  <p className="text-xs font-bold text-[#191c1e] dark:text-white">Drag &amp; drop product images</p>
+                  <p className="text-[10px] text-[#878787] mt-0.5">or click to browse from device</p>
+                </div>
+                <input 
+                  id="add-multiple-file-input" 
+                  type="file" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={handleFileInput} 
+                  className="hidden" 
+                />
+              </div>
+              {fieldErrors.images && <span className="text-[10px] text-red-500 font-bold mt-0.5">{fieldErrors.images}</span>}
+
+              {/* Upload Previews */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {images.map((img, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`relative aspect-square rounded-xl overflow-hidden border ${
+                        idx === 0 ? "border-2 border-[#db2b60]" : "border-[#e2bec2]/40"
+                      } group`}
+                    >
+                      <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleDeleteImage(idx); }}
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700 cursor-pointer border-none opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={10} />
+                      </button>
+                      {idx === 0 && (
+                        <span className="absolute bottom-1 left-1 bg-[#db2b60] text-white text-[8px] font-black px-1.5 py-0.5 rounded">
+                          Cover
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Organization & Category selection card */}
+            <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4">
+              <h3 className="text-sm font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+                <Tag size={18} /> Organization
+              </h3>
+
+              <div className="flex flex-col gap-3">
+                {/* Category select */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Catalog Category</label>
+                  <select 
+                    value={category} 
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full h-11 px-3 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold outline-none cursor-pointer"
+                  >
+                    <option value="women">Women's Apparel</option>
+                    <option value="men">Men's Collection</option>
+                    <option value="kid">Kids / Children Wear</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Dynamic SKU & Per-Size Pricing / Stock Matrix Table */}
+        {/* Dynamic SKU & Variants Editor Grid */}
         {generatedVariants.length > 0 && (
-          <div style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: 'var(--shadow-sm)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4 mt-2">
+            <div className="flex justify-between items-center flex-wrap gap-4 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
               <div>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Variant Catalog & Per-Size Pricing Matrix</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Set custom prices (e.g. S: ₹499, M: ₹549) and exact stock quantities per size.
-                </p>
+                <h3 className="text-sm font-black text-[#191c1e] dark:text-white uppercase tracking-wider">Generated Stock Variants</h3>
+                <p className="text-[11px] text-[#878787] font-medium mt-1">Audit or overwrite default pricing and stock items per size/color.</p>
               </div>
-              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-pink)' }}>
-                Total Stock: {totalCalculatedStock} units
+              <span className="text-xs font-extrabold text-[#db2b60] bg-[#ffd9de]/30 px-3 py-1 rounded-full border border-[#db2b60]/20">
+                Total Stock Count: {totalCalculatedStock} units
               </span>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
-                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>Variant Details</th>
-                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>SKU Code</th>
-                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>Stock Units</th>
-                    <th style={{ padding: '12px 8px', fontWeight: '700' }}>Price per Size (₹)</th>
+                  <tr className="border-b border-[#e2bec2]/30 text-xs font-bold text-[#878787]">
+                    <th className="p-3">Color / Size Variant</th>
+                    <th className="p-3">SKU Code</th>
+                    <th className="p-3 w-40">Stock Units</th>
+                    <th className="p-3 w-48">Variant Price (₹)</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#e2bec2]/20 dark:divide-white/5">
                   {generatedVariants.map((v, idx) => (
-                    <tr key={`${v.color}_${v.size}_${idx}`} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            backgroundColor: v.color.toLowerCase(),
-                            border: '1px solid var(--border-color)',
-                            width: '12px', height: '12px',
-                            borderRadius: '50%',
-                            display: 'inline-block'
-                          }} />
-                          <span style={{ fontWeight: '700' }}>{v.color} / {v.size}</span>
+                    <tr key={`${v.color}_${v.size}_${idx}`} className="text-xs">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full border border-gray-400" style={{ backgroundColor: v.color.toLowerCase() }}></span>
+                          <span className="font-bold text-[#5a4044] dark:text-[#a3b0cc]">{v.color} / {v.size}</span>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 8px' }}>
+                      <td className="p-3">
                         <input 
                           type="text"
                           value={v.sku}
                           onChange={(e) => updateVariantField(v.color, v.size, "sku", e.target.value.toUpperCase())}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            width: '100%',
-                            fontSize: '0.8rem',
-                            fontFamily: 'monospace'
-                          }}
+                          className="w-full h-8 px-2.5 text-xs font-mono rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
                         />
                       </td>
-                      <td style={{ padding: '12px 8px', width: '120px' }}>
+                      <td className="p-3">
                         <input 
                           type="number"
                           value={v.stock}
                           min="0"
                           onChange={(e) => updateVariantField(v.color, v.size, "stock", Math.max(0, Number(e.target.value)))}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            width: '100%',
-                            fontSize: '0.8rem'
-                          }}
+                          className="w-28 h-8 px-2 text-xs rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
                         />
                       </td>
-                      <td style={{ padding: '12px 8px', width: '140px' }}>
+                      <td className="p-3">
                         <input 
                           type="number"
                           value={v.price}
                           min="0"
                           onChange={(e) => updateVariantField(v.color, v.size, "price", Math.max(0, Number(e.target.value)))}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            width: '100%',
-                            fontSize: '0.8rem',
-                            fontWeight: '700'
-                          }}
+                          className="w-32 h-8 px-2 text-xs font-bold rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-[#db2b60]"
                         />
                       </td>
                     </tr>
@@ -592,31 +618,17 @@ export const AdminAddProductTab: React.FC<AdminAddProductTabProps> = ({
           </div>
         )}
 
-        {/* Submit */}
+        {/* Submit button */}
         <button
           type="submit"
           disabled={saving}
-          style={{
-            padding: '14px 28px',
-            backgroundColor: 'var(--accent-pink)',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '1rem',
-            fontWeight: '800',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 16px rgba(184, 0, 53, 0.3)',
-            marginTop: '12px'
-          }}
+          className="w-full sm:w-auto self-start mt-2 px-6 py-3 bg-[#db2b60] hover:bg-[#b80149] text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#db2b60]/20 disabled:opacity-50 border-none transition-all duration-200"
         >
-          {saving ? <Loader2 size={18} className="spin" /> : <FolderPlus size={18} />}
-          {saving ? "Publishing Listing..." : "Publish Product Listing"}
+          {saving ? <Loader2 size={18} className="animate-spin" /> : <FolderPlus size={18} />}
+          <span>{saving ? "Publishing Catalog Listing..." : "Publish Product Listing"}</span>
         </button>
       </form>
     </div>
   );
 };
+export default AdminAddProductTab;

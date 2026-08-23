@@ -8,9 +8,9 @@ import {
   Users, 
   ShoppingCart, 
   Tag,
-  User,
+  User as UserIcon,
   LogOut,
-  Image,
+  Image as ImageIcon,
   Sparkles
 } from 'lucide-react';
 
@@ -31,139 +31,85 @@ export const AdminSidebar = ({
     navigate('/');
   };
 
-  return (
-    <div className="admin-sidebar">
-      <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
-        <img alt="RamCart Logo" src="/RamCart_logo_v2.png" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--accent-color)', fontFamily: "'Outfit', sans-serif", lineHeight: '1.2' }}>RamCart</span>
-          <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin Console</span>
-        </div>
-      </div>
-      
-      <nav className="sidebar-menu">
-        <button 
-          type="button"
-          className={activeTab === "dashboard" ? "active" : ""} 
-          onClick={() => setActiveTab("dashboard")}
-        >
-          <span className="menu-icon"><LayoutDashboard size={18} /></span> Dashboard
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "list" ? "active" : ""} 
-          onClick={() => setActiveTab("list")}
-        >
-          <span className="menu-icon"><ShoppingBag size={18} /></span> Catalog ({productsCount})
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "add" ? "active" : ""} 
-          onClick={() => setActiveTab("add")}
-        >
-          <span className="menu-icon"><PlusCircle size={18} /></span> Add Product
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "users" ? "active" : ""} 
-          onClick={() => setActiveTab("users")}
-        >
-          <span className="menu-icon"><Users size={18} /></span> Users List ({usersCount})
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "orders" ? "active" : ""} 
-          onClick={() => setActiveTab("orders")}
-        >
-          <span className="menu-icon"><ShoppingCart size={18} /></span> Orders ({ordersCount})
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "coupons" ? "active" : ""} 
-          onClick={() => setActiveTab("coupons")}
-        >
-          <span className="menu-icon"><Tag size={18} /></span> Coupons & Offers ({couponsCount})
-        </button>
-        
-        <button 
-          type="button"
-          className={activeTab === "banners" ? "active" : ""} 
-          onClick={() => setActiveTab("banners")}
-        >
-          <span className="menu-icon"><Image size={18} /></span> Hero Banners ({bannersCount})
-        </button>
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'list', label: 'Catalog', icon: ShoppingBag, count: productsCount },
+    { id: 'add', label: 'Add Product', icon: PlusCircle },
+    { id: 'users', label: 'Users List', icon: Users, count: usersCount },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart, count: ordersCount },
+    { id: 'coupons', label: 'Coupons', icon: Tag, count: couponsCount },
+    { id: 'banners', label: 'Hero Banners', icon: ImageIcon, count: bannersCount },
+    { id: 'seasonal', label: 'Seasonal Offers', icon: Sparkles }
+  ];
 
-        <button 
-          type="button"
-          className={activeTab === "seasonal" ? "active" : ""} 
-          onClick={() => setActiveTab("seasonal")}
-        >
-          <span className="menu-icon"><Sparkles size={18} /></span> Seasonal Offers
-        </button>
+  return (
+    <aside className="w-64 bg-[#f2f4f7] dark:bg-[#12141c] border-r border-[#e2bec2]/40 dark:border-white/10 flex flex-col h-screen py-6 px-4 gap-2 shrink-0">
+      {/* Brand Header */}
+      <div className="px-3 mb-6">
+        <h1 className="text-xl font-bold text-[#b80149] dark:text-[#ff3366] tracking-tight">RamCart Admin</h1>
+        <p className="text-xs font-semibold text-[#878787] uppercase tracking-wider mt-0.5">Management Console</p>
+      </div>
+
+      {/* Navigation Menu */}
+      <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-1">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
+                isActive 
+                  ? "bg-[#db2b60] text-white font-bold shadow-md shadow-[#db2b60]/20" 
+                  : "text-[#5a4044] dark:text-[#a3b0cc] hover:bg-[#e6e8eb] dark:hover:bg-[#1e2029]"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon size={18} className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? "text-white" : "text-[#8e6f73] dark:text-[#8090a6]"}`} />
+                <span className="text-sm font-medium tracking-wide">{item.label}</span>
+              </div>
+              {item.count !== undefined && item.count > 0 && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isActive 
+                    ? "bg-white/20 text-white" 
+                    : "bg-[#e6e8eb] dark:bg-[#1e2029] text-[#5a4044] dark:text-[#a3b0cc] border border-[#e2bec2]/30 dark:border-white/5"
+                }`}>
+                  {item.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </nav>
 
-      {/* Bottom Profile and Logout Section */}
-      <div className="sidebar-footer" style={{
-        marginTop: 'auto',
-        paddingTop: '20px',
-        borderTop: '1px solid var(--border-color)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--accent-light)',
-            color: 'var(--accent-color)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <User size={20} />
+      {/* Bottom Profile and Logout */}
+      <div className="mt-auto pt-4 border-t border-[#e2bec2]/40 dark:border-white/10 flex flex-col gap-4">
+        <div className="flex items-center gap-3 px-1">
+          <div className="w-10 h-10 rounded-full bg-[#ffd9de] dark:bg-[#ffd9de]/10 text-[#b80149] dark:text-[#ff3366] flex items-center justify-center font-bold">
+            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={20} />}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1.2' }}>
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-bold text-[#191c1e] dark:text-[#ebf1ff] truncate">
               {user?.name || 'Admin User'}
             </span>
-            <span style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600' }}>
+            <span className="text-[10px] font-bold text-[#878787] uppercase tracking-wider">
               {user?.role === 'admin' ? 'System Root' : 'Administrator'}
             </span>
           </div>
         </div>
+
         <button 
           type="button"
           onClick={handleLogout}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            color: '#ef4444',
-            border: 'none',
-            borderRadius: 'var(--border-radius-sm)',
-            fontSize: '0.85rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'var(--transition-smooth)'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-all duration-200 text-sm font-semibold cursor-pointer"
         >
           <LogOut size={16} />
           Logout
         </button>
       </div>
-    </div>
+    </aside>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, ShoppingCart, Settings, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { User, ShoppingCart, Shield, Trash2, ChevronDown, ChevronUp, UserCheck, AlertTriangle } from 'lucide-react';
 import { adminApi } from '../../Utils/adminApi';
 
 export const AdminUsersTab = ({ 
@@ -10,6 +10,10 @@ export const AdminUsersTab = ({
   triggerConfirm,
   logAction
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all"); // "all" | "admin" | "customer"
+  const [cartFilter, setCartFilter] = useState("all"); // "all" | "active" | "empty"
+  
   const [expandedUserEmail, setExpandedUserEmail] = useState(null);
 
   // Cart normalization helpers
@@ -49,6 +53,31 @@ export const AdminUsersTab = ({
     const items = getNormalizedCartItems(cartData);
     return items.reduce((acc, curr) => acc + curr.quantity, 0);
   };
+
+  // Filter users list
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const nameMatch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      let roleMatch = true;
+      if (roleFilter === 'admin') {
+        roleMatch = u.isAdmin === true;
+      } else if (roleFilter === 'customer') {
+        roleMatch = !u.isAdmin;
+      }
+
+      let cartMatch = true;
+      const cartCount = calculateCartItemsCount(u.cartData);
+      if (cartFilter === 'active') {
+        cartMatch = cartCount > 0;
+      } else if (cartFilter === 'empty') {
+        cartMatch = cartCount === 0;
+      }
+
+      return nameMatch && roleMatch && cartMatch;
+    });
+  }, [users, searchQuery, roleFilter, cartFilter]);
 
   const handleToggleRole = (user) => {
     const nextRole = !user.isAdmin;
@@ -95,185 +124,195 @@ export const AdminUsersTab = ({
   };
 
   return (
-    <div className="admin-users-section animate-fade-in">
-      <h2>Accounts Directory & Active Carts</h2>
-      <p className="admin-helper-note">
-        💡 <strong>Carts Audit Mode:</strong> Click any user profile row in the directory below to expand their details and view active items inside their shopping carts. You can adjust administrative roles or terminate accounts as needed.
-      </p>
-      
-      <div className="table-wrapper" style={{ overflowX: 'auto', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th style={{ paddingLeft: '24px' }}>User Profile Name</th>
-              <th>Email Address</th>
-              <th>Administrative Role</th>
-              <th style={{ textAlign: 'center' }}>Cart Contents</th>
-              <th style={{ paddingRight: '24px', textAlign: 'right' }}>Controls</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u, i) => {
-              const isExpanded = expandedUserEmail === u.email;
-              const normalizedItems = getNormalizedCartItems(u.cartData);
-              const totalQty = calculateCartItemsCount(u.cartData);
+    <div className="flex flex-col gap-6 animate-fade-in w-full text-[#191c1e] dark:text-[#ebf1ff]">
+      {/* Title Header */}
+      <div>
+        <h2 className="text-xl font-bold tracking-tight">Users List</h2>
+        <p className="text-sm text-[#878787] mt-0.5">Manage user accounts, roles, and impersonate baskets for support.</p>
+      </div>
 
-              return (
-                <React.Fragment key={i}>
-                  {/* Main User row */}
-                  <tr 
-                    className={`user-main-row ${isExpanded ? "active-expanded" : ""} ${u.isAdmin ? "admin-account-tr" : ""}`}
-                    onClick={() => setExpandedUserEmail(isExpanded ? null : u.email)}
-                    style={{ cursor: "pointer", transition: 'background-color 0.2s' }}
-                  >
-                    <td className="user-name-cell" style={{ paddingLeft: '24px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: 'none' }}>
-                      <span className="expand-indicator" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </span>
-                      <User size={16} style={{ color: 'var(--text-secondary)' }} />
-                      <span>{u.name}</span>
-                    </td>
-                    
-                    <td className="user-email-cell" style={{ verticalAlign: 'middle' }}>{u.email}</td>
-                    
-                    <td style={{ verticalAlign: 'middle' }}>
-                      <span className={`role-badge ${u.isAdmin ? 'admin' : 'customer'}`} style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: 'var(--border-radius-full)',
-                        fontSize: '0.75rem',
-                        fontWeight: '700'
-                      }}>
-                        {u.isAdmin ? "ADMIN PRIVILEGES" : "STANDARD CUSTOMER"}
-                      </span>
-                    </td>
-                    
-                    <td className="user-cart-count-cell" style={{ verticalAlign: 'middle', textAlign: 'center' }}>
-                      <span className="user-items-added" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <ShoppingCart size={14} style={{ color: 'var(--accent-color)' }} /> 
-                        <span>{totalQty} {totalQty === 1 ? 'Item' : 'Items'}</span>
-                      </span>
-                    </td>
-                    
-                    <td onClick={(e) => e.stopPropagation()} style={{ paddingRight: '24px', verticalAlign: 'middle', textAlign: 'right' }}>
-                      <div className="action-buttons-wrapper" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button 
-                          type="button"
-                          className="user-role-toggle-btn"
-                          onClick={() => handleToggleRole(u)}
-                          style={{
-                            display: 'inline-flex', 
-                            alignItems: 'center', 
-                            gap: '4px',
-                            padding: '8px 14px',
-                            backgroundColor: 'var(--bg-primary)',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-primary)',
-                            borderRadius: 'var(--border-radius-full)',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <Settings size={12} />
-                          {u.isAdmin ? "Revoke Admin" : "Promote to Admin"}
-                        </button>
-                        <button 
-                          type="button"
-                          className="user-delete-btn"
-                          onClick={() => handleDeleteUser(u)}
-                          style={{
-                            display: 'inline-flex', 
-                            alignItems: 'center', 
-                            gap: '4px',
-                            padding: '8px 14px',
-                            backgroundColor: '#fee2e2',
-                            color: '#ef4444',
-                            border: 'none',
-                            borderRadius: 'var(--border-radius-full)',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <Trash2 size={12} />
-                          Terminate
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+      {/* Filters Strip */}
+      <div className="bg-white dark:bg-[#12141c] rounded-2xl p-4 shadow-sm border border-[#e2bec2]/40 dark:border-white/10 flex flex-wrap items-center gap-4 transition-colors duration-200">
+        {/* Search */}
+        <div className="flex-1 min-w-[200px]">
+          <input 
+            type="text" 
+            placeholder="Search users by name or email..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 px-4 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] outline-none text-xs"
+          />
+        </div>
 
-                  {/* Cart details list */}
-                  {isExpanded && (
-                    <tr className="user-detail-drawer-row">
-                      <td colSpan="5" className="drawer-container-td" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px 24px' }}>
-                        <div className="user-drawer-card animate-slide-down" style={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '12px',
-                          padding: '20px'
-                        }}>
-                          <h4 style={{ margin: '0 0 16px 0', fontSize: '0.9rem', fontWeight: '800' }}>🛒 Active Basket Audit for {u.name}</h4>
-                          {normalizedItems.length === 0 ? (
-                            <p className="empty-drawer-note" style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>No items currently stored inside this user's shopping basket.</p>
-                          ) : (
-                            <div className="drawer-cart-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                              {normalizedItems.map((cartItem, idx) => {
-                                const prodDetails = products.find(p => p.id === cartItem.id);
-                                return (
-                                  <div key={idx} className="drawer-cart-item-row" style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '12px',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: '8px',
-                                    backgroundColor: 'var(--bg-primary)'
-                                  }}>
-                                    {prodDetails ? (
-                                      <>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                          <img src={prodDetails.image} alt={prodDetails.name} className="drawer-prod-thumb" style={{ width: '40px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />
-                                          <div className="drawer-prod-info" style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span className="item-title" style={{ fontSize: '0.85rem', fontWeight: '700' }}>{prodDetails.name}</span>
-                                            <div className="item-specs" style={{ display: 'flex', gap: '10px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                              <span>Size: <strong>{cartItem.size}</strong></span>
-                                              <span>Color: <strong>{cartItem.color}</strong></span>
-                                              <span>Qty: <strong>{cartItem.quantity}</strong></span>
-                                              <span>Unit Price: <strong>${prodDetails.new_price}</strong></span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="drawer-item-total" style={{ fontSize: '0.85rem', fontWeight: '700' }}>
-                                          <span>Total: <strong>${prodDetails.new_price * cartItem.quantity}</strong></span>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="drawer-corrupted-item" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        <span>⚠️ Legacy Product ID #{cartItem.id} | Size: {cartItem.size} | Color: {cartItem.color} | Qty: {cartItem.quantity} (Product deleted from database)</span>
-                                      </div>
-                                    )}
+        {/* Role Select */}
+        <select 
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="h-10 px-3 pr-8 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold text-[#5a4044] dark:text-[#a3b0cc] outline-none cursor-pointer"
+        >
+          <option value="all">All Roles</option>
+          <option value="admin">Super Admin</option>
+          <option value="customer">Standard Customer</option>
+        </select>
+
+        {/* Status Select */}
+        <select 
+          value={cartFilter}
+          onChange={(e) => setCartFilter(e.target.value)}
+          className="h-10 px-3 pr-8 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold text-[#5a4044] dark:text-[#a3b0cc] outline-none cursor-pointer"
+        >
+          <option value="all">All Cart Status</option>
+          <option value="active">Active Cart</option>
+          <option value="empty">Empty Cart</option>
+        </select>
+
+        {/* Clear */}
+        {(searchQuery || roleFilter !== 'all' || cartFilter !== 'all') && (
+          <button 
+            type="button"
+            onClick={() => { setSearchQuery(""); setRoleFilter("all"); setCartFilter("all"); }}
+            className="text-xs font-bold text-[#b80149] dark:text-[#ff3366] hover:underline cursor-pointer bg-transparent border-none p-0"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
+      {/* Users Card Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filteredUsers.map((u, idx) => {
+          const isExpanded = expandedUserEmail === u.email;
+          const normalizedItems = getNormalizedCartItems(u.cartData);
+          const totalQty = calculateCartItemsCount(u.cartData);
+          const hasActiveCart = totalQty > 0;
+
+          return (
+            <div 
+              key={idx} 
+              className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/30 dark:border-white/5 overflow-hidden flex flex-col transition-all duration-200 hover:shadow-md hover:border-[#e2bec2]/60"
+            >
+              {/* Card Header */}
+              <div className="p-4 border-b border-[#e2bec2]/20 dark:border-white/5 flex gap-4 items-center bg-[#f2f4f7]/30 dark:bg-[#1e2029]/30">
+                <div className="w-11 h-11 rounded-full bg-[#ffd9de] dark:bg-[#ffd9de]/10 text-[#b80149] dark:text-[#ff3366] flex items-center justify-center font-bold text-sm">
+                  {u.name ? u.name.charAt(0).toUpperCase() : <User size={18} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs font-extrabold text-[#191c1e] dark:text-[#ebf1ff] truncate">
+                    {u.name || 'Anonymous User'}
+                  </h3>
+                  <p className="text-[10px] text-[#878787] font-semibold truncate mt-0.5">
+                    {u.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card Details Info */}
+              <div className="p-4 flex-1 flex flex-col gap-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-semibold text-[#878787]">Role Profile</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    u.isAdmin 
+                      ? "bg-purple-50 dark:bg-purple-950/20 text-purple-600 border border-purple-100" 
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700"
+                  }`}>
+                    {u.isAdmin ? "Super Admin" : "Customer"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-semibold text-[#878787]">Cart Status</span>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    {hasActiveCart ? (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-[#388E3C] animate-pulse"></span>
+                        <span className="text-[#388E3C] text-[11px]">{totalQty} {totalQty === 1 ? 'item' : 'items'} inside</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-[#878787]"></span>
+                        <span className="text-[#878787] text-[11px]">Empty Basket</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded active cart checklist drawer inline inside the Card */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-[#e2bec2]/20 dark:border-white/5 animate-slide-down flex flex-col gap-2.5">
+                    <h4 className="text-[10px] font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <ShoppingCart size={12} /> Active Cart Audit
+                    </h4>
+                    {normalizedItems.length === 0 ? (
+                      <p className="text-[11px] text-[#878787] font-medium italic">No items stored in cart</p>
+                    ) : (
+                      <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
+                        {normalizedItems.map((cartItem, cIdx) => {
+                          const prodDetails = products.find(p => p.id === cartItem.id);
+                          return (
+                            <div key={cIdx} className="p-2 border border-[#e2bec2]/30 dark:border-white/5 bg-[#f2f4f7]/30 dark:bg-[#1e2029]/30 rounded-xl flex items-center justify-between gap-2 text-[11px]">
+                              {prodDetails ? (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <img src={prodDetails.image} alt={prodDetails.name} className="w-8 h-10 object-cover rounded border border-[#e2bec2]/40" />
+                                    <div className="flex flex-col">
+                                      <span className="font-bold text-[#191c1e] dark:text-[#ebf1ff] truncate w-28">{prodDetails.name}</span>
+                                      <span className="text-[10px] text-[#878787] mt-0.5">{cartItem.size} / {cartItem.color} &bull; Qty: {cartItem.quantity}</span>
+                                    </div>
                                   </div>
-                                );
-                              })}
+                                  <div className="font-extrabold text-[#191c1e] dark:text-[#ebf1ff]">
+                                    ₹{prodDetails.newPrice * cartItem.quantity}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-[10px] text-[#878787] flex items-center gap-1">
+                                  <AlertTriangle size={12} className="text-red-500" />
+                                  <span>Deleted Item #{cartItem.id} ({cartItem.quantity} qty)</span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  No registered users found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Card Footer Actions */}
+              <div className="p-3 bg-[#f2f4f7]/30 dark:bg-[#1e2029]/30 border-t border-[#e2bec2]/20 dark:border-white/5 flex gap-1.5 justify-end">
+                <button 
+                  type="button"
+                  onClick={() => setExpandedUserEmail(isExpanded ? null : u.email)}
+                  className="px-2.5 py-1.5 border border-[#e2bec2]/60 dark:border-white/10 hover:bg-[#e6e8eb] dark:hover:bg-[#363636] text-[#5a4044] dark:text-[#a3b0cc] text-[11px] font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer bg-white dark:bg-[#12141c]"
+                >
+                  {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  <span>Inspect Cart</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleToggleRole(u)}
+                  className="px-2.5 py-1.5 border border-[#db2b60]/50 hover:bg-[#db2b60]/10 text-[#db2b60] text-[11px] font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer bg-white dark:bg-[#12141c]"
+                >
+                  <UserCheck size={12} />
+                  <span>{u.isAdmin ? "Demote" : "Promote"}</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleDeleteUser(u)}
+                  className="px-2.5 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 text-[11px] font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer border-none"
+                >
+                  <Trash2 size={12} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {filteredUsers.length === 0 && (
+          <div className="col-span-full p-12 text-center text-sm font-medium text-[#878787]">
+            No user profiles matching filters in database collections.
+          </div>
+        )}
       </div>
     </div>
   );

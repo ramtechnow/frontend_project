@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Image, Loader2, ToggleLeft, ToggleRight, Upload, Edit3, X, Check } from 'lucide-react';
+import { Trash2, Loader2, ToggleLeft, ToggleRight, Upload, Edit3, X, Check, Link as LinkIcon, Plus } from 'lucide-react';
 import { adminApi } from '../../Utils/adminApi';
 import { BACKEND_URL } from '../../config';
 
@@ -256,286 +256,194 @@ export const AdminBannersTab: React.FC<AdminBannersTabProps> = ({
     });
   };
 
-  const inputStyle: React.CSSProperties = {
-    height: '40px',
-    padding: '0 12px',
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    outline: 'none',
-    backgroundColor: 'var(--bg-primary)',
-    color: 'var(--text-primary)',
-    width: '100%',
-    boxSizing: 'border-box'
-  };
-
-  const selectStyle: React.CSSProperties = { ...inputStyle };
-  const labelStyle: React.CSSProperties = { fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '4px' };
-  const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '4px' };
-
   return (
-    <div className="coupon-manager-section animate-fade-in">
-      <h2>Promotional Banners Manager</h2>
-      <p className="admin-helper-note">
-        💡 <strong>Banner Control:</strong> Create and edit hero banners, update overlay descriptions, target links, and promotional offer tags.
-      </p>
+    <div className="flex flex-col gap-6 animate-fade-in w-full text-[#191c1e] dark:text-[#ebf1ff]">
+      {/* Header Title */}
+      <div>
+        <h2 className="text-xl font-bold tracking-tight">Hero Banners Manager</h2>
+        <p className="text-sm text-[#878787] mt-0.5">Manage promotional sliders and highlight campaigns.</p>
+      </div>
 
-      {/* Create Form Card */}
-      <div className="admin-form-card" style={{ backgroundColor: 'var(--bg-secondary)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
-        <h3 style={{ margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-          <Image size={18} className="text-accent-pink" />
-          Create New Hero Banner
-        </h3>
+      {/* Bento Grid layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Left Side: Active Banners Grid */}
+        <div className="xl:col-span-2 flex flex-col gap-4">
+          <h3 className="text-xs font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider border-b border-[#e2bec2]/20 dark:border-white/5 pb-2">
+            Active Storefront Banners
+          </h3>
 
-        <form onSubmit={handleCreateBanner}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>Banner Image <span style={{ color: 'var(--accent-pink)' }}>*</span></label>
-            <div 
-              style={{
-                border: '2px dashed var(--border-color)',
-                borderRadius: '12px',
-                padding: '16px',
-                textAlign: 'center',
-                backgroundColor: 'var(--bg-primary)',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileSelect(e, false)}
-                style={{ display: 'none' }}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {banners.map((b) => (
+              <div 
+                key={b._id} 
+                className="bg-white dark:bg-[#12141c] rounded-2xl overflow-hidden shadow-sm border border-[#e2bec2]/40 dark:border-white/10 flex flex-col group hover:shadow-md transition-shadow duration-200"
+              >
+                {/* Widescreen image box */}
+                <div className="h-44 w-full relative bg-gray-100 dark:bg-gray-800">
+                  <img src={b.image} alt={b.description} className="w-full h-full object-cover" />
+                  
+                  {/* Page Indicator Tag */}
+                  <span className="absolute top-3 left-3 bg-[#191c1e]/85 text-white px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+                    {b.page} Page Slider
+                  </span>
 
-              {uploading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px 0' }}>
-                  <Loader2 size={20} className="animate-spin text-accent-pink" />
-                  <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>Processing image file…</span>
+                  {/* Active status indicator badge */}
+                  <div className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm ${
+                    b.isActive 
+                      ? "bg-green-500 text-white" 
+                      : "bg-[#878787] text-white"
+                  }`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                    {b.isActive ? 'Active' : 'Disabled'}
+                  </div>
                 </div>
-              ) : (imageUrl || imagePreview) ? (
-                <div style={{ position: 'relative', display: 'inline-block', width: '100%', maxHeight: '200px' }}>
-                  <img
-                    src={imageUrl || imagePreview}
-                    alt="Banner preview"
-                    style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); clearImage(); }}
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '28px',
-                      height: '28px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <X size={14} />
-                  </button>
+
+                {/* Info and Actions */}
+                <div className="p-4 flex flex-col flex-1 gap-2 bg-[#f2f4f7]/20 dark:bg-[#1e2029]/20">
+                  <div className="flex justify-between items-start gap-2">
+                    <h4 className="text-xs font-extrabold text-[#191c1e] dark:text-white line-clamp-1">
+                      {b.description}
+                    </h4>
+                    {b.discountType && (
+                      <span className="bg-[#ffd9de] text-[#b80149] text-[9px] font-black px-2 py-0.5 rounded-full shrink-0">
+                        {b.discountType === 'percentage' ? `${b.discountValue}% OFF` : `₹${b.discountValue} OFF`}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-[#878787] font-semibold flex items-center gap-1 mt-1 truncate">
+                    <LinkIcon size={12} className="text-[#db2b60]" />
+                    <span>Redirects to: {b.targetLink}</span>
+                  </p>
+
+                  {/* Action buttons footer inside card */}
+                  <div className="mt-3 pt-3 border-t border-[#e2bec2]/20 dark:border-white/5 flex items-center justify-between">
+                    <button
+                      type="button"
+                      disabled={busyBannerId === b._id}
+                      onClick={() => handleToggleBanner(b._id, b.isActive)}
+                      className={`flex items-center gap-1 text-[11px] font-black border-none bg-transparent cursor-pointer disabled:opacity-50 transition-colors ${
+                        b.isActive ? "text-[#388E3C]" : "text-[#878787]"
+                      }`}
+                    >
+                      {b.isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                      <span>{b.isActive ? 'Disable' : 'Enable'}</span>
+                    </button>
+
+                    <div className="flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(b)}
+                        className="px-2.5 py-1.5 border border-[#e2bec2]/60 dark:border-white/10 hover:bg-[#e6e8eb] dark:hover:bg-[#363636] text-[#5a4044] dark:text-[#a3b0cc] text-[10px] font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer bg-white dark:bg-[#12141c]"
+                      >
+                        <Edit3 size={11} /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBanner(b)}
+                        className="px-2.5 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 text-[10px] font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer border-none"
+                      >
+                        <Trash2 size={11} /> Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 0' }}>
-                  <Upload size={28} style={{ color: 'var(--accent-pink)' }} />
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Click to upload banner image</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>High resolution widescreen (1400px recommended)</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Click Destination Product <span style={{ color: 'var(--accent-pink)' }}>*</span></label>
-              <select value={targetProductId} onChange={handleProductSelect} style={selectStyle} disabled={loadingProducts}>
-                <option value="">{loadingProducts ? 'Loading products…' : '— Select a product —'}</option>
-                {products.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Page Placement</label>
-              <select value={page} onChange={(e) => setPage(e.target.value)} style={selectStyle}>
-                <option value="home">Home Page Hero</option>
-                <option value="men">Men's Category</option>
-                <option value="women">Women's Category</option>
-                <option value="kids">Kids' Category</option>
-              </select>
-            </div>
-
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Overlay Description <span style={{ color: 'var(--accent-pink)' }}>*</span></label>
-              <input
-                type="text"
-                placeholder="E.g. Up to 50% Off Autumn Jackets"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                style={inputStyle}
-              />
-            </div>
-
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Promotional Offer Tag</label>
-              <select value={discountType} onChange={(e) => setDiscountType(e.target.value)} style={selectStyle}>
-                <option value="none">No Promotional Offer</option>
-                <option value="percentage">Percentage Discount (%)</option>
-                <option value="flat">Flat Amount Discount (₹)</option>
-              </select>
-            </div>
-
-            {discountType !== 'none' && (
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Discount Value {discountType === 'percentage' ? '(%)' : '(₹)'}</label>
-                <input
-                  type="number"
-                  placeholder={discountType === 'percentage' ? 'e.g. 20' : 'e.g. 300'}
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                  style={inputStyle}
-                />
+              </div>
+            ))}
+            {banners.length === 0 && (
+              <div className="col-span-full p-12 text-center text-xs font-semibold text-[#878787] bg-white dark:bg-[#12141c] rounded-2xl border border-[#e2bec2]/30 dark:border-white/5">
+                No hero banners published yet.
               </div>
             )}
           </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={saving || uploading}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: 'var(--accent-pink)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '800',
-              fontSize: '0.85rem',
-              cursor: saving ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            Publish Banner
-          </button>
-        </form>
-      </div>
+        {/* Right Side: Draft New Banner Form */}
+        <div className="xl:col-span-1">
+          <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 p-6 flex flex-col gap-4 sticky top-24 transition-colors duration-200">
+            <h3 className="text-xs font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+              <Plus size={16} /> Draft New Banner
+            </h3>
 
-      {/* Banners Listing */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-        {banners.map((b) => (
-          <div key={b._id} style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            <div style={{ position: 'relative', height: '140px' }}>
-              <img src={b.image} alt={b.description} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <span style={{
-                position: 'absolute', top: 8, left: 8,
-                backgroundColor: 'rgba(0,0,0,0.75)', color: '#fff',
-                padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase'
-              }}>
-                {b.page} Page
-              </span>
-            </div>
-
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800' }}>{b.description}</h4>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Destination: {b.targetLink}</span>
-
-              {b.discountType && (
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent-pink)', fontWeight: '700' }}>
-                  Offer: {b.discountType === 'percentage' ? `${b.discountValue}% OFF` : `₹${b.discountValue} OFF`}
-                </span>
-              )}
-
-              <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)' }}>
-                <button
-                  type="button"
-                  onClick={() => handleToggleBanner(b._id, b.isActive)}
-                  disabled={busyBannerId === b._id}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none',
-                    color: b.isActive ? '#10b981' : 'var(--text-muted)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
-                  }}
+            <form onSubmit={handleCreateBanner} className="flex flex-col gap-4">
+              {/* Image Upload Zone */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Banner Widescreen Image</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-[#e2bec2]/60 dark:border-white/10 rounded-xl p-5 text-center bg-[#f2f4f7]/20 dark:bg-[#1e2029]/20 hover:bg-[#e6e8eb] dark:hover:bg-[#363636] transition-all cursor-pointer flex flex-col items-center justify-center gap-2"
                 >
-                  {b.isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                  {b.isActive ? 'Active' : 'Disabled'}
-                </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileSelect(e, false)}
+                    className="hidden"
+                  />
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(b)}
-                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Edit3 size={13} /> Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteBanner(b)}
-                    style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#ef4444', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Trash2 size={13} /> Delete
-                  </button>
+                  {uploading ? (
+                    <div className="flex items-center justify-center gap-2 py-4">
+                      <Loader2 size={18} className="animate-spin text-[#db2b60]" />
+                      <span className="text-xs font-bold">Uploading file...</span>
+                    </div>
+                  ) : (imageUrl || imagePreview) ? (
+                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-[#e2bec2]/40">
+                      <img src={imageUrl || imagePreview} alt="Banner uploader preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); clearImage(); }}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 border-none cursor-pointer"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5 py-4">
+                      <Upload size={24} className="text-[#db2b60]" />
+                      <span className="text-xs font-bold text-[#191c1e] dark:text-white">Click to upload banner</span>
+                      <span className="text-[10px] text-[#878787] font-semibold">Widescreen 1400x450 recommended</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Edit Banner Modal */}
-      {editingBanner && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', padding: '24px', maxWidth: '500px', width: '100%', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800' }}>Edit Hero Banner</h3>
-              <button onClick={() => setEditingBanner(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={18}/></button>
-            </div>
+              {/* Title / Description */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Overlay Banner Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. End of Season Sale &bull; Up to 50% Off"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full h-10 px-3 text-xs rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
+                />
+              </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={labelStyle}>Banner Image</label>
-                <img src={editImageUrl} alt="Edit preview" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }} />
-                <button
-                  type="button"
-                  onClick={() => editFileInputRef.current?.click()}
-                  style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '700', borderRadius: '6px', border: '1px solid var(--border-color)', cursor: 'pointer' }}
+              {/* Click Target selection */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Target Destination Link</label>
+                <select 
+                  value={targetProductId} 
+                  onChange={handleProductSelect}
+                  className="w-full h-10 px-3 text-xs rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none cursor-pointer"
+                  disabled={loadingProducts}
                 >
-                  Change Image File
-                </button>
-                <input ref={editFileInputRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, true)} style={{ display: 'none' }} />
+                  <option value="">{loadingProducts ? 'Syncing Catalog...' : '— Select target product —'}</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
               </div>
 
-              <div>
-                <label style={labelStyle}>Overlay Description</label>
-                <input type="text" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} style={inputStyle} />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Target Link</label>
-                <input type="text" value={editTargetLink} onChange={(e) => setEditTargetLink(e.target.value)} style={inputStyle} />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Page Placement</label>
-                <select value={editPage} onChange={(e) => setEditPage(e.target.value)} style={selectStyle}>
+              {/* Placement */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Page Placement Slider</label>
+                <select 
+                  value={page} 
+                  onChange={(e) => setPage(e.target.value)}
+                  className="w-full h-10 px-3 text-xs rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none cursor-pointer"
+                >
                   <option value="home">Home Page Hero</option>
                   <option value="men">Men's Category</option>
                   <option value="women">Women's Category</option>
@@ -543,37 +451,162 @@ export const AdminBannersTab: React.FC<AdminBannersTabProps> = ({
                 </select>
               </div>
 
-              <div>
-                <label style={labelStyle}>Promotional Offer Tag</label>
-                <select value={editDiscountType} onChange={(e) => setEditDiscountType(e.target.value)} style={selectStyle}>
-                  <option value="none">No Promotional Offer</option>
+              {/* Discount Tag type */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Promotional Discount Tag</label>
+                <select 
+                  value={discountType} 
+                  onChange={(e) => setDiscountType(e.target.value)}
+                  className="w-full h-10 px-3 text-xs rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none cursor-pointer"
+                >
+                  <option value="none">No Offer tag</option>
                   <option value="percentage">Percentage Discount (%)</option>
                   <option value="flat">Flat Amount Discount (₹)</option>
                 </select>
               </div>
 
-              {editDiscountType !== 'none' && (
-                <div>
-                  <label style={labelStyle}>Discount Value {editDiscountType === 'percentage' ? '(%)' : '(₹)'}</label>
-                  <input type="number" value={editDiscountValue} onChange={(e) => setEditDiscountValue(e.target.value)} style={inputStyle} />
+              {/* Discount value if active */}
+              {discountType !== 'none' && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">
+                    Discount Value {discountType === 'percentage' ? '(%)' : '(₹)'}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={discountType === 'percentage' ? 'e.g. 20' : 'e.g. 400'}
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="w-full h-10 px-3 text-xs rounded-xl border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
+                  />
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+              {/* Submit CTA */}
+              <button
+                type="submit"
+                disabled={saving || uploading}
+                className="w-full mt-2 py-2.5 px-4 bg-[#db2b60] hover:bg-[#b80149] text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#db2b60]/20 disabled:opacity-50 border-none transition-all duration-150 text-xs"
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                <span>Publish Promo Banner</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Banner Dialog Modal */}
+      {editingBanner && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-[#12141c] rounded-2xl border border-[#e2bec2]/40 dark:border-white/10 p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4 animate-scale-in max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-[#e2bec2]/20 dark:border-white/5 pb-3">
+              <h3 className="text-sm font-black text-[#b80149] dark:text-[#ff3366] uppercase tracking-wider">Edit Banner Specifications</h3>
+              <button 
+                onClick={() => setEditingBanner(null)} 
+                className="text-[#878787] hover:text-[#5a4044] cursor-pointer bg-transparent border-none p-0"
+              >
+                <X size={18}/>
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3.5">
+              {/* Image */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Banner Image</label>
+                <img src={editImageUrl} alt="Edit preview" className="w-full h-28 object-cover rounded-xl border border-[#e2bec2]/40 mb-2 bg-gray-100" />
+                <button
+                  type="button"
+                  onClick={() => editFileInputRef.current?.click()}
+                  className="self-start px-3 py-1.5 border border-[#e2bec2]/60 dark:border-white/10 hover:bg-[#e6e8eb] dark:hover:bg-[#363636] text-[#5a4044] dark:text-[#a3b0cc] text-xs font-bold rounded-lg cursor-pointer bg-white dark:bg-[#12141c]"
+                >
+                  Replace image file
+                </button>
+                <input ref={editFileInputRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, true)} className="hidden" />
+              </div>
+
+              {/* Title Description */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Overlay Description</label>
+                <input 
+                  type="text" 
+                  value={editDescription} 
+                  onChange={(e) => setEditDescription(e.target.value)} 
+                  className="w-full h-9 px-3 rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-xs"
+                />
+              </div>
+
+              {/* Target Redirect */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Target Link</label>
+                <input 
+                  type="text" 
+                  value={editTargetLink} 
+                  onChange={(e) => setEditTargetLink(e.target.value)} 
+                  className="w-full h-9 px-3 rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-xs"
+                />
+              </div>
+
+              {/* Placement */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Placement</label>
+                <select 
+                  value={editPage} 
+                  onChange={(e) => setEditPage(e.target.value)} 
+                  className="w-full h-9 px-3 rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-xs cursor-pointer"
+                >
+                  <option value="home">Home Page Hero</option>
+                  <option value="men">Men's Category</option>
+                  <option value="women">Women's Category</option>
+                  <option value="kids">Kids' Category</option>
+                </select>
+              </div>
+
+              {/* Promo tags */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">Promo Offer Tag</label>
+                <select 
+                  value={editDiscountType} 
+                  onChange={(e) => setEditDiscountType(e.target.value)} 
+                  className="w-full h-9 px-3 rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-xs cursor-pointer"
+                >
+                  <option value="none">No Offer tag</option>
+                  <option value="percentage">Percentage Discount (%)</option>
+                  <option value="flat">Flat Amount Discount (₹)</option>
+                </select>
+              </div>
+
+              {/* Discount Value */}
+              {editDiscountType !== 'none' && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc]">
+                    Discount Value {editDiscountType === 'percentage' ? '(%)' : '(₹)'}
+                  </label>
+                  <input 
+                    type="number" 
+                    value={editDiscountValue} 
+                    onChange={(e) => setEditDiscountValue(e.target.value)} 
+                    className="w-full h-9 px-3 rounded-lg border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none text-xs"
+                  />
+                </div>
+              )}
+
+              {/* Modal controls */}
+              <div className="flex gap-3 mt-4 border-t border-[#e2bec2]/20 dark:border-white/5 pt-4">
                 <button
                   type="button"
                   onClick={() => setEditingBanner(null)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', fontWeight: '700', cursor: 'pointer' }}
+                  className="flex-1 py-2 rounded-xl border border-[#e2bec2]/60 dark:border-white/10 text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc] hover:bg-[#f2f4f7] cursor-pointer bg-transparent"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveEditedBanner}
                   disabled={saving}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent-pink)', color: '#fff', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  onClick={handleSaveEditedBanner}
+                  className="flex-1 py-2 bg-[#db2b60] hover:bg-[#b80149] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#db2b60]/20 border-none"
                 >
-                  {saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} Save Changes
+                  {saving ? <Loader2 size={14} className="animate-spin"/> : <Check size={14}/>} 
+                  <span>Save Changes</span>
                 </button>
               </div>
             </div>
@@ -583,3 +616,4 @@ export const AdminBannersTab: React.FC<AdminBannersTabProps> = ({
     </div>
   );
 };
+export default AdminBannersTab;

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, ChangeEvent } from 'react';
-import { Pencil, Trash2, Save, X, Search, Filter, Loader2, Plus } from 'lucide-react';
+import { Pencil, Trash2, X, Search, Filter, Loader2, Plus, AlertTriangle, Check } from 'lucide-react';
 import { adminApi } from '../../Utils/adminApi';
 import { compressImageToBase64, normalizeCategory } from '../../Utils/adminHelpers';
 import { Product, ProductVariant } from '../../features/catalog/types/productTypes';
@@ -43,6 +43,7 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all"); // "all" | "low" | "ok"
 
   // Editing Product Inline State
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -62,17 +63,23 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
       if (categoryFilter !== 'all') {
         const prodCat = prod.category?.toLowerCase() || '';
         const filterCat = categoryFilter.toLowerCase();
-        
         if (filterCat === 'kids') {
           catMatch = prodCat === 'kid' || prodCat === 'kids';
         } else {
           catMatch = prodCat === filterCat;
         }
       }
+
+      let stockMatch = true;
+      if (stockFilter === 'low') {
+        stockMatch = (prod.stockCount ?? 0) < 10;
+      } else if (stockFilter === 'ok') {
+        stockMatch = (prod.stockCount ?? 0) >= 10;
+      }
       
-      return nameMatch && catMatch;
+      return nameMatch && catMatch && stockMatch;
     });
-  }, [products, searchQuery, categoryFilter]);
+  }, [products, searchQuery, categoryFilter, stockFilter]);
 
   // Edit Handlers
   const syncVariants = (
@@ -114,7 +121,6 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
   const startEditing = (prod: Product) => {
     setEditingProductId(prod.id);
     
-    // Synthesize variants locally if they don't exist yet to make sure editing works
     let initialVariants: ProductVariant[] = prod.variants ? JSON.parse(JSON.stringify(prod.variants)) : [];
     if (initialVariants.length === 0) {
       const colors = prod.colors && prod.colors.length > 0 ? prod.colors : ['Black', 'White'];
@@ -290,426 +296,441 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
   };
 
   return (
-    <div className="admin-list-section animate-fade-in" style={{ color: 'var(--text-primary)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '800' }}>Product Catalog Audit</h2>
-        
-        {/* INTERACTIVE CONTROLS BAR */}
-        <div className="audit-controls" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)' }} />
-            <input 
-              type="text" 
-              className="audit-search-input" 
-              placeholder="Search catalog titles..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '36px', height: '40px', borderRadius: '40px', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-            />
-          </div>
-          
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Filter size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+    <div className="flex flex-col gap-6 animate-fade-in w-full text-[#191c1e] dark:text-[#ebf1ff]">
+      {/* Title Header */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-xl font-bold text-[#191c1e] dark:text-[#ebf1ff] tracking-tight">Catalog Audit</h2>
+          <p className="text-sm text-[#878787] mt-0.5">Manage inventory, pricing, and product details.</p>
+        </div>
+      </div>
+
+      {/* Interactive Controls & Filters */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Search */}
+        <div className="relative w-full sm:w-80">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#878787]" />
+          <input 
+            type="text" 
+            placeholder="Search catalog..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] focus:border-[#db2b60] focus:ring-1 focus:ring-[#db2b60] outline-none text-sm transition-all"
+          />
+        </div>
+
+        {/* Filters Select boxes */}
+        <div className="flex flex-wrap gap-2.5">
+          {/* Category */}
+          <div className="relative">
             <select 
-              className="audit-filter-select"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{ paddingLeft: '36px', height: '40px', borderRadius: '40px', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+              className="h-11 px-4 pr-9 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold text-[#5a4044] dark:text-[#a3b0cc] outline-none cursor-pointer hover:bg-[#e6e8eb] dark:hover:bg-[#363636] transition-colors appearance-none"
             >
               <option value="all">All Categories</option>
               <option value="women">Women</option>
               <option value="men">Men</option>
               <option value="kids">Kids</option>
             </select>
+            <Filter size={12} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#878787] pointer-events-none" />
+          </div>
+
+          {/* Stock Level */}
+          <div className="relative">
+            <select 
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value)}
+              className="h-11 px-4 pr-9 rounded-xl border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold text-[#5a4044] dark:text-[#a3b0cc] outline-none cursor-pointer hover:bg-[#e6e8eb] dark:hover:bg-[#363636] transition-colors appearance-none"
+            >
+              <option value="all">All Stock Levels</option>
+              <option value="low">Stock: Low (&lt; 10)</option>
+              <option value="ok">Stock: Healthy (&ge; 10)</option>
+            </select>
+            <Filter size={12} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#878787] pointer-events-none" />
           </div>
         </div>
       </div>
 
-      <div className="table-wrapper" style={{ overflowX: 'auto', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th style={{ paddingLeft: '24px' }}>Product</th>
-              <th>Title & Parameters</th>
-              <th>Category</th>
-              <th>Stock Control (Inline)</th>
-              <th>New Price</th>
-              <th>Old Price</th>
-              <th style={{ paddingRight: '24px', textAlign: 'right' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((prod) => {
-              const isEditing = editingProductId === prod.id;
-              const isSaving = savingProductId === prod.id;
+      {/* Audit Data Table */}
+      <div className="bg-white dark:bg-[#12141c] rounded-2xl shadow-sm border border-[#e2bec2]/40 dark:border-white/10 overflow-hidden flex flex-col transition-colors duration-200">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr className="bg-[#f2f4f7] dark:bg-[#1e2029] border-b border-[#e2bec2]/40 dark:border-white/10 text-xs font-bold text-[#5a4044] dark:text-[#a3b0cc] uppercase tracking-wider">
+                <th className="p-4 w-28 text-center">Product View</th>
+                <th className="p-4">Title & Specifications</th>
+                <th className="p-4 w-32">Category</th>
+                <th className="p-4 w-72">Stock Control (Inline)</th>
+                <th className="p-4 w-28">New Price</th>
+                <th className="p-4 w-28">Old Price</th>
+                <th className="p-4 w-44 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e2bec2]/20 dark:divide-white/5">
+              {filteredProducts.map((prod) => {
+                const isEditing = editingProductId === prod.id;
+                const isSaving = savingProductId === prod.id;
+                const totalStock = prod.stockCount ?? 0;
+                
+                // Anomalies calculations
+                const isLowStock = totalStock < 10;
+                const isMissingImages = !prod.image || (prod.images && prod.images.length === 0);
 
-              return (
-                <tr key={prod.id} className={isEditing ? "row-editing" : ""} style={{ transition: 'background-color 0.2s', borderBottom: '1px solid var(--border-color)' }}>
-                  {/* Thumbnail Image / Multi-Image Manager in Edit Mode */}
-                  <td style={{ paddingLeft: '24px', verticalAlign: 'middle' }}>
-                    {isEditing && editForm ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '130px' }}>
-                        {/* Horizontal Image strip */}
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {editForm.images.map((img, idx) => (
-                            <div key={idx} style={{ position: 'relative', width: '38px', height: '46px', borderRadius: '4px', overflow: 'hidden', border: idx === 0 ? '1.5px solid var(--accent-pink)' : '1px solid var(--border-color)' }}>
-                              <img src={img} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{
-                                position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
-                                backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', opacity: 0, transition: 'opacity 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                              onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                let rowBgClass = "";
+                if (isEditing) {
+                  rowBgClass = "bg-[#ffd9de]/5 dark:bg-[#ffd9de]/5";
+                } else if (isMissingImages) {
+                  rowBgClass = "bg-amber-500/5 dark:bg-amber-500/10";
+                } else if (isLowStock) {
+                  rowBgClass = "bg-red-500/5 dark:bg-red-500/10";
+                }
+
+                return (
+                  <tr 
+                    key={prod.id} 
+                    className={`transition-colors duration-150 hover:bg-[#f2f4f7]/30 dark:hover:bg-[#1e2029]/30 ${rowBgClass}`}
+                  >
+                    {/* Media Gallery / Single image preview */}
+                    <td className="p-4 align-middle">
+                      {isEditing && editForm ? (
+                        <div className="flex flex-col gap-2 justify-center items-center">
+                          {/* Image Thumbnail Grid */}
+                          <div className="flex flex-wrap gap-1.5 justify-center max-w-[120px]">
+                            {editForm.images.map((img, idx) => (
+                              <div 
+                                key={idx} 
+                                className={`relative w-8 h-10 rounded overflow-hidden border ${
+                                  idx === 0 ? "border-[#db2b60]" : "border-[#e2bec2]/40"
+                                } group`}
                               >
-                                <button type="button" onClick={() => handleReplaceClick(idx)} style={{ border: 'none', background: 'white', borderRadius: '50%', padding: '2px', cursor: 'pointer', color: '#111' }}>
-                                  <Pencil size={8} />
-                                </button>
-                                <button type="button" onClick={() => handleDeleteImage(idx)} style={{ border: 'none', background: '#ef4444', borderRadius: '50%', padding: '2px', cursor: 'pointer', color: 'white' }}>
-                                  <Trash2 size={8} />
-                                </button>
+                                <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center gap-1">
+                                  <button 
+                                    type="button" 
+                                    onClick={() => handleReplaceClick(idx)} 
+                                    className="p-0.5 bg-white text-gray-800 rounded-full hover:bg-gray-100 cursor-pointer"
+                                  >
+                                    <Pencil size={8} />
+                                  </button>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => handleDeleteImage(idx)} 
+                                    className="p-0.5 bg-red-600 text-white rounded-full hover:bg-red-700 cursor-pointer"
+                                  >
+                                    <Trash2 size={8} />
+                                  </button>
+                                </div>
                               </div>
+                            ))}
+                            {/* Upload New thumbnail trigger */}
+                            <button
+                              type="button"
+                              onClick={() => { setReplaceIndex(null); document.getElementById(`edit-image-input-file-${prod.id}`)?.click(); }}
+                              className="w-8 h-10 border border-dashed border-[#e2bec2] dark:border-white/20 rounded flex items-center justify-center text-[#878787] hover:border-[#db2b60] cursor-pointer bg-transparent"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+
+                          <input 
+                            type="file" 
+                            id={`edit-image-input-file-${prod.id}`}
+                            accept="image/*" 
+                            multiple={replaceIndex === null}
+                            onChange={handleAddImage}
+                            className="hidden"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex justify-center">
+                          {isMissingImages ? (
+                            <div className="w-12 h-14 rounded-lg border-2 border-dashed border-red-500 flex flex-col items-center justify-center text-red-500 bg-red-500/5">
+                              <AlertTriangle size={18} />
+                              <span className="text-[7px] font-bold uppercase mt-0.5">No Img</span>
                             </div>
-                          ))}
-                          <button 
-                            type="button"
-                            onClick={() => { setReplaceIndex(null); document.getElementById(`edit-image-input-file-${prod.id}`)?.click(); }}
-                            style={{ width: '38px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px dashed var(--border-color)', borderRadius: '4px', cursor: 'pointer', background: 'none', color: 'var(--text-muted)' }}
-                          >
-                            <Plus size={14} />
-                          </button>
+                          ) : (
+                            <img 
+                              src={prod.image} 
+                              alt={prod.name} 
+                              className="w-12 h-14 object-cover rounded-lg border border-[#e2bec2]/40 dark:border-white/10 shadow-sm"
+                            />
+                          )}
                         </div>
-                        <input 
-                          type="file" 
-                          id={`edit-image-input-file-${prod.id}`}
-                          accept="image/*" 
-                          multiple={replaceIndex === null}
-                          onChange={handleAddImage}
-                          style={{ display: 'none' }}
-                        />
-                      </div>
-                    ) : (
-                      <>
-                      <img 
-                        src={prod.image || ""} 
-                        alt={prod.name} 
-                        className="admin-prod-thumb" 
-                        style={{ width: '50px', height: '58px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling && ((e.target as HTMLImageElement).nextElementSibling as HTMLElement).style.removeProperty('display'); }}
-                      />
-                      <div style={{ display: 'none', width: '50px', height: '58px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '18px', fontWeight: 700, color: 'var(--text-muted)', lineHeight: '58px', textAlign: 'center' }}>
-                        {prod.name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                      </>
-                    )}
-                  </td>
-                  
-                  {/* Name and Attributes */}
-                  <td className="prod-title-cell" style={{ verticalAlign: 'middle' }}>
-                    {isEditing && editForm ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Title:</label>
-                          <input 
-                            type="text" 
-                            value={editForm.name} 
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-                          />
-                        </div>
+                      )}
+                    </td>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>🎨 Colors (comma-separated):</label>
-                          <input 
-                            type="text" 
-                            value={editForm.colors ? editForm.colors.join(', ') : ''} 
-                            onChange={(e) => {
-                              const newColors = e.target.value.split(',').map(c => c.trim()).filter(Boolean);
-                              const newVariants = syncVariants(newColors, editForm.sizes || [], editForm.variants, editForm.category, editForm.name, editForm.newPrice);
-                              setEditForm({ ...editForm, colors: newColors, variants: newVariants });
-                            }}
-                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>📏 Sizes (comma-separated):</label>
-                          <input 
-                            type="text" 
-                            value={editForm.sizes ? editForm.sizes.join(', ') : ''} 
-                            onChange={(e) => {
-                              const newSizes = e.target.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-                              const newVariants = syncVariants(editForm.colors || [], newSizes, editForm.variants, editForm.category, editForm.name, editForm.newPrice);
-                              setEditForm({ ...editForm, sizes: newSizes, variants: newVariants });
-                            }}
-                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>📝 Description:</label>
-                          <textarea 
-                            value={editForm.description || ''} 
-                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                            rows={2}
-                            style={{ padding: '6px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem', resize: 'vertical' }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="prod-name-bold" style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{prod.name}</span>
-                        <div className="prod-params-meta" style={{ display: 'flex', gap: '10px', marginTop: '4px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          <span>📏 Sizing: <strong>{prod.sizes?.join(', ') || 'N/A'}</strong></span>
-                          <span>🎨 Colors: <strong>{prod.colors?.join(', ') || 'N/A'}</strong></span>
-                        </div>
-                      </>
-                    )}
-                  </td>
-                  
-                  {/* Category Tag */}
-                  <td style={{ verticalAlign: 'middle' }}>
-                    {isEditing && editForm ? (
-                      <select 
-                        value={editForm.category} 
-                        onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                        style={{ height: '36px', padding: '0 8px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'pointer' }}
-                      >
-                        <option value="women">Women</option>
-                        <option value="men">Men</option>
-                        <option value="kid">Kids</option>
-                      </select>
-                    ) : (
-                      <span className={`cat-tag ${prod.category?.toLowerCase() || 'kid'}`} style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: 'var(--border-radius-full)',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        textTransform: 'uppercase'
-                      }}>
-                        {normalizeCategory(prod.category)}
-                      </span>
-                    )}
-                  </td>
-                  
-                  {/* Inline Variant Stock & SKU Editors */}
-                  <td style={{ verticalAlign: 'middle' }}>
-                    {isEditing && editForm ? (
-                      <div className="inline-variant-edit-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px', minWidth: '350px' }}>
-                        {editForm.variants.map((v, idx) => (
-                          <div key={idx} className="inline-variant-edit-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px dashed var(--border-color)', paddingBottom: '6px' }}>
-                            <span style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid var(--border-color)', width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                            <span style={{ fontSize: '0.75rem', fontWeight: '700', minWidth: '45px' }}>{v.color}/{v.size}</span>
-                            
+                    {/* Specifications */}
+                    <td className="p-4 align-middle">
+                      {isEditing && editForm ? (
+                        <div className="flex flex-col gap-2.5 max-w-sm">
+                          <div>
+                            <label className="block text-[10px] font-bold text-[#878787] uppercase mb-1">Product Title</label>
                             <input 
                               type="text" 
-                              value={v.sku || ""}
-                              placeholder="SKU"
-                              onChange={(e) => handleVariantFieldChange(idx, "sku", e.target.value.toUpperCase())}
-                              style={{ flexGrow: 1, padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-                            />
-                            
-                            <input 
-                              type="number" 
-                              value={v.stock}
-                              onChange={(e) => handleVariantFieldChange(idx, "stock", Math.max(0, Number(e.target.value)))}
-                              min="0"
-                              style={{ width: '55px', padding: '4px 6px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.75rem', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-                              placeholder="Stock"
+                              value={editForm.name} 
+                              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] outline-none"
                             />
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="variant-auditor-panel" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {(prod.variants || []).slice(0, 3).map((v, vidx) => {
-                          const stockKey = `${prod.id}-${v.color}`;
-                          const isBusy = busyStockKeys[stockKey];
 
-                          return (
-                            <div key={vidx} className="variant-auditor-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ backgroundColor: v.color.toLowerCase(), border: '1px solid var(--border-color)', width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '50px' }}>{v.color}/{v.size}:</span>
-                              
-                              <div className="inline-stock-control-panel mini" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <button 
-                                  type="button"
-                                  className="adjust-stock-btn dec mini" 
-                                  onClick={() => handleVariantStockAdjust(prod.id, v.color, -5)}
-                                  disabled={isBusy}
-                                  style={{ opacity: isBusy ? 0.5 : 1, width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                                >
-                                  -
-                                </button>
-                                <span className={`stock-count-badge mini ${Number(v.stock) > 0 ? 'in' : 'out'}`} style={{
-                                  fontSize: '0.75rem',
-                                  fontWeight: '600',
-                                  minWidth: '24px',
-                                  textAlign: 'center'
-                                }}>
-                                  {v.stock}
-                                </span>
-                                <button 
-                                  type="button"
-                                  className="adjust-stock-btn inc mini" 
-                                  onClick={() => handleVariantStockAdjust(prod.id, v.color, 5)}
-                                  disabled={isBusy}
-                                  style={{ opacity: isBusy ? 0.5 : 1, width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {prod.variants && prod.variants.length > 3 && (
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>+ {prod.variants.length - 3} more variants</span>
-                        )}
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginTop: '4px' }}>
-                          Total Stock: <strong>{prod.stockCount} units</strong>
+                          <div>
+                            <label className="block text-[10px] font-bold text-[#878787] uppercase mb-1">🎨 Colors (comma-separated)</label>
+                            <input 
+                              type="text" 
+                              value={editForm.colors.join(', ')} 
+                              onChange={(e) => {
+                                const newColors = e.target.value.split(',').map(c => c.trim()).filter(Boolean);
+                                const newVariants = syncVariants(newColors, editForm.sizes, editForm.variants, editForm.category, editForm.name, editForm.newPrice);
+                                setEditForm({ ...editForm, colors: newColors, variants: newVariants });
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-[#878787] uppercase mb-1">📏 Sizes (comma-separated)</label>
+                            <input 
+                              type="text" 
+                              value={editForm.sizes.join(', ')} 
+                              onChange={(e) => {
+                                const newSizes = e.target.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                                const newVariants = syncVariants(editForm.colors, newSizes, editForm.variants, editForm.category, editForm.name, editForm.newPrice);
+                                setEditForm({ ...editForm, sizes: newSizes, variants: newVariants });
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] outline-none animate-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-[#878787] uppercase mb-1">📝 Description</label>
+                            <textarea 
+                              value={editForm.description || ''} 
+                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                              rows={2}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] outline-none resize-none"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </td>
-                  
-                  {/* New Price */}
-                  <td className="price-cell" style={{ verticalAlign: 'middle' }}>
-                    {isEditing && editForm ? (
-                      <input 
-                        type="number" 
-                        value={editForm.newPrice} 
-                        onChange={(e) => setEditForm({ ...editForm, newPrice: Number(e.target.value) })}
-                        style={{ width: '70px', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-                      />
-                    ) : (
-                      <strong style={{ color: 'var(--text-primary)' }}>₹{prod.newPrice}</strong>
-                    )}
-                  </td>
-                  
-                  {/* Old Price */}
-                  <td className="price-cell old" style={{ verticalAlign: 'middle', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
-                    {isEditing && editForm ? (
-                      <input 
-                        type="number" 
-                        value={editForm.oldPrice} 
-                        onChange={(e) => setEditForm({ ...editForm, oldPrice: Number(e.target.value) })}
-                        style={{ width: '70px', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-                      />
-                    ) : (
-                      <span>₹{prod.oldPrice || 0}</span>
-                    )}
-                  </td>
-                  
-                  {/* Action Buttons */}
-                  <td style={{ paddingRight: '24px', verticalAlign: 'middle', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      {isEditing ? (
-                        <>
-                          <button 
-                            type="button"
-                            className="save-edit-btn" 
-                            onClick={() => handleSaveEdit(prod.id)}
-                            disabled={isSaving}
-                            style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '4px',
-                              padding: '8px 14px',
-                              backgroundColor: '#10b981',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '40px',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                            Save
-                          </button>
-                          <button 
-                            type="button"
-                            className="cancel-edit-btn" 
-                            onClick={() => setEditingProductId(null)}
-                            disabled={isSaving}
-                            style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '4px',
-                              padding: '8px 14px',
-                              backgroundColor: 'var(--bg-primary)',
-                              border: '1px solid var(--border-color)',
-                              color: 'var(--text-primary)',
-                              borderRadius: '40px',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <X size={12} />
-                            Cancel
-                          </button>
-                        </>
                       ) : (
-                        <>
-                          <button 
-                            type="button"
-                            className="admin-edit-btn" 
-                            onClick={() => startEditing(prod)}
-                            style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '4px',
-                              padding: '8px 14px',
-                              backgroundColor: 'var(--bg-primary)',
-                              border: '1px solid var(--border-color)',
-                              color: 'var(--text-primary)',
-                              borderRadius: '40px',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <Pencil size={12} />
-                            Edit
-                          </button>
-                          <button 
-                            type="button"
-                            className="admin-delete-btn" 
-                            onClick={() => handleDeleteProduct(prod)}
-                            style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '4px',
-                              padding: '8px 14px',
-                              backgroundColor: '#fee2e2',
-                              color: '#ef4444',
-                              border: 'none',
-                              borderRadius: '40px',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <Trash2 size={12} />
-                            Delete
-                          </button>
-                        </>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-[#191c1e] dark:text-[#ebf1ff] hover:underline cursor-pointer">
+                            {prod.name}
+                          </span>
+                          
+                          {/* Warnings overlay tags */}
+                          {isMissingImages && (
+                            <span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-amber-600">
+                              <AlertTriangle size={12} /> Missing Product Images
+                            </span>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px] text-[#878787]">
+                            <span className="bg-[#f2f4f7] dark:bg-[#1e2029] px-2 py-0.5 rounded-md">
+                              📏 Sizes: <strong className="text-[#5a4044] dark:text-[#ebf1ff]">{prod.sizes?.join(', ') || 'N/A'}</strong>
+                            </span>
+                            <span className="bg-[#f2f4f7] dark:bg-[#1e2029] px-2 py-0.5 rounded-md">
+                              🎨 Colors: <strong className="text-[#5a4044] dark:text-[#ebf1ff]">{prod.colors?.join(', ') || 'N/A'}</strong>
+                            </span>
+                          </div>
+                        </div>
                       )}
-                    </div>
+                    </td>
+
+                    {/* Category Tag */}
+                    <td className="p-4 align-middle">
+                      {isEditing && editForm ? (
+                        <select 
+                          value={editForm.category} 
+                          onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                          className="h-9 px-3 rounded-lg border border-[#e2bec2]/40 dark:border-white/10 bg-white dark:bg-[#1e2029] text-xs font-semibold outline-none cursor-pointer"
+                        >
+                          <option value="women">Women</option>
+                          <option value="men">Men</option>
+                          <option value="kid">Kids</option>
+                        </select>
+                      ) : (
+                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          prod.category?.toLowerCase() === 'men' 
+                            ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 border border-blue-100 dark:border-blue-950" 
+                            : prod.category?.toLowerCase() === 'women'
+                              ? "bg-pink-50 dark:bg-pink-950/20 text-[#db2b60] border border-pink-100 dark:border-pink-950" 
+                              : "bg-emerald-50 dark:bg-emerald-950/20 text-[#388E3C] border border-emerald-100 dark:border-emerald-950"
+                        }`}>
+                          {normalizeCategory(prod.category)}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Stock Control */}
+                    <td className="p-4 align-middle">
+                      {isEditing && editForm ? (
+                        <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
+                          {editForm.variants.map((v, idx) => (
+                            <div key={idx} className="flex items-center gap-2 border-b border-[#e2bec2]/20 dark:border-white/5 pb-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full border border-gray-400" style={{ backgroundColor: v.color.toLowerCase() }}></span>
+                              <span className="text-[11px] font-bold text-[#5a4044] dark:text-[#a3b0cc] min-w-[50px]">{v.color}/{v.size}</span>
+                              <input 
+                                type="text" 
+                                value={v.sku || ""}
+                                placeholder="SKU Code"
+                                onChange={(e) => handleVariantFieldChange(idx, "sku", e.target.value.toUpperCase())}
+                                className="flex-1 px-2.5 py-1 text-[11px] font-mono rounded border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029]"
+                              />
+                              <input 
+                                type="number" 
+                                value={v.stock}
+                                onChange={(e) => handleVariantFieldChange(idx, "stock", Math.max(0, Number(e.target.value)))}
+                                min="0"
+                                className="w-16 px-2 py-1 text-[11px] rounded border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1.5">
+                          {/* Inventory Warning Badge */}
+                          {isLowStock ? (
+                            <div className="flex items-center gap-1.5 mb-1 text-red-600 font-extrabold text-xs">
+                              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                              <span>{totalStock} in stock (Low Stock Alert)</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 mb-1 text-[#388E3C] font-extrabold text-xs">
+                              <span className="w-2 h-2 rounded-full bg-[#388E3C]"></span>
+                              <span>{totalStock} in stock (Healthy)</span>
+                            </div>
+                          )}
+
+                          {/* Quick Adjust buttons per Variant */}
+                          <div className="flex flex-col gap-1">
+                            {(prod.variants || []).slice(0, 3).map((v, vidx) => {
+                              const stockKey = `${prod.id}-${v.color}`;
+                              const isBusy = busyStockKeys[stockKey];
+
+                              return (
+                                <div key={vidx} className="flex items-center justify-between text-[11px] text-[#5a4044] dark:text-[#a3b0cc] max-w-[200px]">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full border border-gray-400" style={{ backgroundColor: v.color.toLowerCase() }}></span>
+                                    <span>{v.color}/{v.size}:</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <button 
+                                      type="button"
+                                      disabled={isBusy}
+                                      onClick={() => handleVariantStockAdjust(prod.id, v.color, -5)}
+                                      className="w-5 h-5 flex items-center justify-center bg-[#f2f4f7] dark:bg-[#1e2029] border border-[#e2bec2]/40 dark:border-white/10 hover:bg-[#e6e8eb] rounded text-xs font-bold disabled:opacity-50 cursor-pointer text-[#191c1e] dark:text-white"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="w-7 text-center font-bold">{v.stock}</span>
+                                    <button 
+                                      type="button"
+                                      disabled={isBusy}
+                                      onClick={() => handleVariantStockAdjust(prod.id, v.color, 5)}
+                                      className="w-5 h-5 flex items-center justify-center bg-[#f2f4f7] dark:bg-[#1e2029] border border-[#e2bec2]/40 dark:border-white/10 hover:bg-[#e6e8eb] rounded text-xs font-bold disabled:opacity-50 cursor-pointer text-[#191c1e] dark:text-white"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {prod.variants && prod.variants.length > 3 && (
+                              <span className="text-[10px] text-[#878787] mt-0.5">+ {prod.variants.length - 3} more variants</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </td>
+
+                    {/* New Price */}
+                    <td className="p-4 align-middle font-bold text-[#191c1e] dark:text-[#ebf1ff]">
+                      {isEditing && editForm ? (
+                        <input 
+                          type="number" 
+                          value={editForm.newPrice} 
+                          onChange={(e) => setEditForm({ ...editForm, newPrice: Number(e.target.value) })}
+                          className="w-20 px-2.5 py-1 text-xs rounded border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
+                        />
+                      ) : (
+                        <span>₹{prod.newPrice}</span>
+                      )}
+                    </td>
+
+                    {/* Old Price */}
+                    <td className="p-4 align-middle text-[#878787] line-through">
+                      {isEditing && editForm ? (
+                        <input 
+                          type="number" 
+                          value={editForm.oldPrice} 
+                          onChange={(e) => setEditForm({ ...editForm, oldPrice: Number(e.target.value) })}
+                          className="w-20 px-2.5 py-1 text-xs rounded border border-[#e2bec2]/40 bg-white dark:bg-[#1e2029] outline-none"
+                        />
+                      ) : (
+                        <span>₹{prod.oldPrice || 0}</span>
+                      )}
+                    </td>
+
+                    {/* Action buttons */}
+                    <td className="p-4 align-middle text-right">
+                      <div className="flex gap-1.5 justify-end">
+                        {isEditing ? (
+                          <>
+                            <button 
+                              type="button" 
+                              disabled={isSaving}
+                              onClick={() => handleSaveEdit(prod.id)}
+                              className="px-3 py-1.5 bg-[#388E3C] hover:bg-[#2E7D32] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer border-none"
+                            >
+                              {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                              Save
+                            </button>
+                            <button 
+                              type="button" 
+                              disabled={isSaving}
+                              onClick={() => setEditingProductId(null)}
+                              className="px-3 py-1.5 bg-white dark:bg-[#1e2029] border border-[#e2bec2]/60 hover:bg-[#f2f4f7] dark:hover:bg-[#363636] text-[#5a4044] dark:text-[#a3b0cc] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
+                            >
+                              <X size={12} />
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              type="button" 
+                              onClick={() => startEditing(prod)}
+                              className="px-3 py-1.5 bg-white dark:bg-[#1e2029] border border-[#e2bec2]/60 hover:bg-[#f2f4f7] dark:hover:bg-[#363636] text-[#5a4044] dark:text-[#a3b0cc] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
+                            >
+                              <Pencil size={12} />
+                              Edit
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => handleDeleteProduct(prod)}
+                              className="px-3 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border-none"
+                            >
+                              <Trash2 size={12} />
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredProducts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-12 text-center text-sm font-medium text-[#878787]">
+                    No products found matching the search/filter criteria.
                   </td>
                 </tr>
-              );
-            })}
-            {filteredProducts.length === 0 && (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  No products found matching the filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
