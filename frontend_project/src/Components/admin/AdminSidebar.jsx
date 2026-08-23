@@ -43,15 +43,15 @@ export const AdminSidebar = ({
   ];
 
   return (
-    <aside className="w-64 bg-[#f2f4f7] dark:bg-[#12141c] border-r border-[#e2bec2]/40 dark:border-white/10 flex flex-col h-screen py-6 px-4 gap-2 shrink-0">
+    <aside className="admin-sidebar w-64 bg-[#f2f4f7] dark:bg-[#12141c] border-r border-[#e2bec2]/40 dark:border-white/10 flex flex-col h-screen py-6 px-4 gap-2 shrink-0">
       {/* Brand Header */}
-      <div className="px-3 mb-6">
+      <div className="sidebar-header px-3 mb-6">
         <h1 className="text-xl font-bold text-[#b80149] dark:text-[#ff3366] tracking-tight">RamCart Admin</h1>
         <p className="text-xs font-semibold text-[#878787] uppercase tracking-wider mt-0.5">Management Console</p>
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-1">
+      <nav className="sidebar-menu flex-1 flex flex-col gap-1.5 overflow-y-auto pr-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -63,7 +63,7 @@ export const AdminSidebar = ({
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                 isActive 
-                  ? "bg-[#db2b60] text-white font-bold shadow-md shadow-[#db2b60]/20" 
+                  ? "active bg-[#db2b60] text-white font-bold shadow-md shadow-[#db2b60]/20" 
                   : "text-[#5a4044] dark:text-[#a3b0cc] hover:bg-[#e6e8eb] dark:hover:bg-[#1e2029]"
               }`}
             >
@@ -86,7 +86,7 @@ export const AdminSidebar = ({
       </nav>
 
       {/* Bottom Profile and Logout */}
-      <div className="mt-auto pt-4 border-t border-[#e2bec2]/40 dark:border-white/10 flex flex-col gap-4">
+      <div className="sidebar-footer mt-auto pt-4 border-t border-[#e2bec2]/40 dark:border-white/10 flex flex-col gap-4">
         <div className="flex items-center gap-3 px-1">
           <div className="w-10 h-10 rounded-full bg-[#ffd9de] dark:bg-[#ffd9de]/10 text-[#b80149] dark:text-[#ff3366] flex items-center justify-center font-bold">
             {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={20} />}

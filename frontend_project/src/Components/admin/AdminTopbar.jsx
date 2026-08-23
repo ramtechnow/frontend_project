@@ -15,7 +15,7 @@ export const AdminTopbar = ({
   const unreadCount = notifications.filter(n => n.unread).length;
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 w-full h-16 bg-white dark:bg-[#12141c] border-b border-[#e2bec2]/40 dark:border-white/10 shadow-sm transition-colors duration-200">
+    <header className="admin-topbar sticky top-0 z-50 flex items-center justify-between px-6 w-full h-16 bg-white dark:bg-[#12141c] border-b border-[#e2bec2]/40 dark:border-white/10 shadow-sm transition-colors duration-200">
       {/* Search/Dashboard Intro */}
       <div className="flex items-center gap-4 flex-1">
         <div>
@@ -161,3 +161,4 @@ export const AdminTopbar = ({
     </header>
   );
 };
+export default AdminTopbar;
