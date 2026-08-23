@@ -10,7 +10,8 @@ import {
   Tag,
   User,
   LogOut,
-  Image
+  Image,
+  Sparkles
 } from 'lucide-react';
 
 export const AdminSidebar = ({ 
@@ -95,6 +96,14 @@ export const AdminSidebar = ({
           onClick={() => setActiveTab("banners")}
         >
           <span className="menu-icon"><Image size={18} /></span> Hero Banners ({bannersCount})
+        </button>
+
+        <button 
+          type="button"
+          className={activeTab === "seasonal" ? "active" : ""} 
+          onClick={() => setActiveTab("seasonal")}
+        >
+          <span className="menu-icon"><Sparkles size={18} /></span> Seasonal Offers
         </button>
       </nav>
 

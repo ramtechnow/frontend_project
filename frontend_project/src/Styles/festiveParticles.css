@@ -1,0 +1,43 @@
+.festive-particles-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999; /* Float on top of everything, but non-clickable */
+  overflow: hidden;
+}
+
+.festive-drift-particle {
+  position: absolute;
+  bottom: -50px;
+  animation: floatUp 15s linear infinite;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15));
+}
+
+/* Specific behaviors */
+.festive-drift-particle.particle-type-lamp {
+  filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.6));
+}
+
+.festive-drift-particle.particle-type-star {
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.7));
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-110vh) rotate(360deg);
+    opacity: 0;
+  }
+}

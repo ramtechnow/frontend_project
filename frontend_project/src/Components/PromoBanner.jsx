@@ -13,20 +13,26 @@ const PromoBanner = ({ page = "home" }) => {
   const [transitioning, setTransitioning] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     const fetchActiveBanners = async () => {
       try {
-        const res  = await fetch(`${BACKEND_URL}/banners/active?page=${page}`);
+        const res  = await fetch(`${BACKEND_URL}/banners/active?page=${page}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           setBanners(data);
         }
       } catch (err) {
+        clearTimeout(timeoutId);
         console.warn("Failed to fetch active promotional banners:", err);
       } finally {
         setLoading(false);
       }
     };
     fetchActiveBanners();
+    return () => { clearTimeout(timeoutId); controller.abort(); };
   }, [page]);
 
   const goTo = useCallback((idx) => {
@@ -78,8 +84,8 @@ const PromoBanner = ({ page = "home" }) => {
         <div
           className="hero-slide"
           style={{
-            backgroundImage:
-              "linear-gradient(to right, rgba(15,17,21,0.85) 30%, rgba(15,17,21,0.2) 80%), url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1400&auto=format&fit=crop')"
+            background:
+              "linear-gradient(135deg, #0f1115 0%, #1a1f2e 40%, #2d1b3d 70%, #1a1f2e 100%)"
           }}
         >
           <div className="hero-content">

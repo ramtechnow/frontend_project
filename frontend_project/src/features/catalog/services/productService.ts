@@ -1,32 +1,10 @@
 import { Product } from "../types/productTypes";
 import { BACKEND_URL } from "../../../config";
-// @ts-ignore
-import fallbackProductsData from "../../../data/products.js";
 
-const getFallbackProducts = (): Product[] => {
-  if (!Array.isArray(fallbackProductsData)) return [];
-  return fallbackProductsData.map((p: any) => ({
-    id: String(p.id),
-    name: p.name,
-    description: p.description || `Premium quality ${p.name} from RamCart.`,
-    category: p.category === "kid" ? "kids" : p.category,
-    newPrice: Number(p.new_price || 0),
-    oldPrice: Number(p.old_price || 0),
-    sizes: p.sizes || ['S', 'M', 'L', 'XL'],
-    colors: p.colors || ['Black', 'White'],
-    variants: p.variants || [],
-    stockCount: Number(p.stockCount || 10),
-    image: p.image || "",
-    images: p.images || [],
-    available: true,
-    createdAt: new Date().toISOString()
-  }));
-};
-
-// Fetch all available products with instant fallback guarantee
+// Fetch all available products — NO dummy fallback, only real MongoDB data
 export const fetchProducts = async (category?: string): Promise<Product[]> => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s quick timeout
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for cold starts
 
   try {
     const res = await fetch(`${BACKEND_URL}/allproducts`, { signal: controller.signal });
@@ -37,7 +15,7 @@ export const fetchProducts = async (category?: string): Promise<Product[]> => {
     }
     const data = await res.json();
     if (!Array.isArray(data) || data.length === 0) {
-      throw new Error("Empty backend products response");
+      return []; // Empty catalog — no fake data
     }
 
     const list: Product[] = data.map((p: any) => ({
@@ -58,19 +36,14 @@ export const fetchProducts = async (category?: string): Promise<Product[]> => {
     }));
 
     if (category) {
-      const filtered = list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
-      return filtered.length > 0 ? filtered : getFallbackProducts().filter((p) => p.category.toLowerCase() === category.toLowerCase());
+      return list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
     }
 
     return list;
   } catch (err) {
     clearTimeout(timeoutId);
-    console.warn("fetchProducts API failed or cold-starting, returning fallback catalog:", err);
-    const fallbacks = getFallbackProducts();
-    if (category) {
-      return fallbacks.filter((p) => p.category.toLowerCase() === category.toLowerCase());
-    }
-    return fallbacks;
+    console.warn("fetchProducts: Backend unavailable or cold-starting. Returning empty catalog.", err);
+    return []; // No dummy data — skeleton/loading state will show instead
   }
 };
 

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
@@ -12,6 +12,10 @@ import { setUser, setAuthLoading, setAuthError, clearAuth } from "./store/slices
 import { useAppDispatch } from "./store/hooks";
 import Pattern from "./Components/Pattern";
 import ScrollToTop from "./Components/ScrollToTop";
+import { fetchActivePromo } from "./features/catalog/services/promoService";
+import { SeasonalPromo } from "./features/catalog/types/promoTypes";
+import AnnouncementMarquee from "./Components/AnnouncementMarquee";
+import FestiveParticles from "./Components/FestiveParticles";
 
 // Lazy load pages for code splitting and optimized bundles
 const Home = lazy(() => import("./Pages/Home"));
@@ -30,6 +34,7 @@ const TestimonialsDemo = lazy(() => import("./Pages/TestimonialsDemo"));
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [activePromo, setActivePromo] = useState<SeasonalPromo | null>(null);
 
   useEffect(() => {
     dispatch(setAuthLoading(true));
@@ -47,10 +52,24 @@ export const App: React.FC = () => {
       }
     });
 
+    // Load active seasonal settings on mount
+    fetchActivePromo().then(setActivePromo).catch(() => {});
+
     return () => unsubscribe();
   }, [dispatch]);
+
   return (
     <BrowserRouter>
+      {activePromo && (
+        <AnnouncementMarquee 
+          text={activePromo.announcementText} 
+          bg={activePromo.announcementBg} 
+        />
+      )}
+      <FestiveParticles 
+        type={activePromo?.particleType || "star"} 
+        enable={activePromo?.enableParticles || false} 
+      />
       <div 
         style={{ 
           display: "flex", 

@@ -10,6 +10,9 @@ import categories from "../data/categories";
 import { fetchProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
 import { Truck, RotateCcw, Shield, Tag } from "lucide-react";
+import { fetchActivePromo } from "../features/catalog/services/promoService";
+import { SeasonalPromo } from "../features/catalog/types/promoTypes";
+import BankOffers from "../Components/BankOffers";
 import "../Styles/productGrid.css";
 
 export const ProductCardSkeleton: React.FC = () => {
@@ -25,27 +28,94 @@ export const ProductCardSkeleton: React.FC = () => {
   );
 };
 
+/* Cold-start / empty-state banner shown when backend is waking up */
+export const BackendLoadingBanner: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
+  <div style={{
+    textAlign: "center",
+    padding: "48px 24px",
+    border: "1px dashed var(--border-color)",
+    borderRadius: "16px",
+    backgroundColor: "var(--bg-secondary)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "16px",
+    margin: "12px 0"
+  }}>
+    <div style={{
+      width: "56px", height: "56px", borderRadius: "50%",
+      background: "linear-gradient(135deg, var(--accent-pink), #a855f7)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      animation: "pulse 2s ease-in-out infinite"
+    }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+      </svg>
+    </div>
+    <h3 style={{ margin: 0, fontWeight: "800", fontSize: "16px", color: "var(--text-primary)" }}>
+      Server is waking up...
+    </h3>
+    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", maxWidth: "360px", lineHeight: "1.6" }}>
+      Our backend server is loading. This usually takes a few seconds on the first visit. Real products from the catalog will appear shortly.
+    </p>
+    {onRetry && (
+      <button
+        onClick={onRetry}
+        style={{
+          backgroundColor: "var(--accent-pink)", color: "white", fontWeight: "700",
+          padding: "10px 28px", borderRadius: "8px", border: "none", fontSize: "13px",
+          cursor: "pointer", transition: "transform 0.2s ease"
+        }}
+        onMouseOver={e => (e.currentTarget.style.transform = "scale(1.04)")}
+        onMouseOut={e => (e.currentTarget.style.transform = "scale(1)")}
+      >
+        🔄 Retry Now
+      </button>
+    )}
+  </div>
+);
+
 export const Home: React.FC = () => {
   const [productsList, setProductsList] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const [activePromo, setActivePromo] = useState<SeasonalPromo | null>(null);
+
+  const loadProducts = async (isRetry = false) => {
+    if (!isRetry) setLoading(true);
+    try {
+      const [productsData, promoData] = await Promise.all([
+        fetchProducts(),
+        fetchActivePromo()
+      ]);
+      
+      if (productsData && productsData.length > 0) {
+        setProductsList(productsData);
+        setRetryCount(0);
+      } else if (retryCount < 6) {
+        // Backend cold-starting — auto-retry after 5s
+        setTimeout(() => setRetryCount(prev => prev + 1), 5000);
+      }
+      
+      if (promoData) {
+        setActivePromo(promoData);
+      }
+    } catch (err) {
+      console.error("Failed to load products/promos for home page:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    const loadProducts = async () => {
-      try {
-        const data = await fetchProducts();
-        if (isMounted && data && data.length > 0) {
-          setProductsList(data);
-        }
-      } catch (err) {
-        console.error("Failed to load products for home page:", err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    loadProducts();
-    return () => { isMounted = false; };
-  }, []);
+    loadProducts(retryCount > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setRetryCount(prev => prev + 1);
+  };
 
   // Curate special selections
   const newCollections = productsList.slice(0, 8);
@@ -107,6 +177,10 @@ export const Home: React.FC = () => {
       </div>
 
       <main className="container home-main-container" id="main-content" style={{ marginTop: "24px" }}>
+        {activePromo && activePromo.bankOffers && activePromo.bankOffers.length > 0 && (
+          <BankOffers offers={activePromo.bankOffers} />
+        )}
+
         {/* 2. Top Categories Grid — desktop only */}
         <section aria-labelledby="cat-heading" className="home-section desktop-only-section" style={{ marginTop: 0 }}>
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
@@ -142,10 +216,15 @@ export const Home: React.FC = () => {
           <div className="product-grid horizontal-scroll-mobile">
             {loading
               ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-              : newCollections.map((prod) => (
-                  <ProductCard key={prod.id} product={prod} />
-                ))}
+              : newCollections.length > 0
+                ? newCollections.map((prod) => (
+                    <ProductCard key={prod.id} product={prod} />
+                  ))
+                : null}
           </div>
+          {!loading && productsList.length === 0 && (
+            <BackendLoadingBanner onRetry={handleRetry} />
+          )}
         </section>
 
         {/* 4. Process Value Propositions */}
@@ -169,7 +248,7 @@ export const Home: React.FC = () => {
           <div className="product-grid horizontal-scroll-mobile">
             {loading
               ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-              : (popularInWomen.length > 0 ? popularInWomen : productsList.slice(0, 4)).map((prod) => (
+              : popularInWomen.map((prod) => (
                   <ProductCard key={prod.id} product={prod} />
                 ))}
           </div>
@@ -193,7 +272,7 @@ export const Home: React.FC = () => {
           <div className="product-grid horizontal-scroll-mobile">
             {loading
               ? [1, 2, 3, 4].map((id) => <ProductCardSkeleton key={id} />)
-              : (popularInMen.length > 0 ? popularInMen : productsList.slice(4, 8)).map((prod) => (
+              : popularInMen.map((prod) => (
                   <ProductCard key={prod.id} product={prod} />
                 ))}
           </div>

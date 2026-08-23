@@ -152,7 +152,7 @@ export const ProductDetail: React.FC = () => {
           .filter((img) => img !== "" && img !== "null" && img !== "undefined")
       )
     );
-    return unique.length > 0 ? unique : [product.image || "https://placehold.co/400x500?text=Apparel"];
+    return unique.length > 0 ? unique : [product.image || ""];
   })();
 
   // Brand Name

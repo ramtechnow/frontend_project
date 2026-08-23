@@ -10,6 +10,7 @@ import { AdminUsersTab } from "../Components/admin/AdminUsersTab";
 import { AdminOrdersTab } from "../Components/admin/AdminOrdersTab";
 import { AdminCouponsTab } from "../Components/admin/AdminCouponsTab";
 import { AdminBannersTab } from "../Components/admin/AdminBannersTab";
+import { AdminSeasonalTab } from "../Components/admin/AdminSeasonalTab";
 
 // UI Components
 import { AdminSidebar } from "../Components/admin/AdminSidebar";
@@ -414,6 +415,13 @@ export const AdminPanel: React.FC = () => {
               addToast={triggerToast as any}
               triggerConfirm={triggerConfirm as any}
               logAction={logAction as any}
+            />
+          )}
+
+          {activeTab === "seasonal" && (
+            <AdminSeasonalTab 
+              addToast={triggerToast}
+              logAction={logAction}
             />
           )}
         </main>

@@ -4,6 +4,7 @@ import ProductCard from "../Components/ProductCard";
 import PromoBanner from "../Components/PromoBanner";
 import { fetchProducts } from "../features/catalog/services/productService";
 import { Product } from "../features/catalog/types/productTypes";
+import { BackendLoadingBanner } from "./Home";
 import { ArrowUpDown, Search, X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import "../Styles/productGrid.css";
 
@@ -58,10 +59,12 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
     setCurrentPage(1); // reset to page 1 on category change
   }, [category]);
 
-  // Load products
+  // Load products with auto-retry on cold start
+  const [retryCount, setRetryCount] = useState(0);
+
   useEffect(() => {
     const loadProducts = async () => {
-      setLoading(true);
+      if (retryCount === 0) setLoading(true);
       try {
         const data = await fetchProducts();
         setProductsList(data);
@@ -71,7 +74,10 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
           const prices = data.map(p => p.newPrice);
           const highest = Math.max(...prices, 1000);
           setMaxProductPrice(highest);
-          setPriceRange(highest); // default slider to max
+          setPriceRange(highest);
+        } else if (retryCount < 6) {
+          // Backend cold-starting — auto-retry after 5s
+          setTimeout(() => setRetryCount(prev => prev + 1), 5000);
         }
       } catch (err) {
         console.error("Failed to fetch shop products:", err);
@@ -80,7 +86,13 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
       }
     };
     loadProducts();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setRetryCount(prev => prev + 1);
+  };
 
   // Debounce search query
   useEffect(() => {
@@ -416,6 +428,8 @@ export const Shop: React.FC<ShopProps> = ({ category = "all" }) => {
             <div className="product-grid">
               {[1,2,3,4,5,6,7,8].map((id) => <SkeletonCard key={id} />)}
             </div>
+          ) : productsList.length === 0 ? (
+            <BackendLoadingBanner onRetry={handleRetry} />
           ) : processedProducts.length === 0 ? (
             <div className="catalog-empty-state">
               <p>No products match your active filters.</p>

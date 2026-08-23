@@ -199,6 +199,7 @@ const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const seasonalRoutes = require('./routes/seasonalRoutes');
 
 // API CREATION
 app.get("/", (req, res) => {
@@ -249,6 +250,7 @@ app.use(userRoutes);
 app.use(orderRoutes);
 app.use(couponRoutes);
 app.use(bannerRoutes);
+app.use(seasonalRoutes);
 
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {

@@ -221,11 +221,15 @@ export const AdminOrdersTab = ({
                                     }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <img 
-                                          src={prodDetails?.image || item.image || "https://placehold.co/100x120?text=Product"} 
+                                          src={prodDetails?.image || item.image || ""} 
                                           alt={item.name} 
                                           className="drawer-prod-thumb" 
                                           style={{ width: '40px', height: '48px', objectFit: 'cover', borderRadius: '4px' }}
+                                          onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'flex'); }}
                                         />
+                                        <div style={{ display: 'none', width: '40px', height: '48px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '16px', fontWeight: 700, color: 'var(--text-muted)', alignItems: 'center', justifyContent: 'center' }}>
+                                          {item.name?.charAt(0)?.toUpperCase() || '?'}
+                                        </div>
                                         <div className="drawer-prod-info" style={{ display: 'flex', flexDirection: 'column' }}>
                                           <span className="item-title" style={{ fontSize: '0.85rem', fontWeight: '700' }}>{item.name}</span>
                                           <div className="item-specs" style={{ display: 'flex', gap: '10px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>

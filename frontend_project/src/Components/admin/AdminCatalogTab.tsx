@@ -388,12 +388,18 @@ export const AdminCatalogTab: React.FC<AdminCatalogTabProps> = ({
                         />
                       </div>
                     ) : (
+                      <>
                       <img 
-                        src={prod.image || "https://placehold.co/100x120?text=Product"} 
+                        src={prod.image || ""} 
                         alt={prod.name} 
                         className="admin-prod-thumb" 
-                        style={{ width: '50px', height: '58px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} 
+                        style={{ width: '50px', height: '58px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling && ((e.target as HTMLImageElement).nextElementSibling as HTMLElement).style.removeProperty('display'); }}
                       />
+                      <div style={{ display: 'none', width: '50px', height: '58px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '18px', fontWeight: 700, color: 'var(--text-muted)', lineHeight: '58px', textAlign: 'center' }}>
+                        {prod.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      </>
                     )}
                   </td>
                   
